@@ -10,6 +10,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -66,6 +68,17 @@ public class MusicService {
     @Transactional
     public void delete(Long id, Long loginUserId, boolean isAdmin) {
         musicPostService.delete(id, loginUserId, isAdmin);
+    }
+
+    // 회원탈퇴용: 특정 회원이 작성한 모든 음악 게시글 삭제
+    @Transactional
+    public void deleteAllByWriter(Long writerId) {
+
+        List<Music> musics = musicRepository.findAllByWriterId(writerId);
+
+        for (Music music : musics) {
+            musicPostService.delete(music.getId(), writerId, true);
+        }
     }
 
     public Page<Music> findPage(int num, int pageSize) {

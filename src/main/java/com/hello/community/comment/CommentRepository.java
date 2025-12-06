@@ -16,6 +16,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 게시글별 댓글 개수
     long countByPost(BasePost post);
 
-    // Admin 기능: 특정 회원이 작성한 모든 댓글 조회
+    // Admin 기능: 특정 회원이 작성한 모든 댓글 조회 (페이지네이션)
     Page<Comment> findByWriterId(Long writerId, Pageable pageable);
+
+    // 회원탈퇴용: 특정 회원이 작성한 모든 댓글 조회 (전체)
+    List<Comment> findAllByWriterId(Long writerId);
 }

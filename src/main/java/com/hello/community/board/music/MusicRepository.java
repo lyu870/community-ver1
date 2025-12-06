@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface MusicRepository extends BasePostRepository<Music> {
 
     @Query("""
@@ -19,4 +21,7 @@ public interface MusicRepository extends BasePostRepository<Music> {
 
     // Admin 기능: 특정 회원 게시글 목록보기
     Page<Music> findByWriterId(Long writerId, Pageable pageable);
+
+    // 회원탈퇴용: 특정 회원이 작성한 모든 음악 게시글 조회
+    List<Music> findAllByWriterId(Long writerId);
 }

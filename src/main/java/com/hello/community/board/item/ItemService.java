@@ -10,6 +10,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ItemService {
@@ -63,6 +65,18 @@ public class ItemService {
     public void deleteItem(Long id, Long loginUserId, boolean isAdmin) {
         // 관리자 여부를 BasePostService 로 전달.
         itemPostService.delete(id, loginUserId, isAdmin);
+    }
+
+    // 회원탈퇴용: 특정 회원이 작성한 모든 아이템 게시글 삭제
+    @Transactional
+    public void deleteAllByWriter(Long writerId) {
+
+        List<Item> items = itemRepository.findAllByWriterId(writerId);
+
+        for (Item item : items) {
+            // isAdmin = true 로 넘겨서 권한 체크 우회
+            itemPostService.delete(item.getId(), writerId, true);
+        }
     }
 
     @Transactional(readOnly = false)

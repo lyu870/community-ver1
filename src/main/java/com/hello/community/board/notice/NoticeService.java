@@ -10,6 +10,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -51,6 +53,17 @@ public class NoticeService {
     @Transactional
     public void delete(Long id, Long loginUserId) {
         noticePostService.delete(id, loginUserId);
+    }
+
+    // 회원탈퇴용: 특정 회원이 작성한 모든 공지 게시글 삭제
+    @Transactional
+    public void deleteAllByWriter(Long writerId) {
+
+        List<Notice> notices = noticeRepository.findAllByWriterId(writerId);
+
+        for (Notice notice : notices) {
+            noticePostService.delete(notice.getId(), writerId, true);
+        }
     }
 
     public Page<Notice> findPage(int num, int pageSize) {

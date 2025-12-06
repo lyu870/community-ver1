@@ -57,6 +57,23 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    // 회원탈퇴 시: 해당 회원이 작성한 댓글 전체 정리
+    // - 자식 댓글이 있는 경우: "삭제된 댓글입니다." 로 내용만 변경
+    // - 자식 댓글이 없는 경우: 실제 삭제
+    @Transactional
+    public void deleteCommentsForWithdraw(Long memberId) {
+
+        List<Comment> comments = commentRepository.findAllByWriterId(memberId);
+
+        for (Comment comment : comments) {
+            if (!comment.getChildren().isEmpty()) {
+                comment.setContent("삭제된 댓글입니다.");
+            } else {
+                commentRepository.delete(comment);
+            }
+        }
+    }
+
     @Transactional
     public void editComment(Long commentId, Member loginUser, String newContent) {
 

@@ -1,6 +1,11 @@
 // MemberService.java
 package com.hello.community.member;
 
+import com.hello.community.board.item.ItemService;
+import com.hello.community.board.music.MusicService;
+import com.hello.community.board.news.NewsService;
+import com.hello.community.board.notice.NoticeService;
+import com.hello.community.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +18,11 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final CommentService commentService;
+    private final MusicService musicService;
+    private final ItemService itemService;
+    private final NewsService newsService;
+    private final NoticeService noticeService;
 
     public void saveMember(String username,
                            String password,
@@ -260,6 +270,26 @@ public class MemberService {
         member.setPassword(passwordEncoder.encode(newPassword));
 
         emailVerificationService.deletePasswordResetCode(email);
+    }
+
+    // 회원탈퇴: 회원의 댓글/게시글/회원정보 삭제
+    @Transactional
+    public void withdrawMember(Long memberId) throws Exception {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new Exception("회원 정보를 찾을 수 없습니다."));
+
+        // 회원이 작성한 댓글 전체 정리 (자식 있으면 "삭제된 댓글입니다.", 아니면 실제 삭제)
+        commentService.deleteCommentsForWithdraw(memberId);
+
+        // 회원이 작성한 게시글 전체 삭제 (각 게시판 서비스에 위임)
+        musicService.deleteAllByWriter(memberId);
+        itemService.deleteAllByWriter(memberId);
+        newsService.deleteAllByWriter(memberId);
+        noticeService.deleteAllByWriter(memberId);
+
+        // 회원 정보 삭제
+        memberRepository.delete(member);
     }
 
     // 아이디찾기값 반환 (나중에 마스킹된 ID를 반환하게 할거면 이 함수 수정)

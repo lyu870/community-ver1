@@ -288,12 +288,40 @@ public class MemberController {
         }
     }
 
+    // 회원 탈퇴 : AJAX JSON 응답
+    @PostMapping("/my-page/withdraw")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> withdraw(Authentication auth) {
+
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUser currentUser)) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "로그인이 필요합니다."
+            ));
+        }
+
+        try {
+            memberService.withdrawMember(currentUser.getId());
+
+            SecurityContextHolder.clearContext();
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "회원탈퇴가 완료되었습니다."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
     @GetMapping("/user/{id}")
     @ResponseBody
     public MemberDto user(@PathVariable Long id) {
         return memberService.getMemberDtoById(id);
     }
-
 
     // 회원가입 시 데이터 중복확인
     @PostMapping("/member/check-username")

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface NoticeRepository extends BasePostRepository<Notice> {
 
     @Query("""
@@ -20,4 +22,6 @@ public interface NoticeRepository extends BasePostRepository<Notice> {
     // Admin 기능: 특정 회원 게시글 목록보기
     Page<Notice> findByWriterId(Long writerId, Pageable pageable);
 
+    // 회원탈퇴용: 특정 회원이 작성한 모든 공지 게시글 조회
+    List<Notice> findAllByWriterId(Long writerId);
 }
