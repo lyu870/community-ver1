@@ -1,0 +1,61 @@
+<!-- board/notice/detail.html -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/fragments/base}">
+
+<head>
+    <title>공지사항 상세</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/board.css}">
+</head>
+
+<body>
+<div layout:fragment="content">
+    <main class="board-container board board-notice">
+
+        <!-- 수정/삭제 버튼 -->
+        <div style="margin-bottom:10px;"
+             th:if="${isAdmin or (loginUserId != null and loginUserId == data.writer.id)}">
+
+            <!-- 수정 버튼: 작성자 본인에게만 노출 -->
+            <a th:href="@{|/notice/edit/${data.id}|}"
+               th:if="${loginUserId != null and loginUserId == data.writer.id}"
+               class="btn-edit" style="margin-right:8px;">수정</a>
+
+            <form th:action="@{|/notice/delete/${data.id}|}"
+                  method="post"
+                  style="display:inline;"
+                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="btn-delete">삭제</button>
+            </form>
+        </div>
+
+        <!-- 헤더 -->
+        <section class="post-header-bar">
+            <div class="post-header-left">
+                <div class="post-title" th:text="${data.title}">제목</div>
+                <div class="post-writer" th:text="${data.writer.displayName}">작성자</div>
+            </div>
+
+            <div class="post-header-right">
+                <span class="post-meta-item">조회수 <strong th:text="${data.viewCount}">0</strong></span>
+                <span class="post-meta-sep">|</span>
+                <span class="post-meta-item">
+                    작성일 <strong th:text="${#temporals.format(data.createdAt,'yyyy-MM-dd HH:mm')}"></strong>
+                </span>
+            </div>
+        </section>
+
+        <!-- 본문 -->
+        <section class="post-body">
+            <div class="post-content" th:text="${data.content}">본문</div>
+        </section>
+
+    </main>
+</div>
+</body>
+</html>

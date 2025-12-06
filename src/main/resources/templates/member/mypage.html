@@ -1,0 +1,302 @@
+<!-- member/mypage.html -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+<head>
+    <title th:with="title='마이페이지'">마이페이지</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="board-container">
+
+        <h2>마이페이지</h2>
+
+        <!-- 기본 정보 영역 -->
+        <section style="margin-top:20px;">
+            <h3>프로필 정보</h3>
+
+            <p>아이디 :
+                <strong th:text="${member.username}">username</strong>
+            </p>
+
+            <p>닉네임 :
+                <strong id="currentNickname" th:text="${member.displayName}">displayName</strong>
+            </p>
+
+            <!-- 액션 버튼들 -->
+            <div style="margin-top:12px; display:flex; gap:8px;">
+                <button type="button" id="openProfileBtn">닉네임 변경</button>
+                <button type="button" id="openPasswordBtn">비밀번호 변경</button>
+            </div>
+        </section>
+
+        <!-- 닉네임 변경 UI -->
+        <section id="profileSection" style="margin-top:24px; display:none;">
+            <h3>닉네임 변경</h3>
+
+            <!-- 닉네임 변경 결과 메시지 -->
+            <div id="profileMessageBox">
+                <div id="profileMessage" style="color:green; display:none;"></div>
+                <div id="profileError" style="color:red; display:none;"></div>
+            </div>
+
+            <!-- 닉네임 변경 폼 -->
+            <form id="profileForm" th:action="@{/my-page/profile}" method="post" style="margin-top:10px;">
+                <label>
+                    새 닉네임
+                    <input type="text" name="newDisplayName" placeholder="새 닉네임" required>
+                </label>
+                <div style="margin-top:8px;">
+                    <button type="submit">변경하기</button>
+                    <button type="button" id="cancelProfileBtn">취소</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 비밀번호 변경 UI -->
+        <section id="passwordSection" style="margin-top:24px; display:none;">
+            <h3>비밀번호 변경</h3>
+
+            <!-- 비밀번호 변경 결과 메시지 -->
+            <div id="passwordMessageBox">
+                <div id="passwordMessage" style="color:green; display:none;"></div>
+                <div id="passwordError" style="color:red; display:none;"></div>
+            </div>
+
+            <form id="passwordForm"
+                  th:action="@{/my-page/password}"
+                  method="post"
+                  style="display:flex; flex-direction:column; gap:8px; max-width:320px; margin-top:10px;">
+
+                <label>
+                    현재 비밀번호
+                    <input type="password" name="currentPassword" required>
+                </label>
+
+                <label>
+                    새 비밀번호
+                    <input type="password" name="newPassword" required>
+                </label>
+
+                <label>
+                    새 비밀번호 확인
+                    <input type="password" name="newPasswordConfirm" required>
+                </label>
+
+                <!-- 실시간 비밀번호 일치 메시지 영역 -->
+                <div id="passwordMatchMsg" style="font-size:0.9rem; margin-top:4px;"></div>
+
+                <small>비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.</small>
+
+                <div style="margin-top:8px;">
+                    <button type="submit">변경하기</button>
+                    <button type="button" id="cancelPasswordBtn">취소</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- JS: UI 토글 + AJAX 제출 -->
+        <script>
+            (function () {
+
+                const openProfileBtn = document.getElementById('openProfileBtn');
+                const openPasswordBtn = document.getElementById('openPasswordBtn');
+
+                const profileSection = document.getElementById('profileSection');
+                const passwordSection = document.getElementById('passwordSection');
+
+                const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+                const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+
+                const profileForm = document.getElementById('profileForm');
+                const passwordForm = document.getElementById('passwordForm');
+
+                const profileMessage = document.getElementById('profileMessage');
+                const profileError = document.getElementById('profileError');
+
+                const passwordMessage = document.getElementById('passwordMessage');
+                const passwordError = document.getElementById('passwordError');
+
+                const currentNicknameEl = document.getElementById('currentNickname');
+
+                // 비밀번호 일치 체크용 요소
+                const newPasswordInput = document.querySelector('input[name="newPassword"]');
+                const newPasswordConfirmInput = document.querySelector('input[name="newPasswordConfirm"]');
+                const passwordMatchMsg = document.getElementById('passwordMatchMsg');
+
+                function hideProfileMessages() {
+                    profileMessage.style.display = 'none';
+                    profileError.style.display = 'none';
+                    profileMessage.textContent = '';
+                    profileError.textContent = '';
+                }
+
+                function hidePasswordMessages() {
+                    passwordMessage.style.display = 'none';
+                    passwordError.style.display = 'none';
+                    passwordMessage.textContent = '';
+                    passwordError.textContent = '';
+                }
+
+                // 비밀번호 일치 메시지 초기화
+                function resetPasswordMatchMsg() {
+                    if (!passwordMatchMsg) return;
+                    passwordMatchMsg.textContent = '';
+                    passwordMatchMsg.style.color = '';
+                }
+
+                function resetProfileUI() {
+                    hideProfileMessages();
+                    profileForm.reset();
+                    profileSection.style.display = 'none';
+                }
+
+                function resetPasswordUI() {
+                    hidePasswordMessages();
+                    passwordForm.reset();
+                    passwordSection.style.display = 'none';
+                    resetPasswordMatchMsg();
+                }
+
+                // 닉네임 변경 버튼 클릭 시
+                if (openProfileBtn) {
+                    openProfileBtn.addEventListener('click', function () {
+                        resetPasswordUI();
+                        hideProfileMessages();
+                        profileSection.style.display = 'block';
+                    });
+                }
+
+                // 비밀번호 변경 버튼 클릭 시
+                if (openPasswordBtn) {
+                    openPasswordBtn.addEventListener('click', function () {
+                        resetProfileUI();
+                        hidePasswordMessages();
+                        passwordSection.style.display = 'block';
+                    });
+                }
+
+                // 닉네임 변경 취소 버튼
+                if (cancelProfileBtn) {
+                    cancelProfileBtn.addEventListener('click', function () {
+                        resetProfileUI();
+                    });
+                }
+
+                // 비밀번호 변경 취소 버튼
+                if (cancelPasswordBtn) {
+                    cancelPasswordBtn.addEventListener('click', function () {
+                        resetPasswordUI();
+                    });
+                }
+
+                // 새 비밀번호 / 확인 실시간 일치 체크
+                function updatePasswordMatchMsg() {
+                    if (!newPasswordInput || !newPasswordConfirmInput || !passwordMatchMsg) return;
+
+                    const pwd = newPasswordInput.value;
+                    const confirm = newPasswordConfirmInput.value;
+
+                    if (!pwd && !confirm) {
+                        resetPasswordMatchMsg();
+                        return;
+                    }
+
+                    if (pwd === confirm) {
+                        passwordMatchMsg.textContent = "비밀번호가 일치합니다.";
+                        passwordMatchMsg.style.color = "green";
+                    } else {
+                        passwordMatchMsg.textContent = "비밀번호가 다릅니다.";
+                        passwordMatchMsg.style.color = "red";
+                    }
+                }
+
+                if (newPasswordInput && newPasswordConfirmInput && passwordMatchMsg) {
+                    newPasswordInput.addEventListener('input', updatePasswordMatchMsg);
+                    newPasswordConfirmInput.addEventListener('input', updatePasswordMatchMsg);
+                }
+
+                // 닉네임 변경 폼 AJAX 제출
+                if (profileForm) {
+                    profileForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        hideProfileMessages();
+
+                        const formData = new FormData(profileForm);
+
+                        try {
+                            const res = await fetch(profileForm.action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: new URLSearchParams(formData)
+                            });
+
+                            const body = await res.json();
+
+                            if (body.success) {
+                                if (body.newDisplayName && currentNicknameEl) {
+                                    currentNicknameEl.textContent = body.newDisplayName;
+                                }
+
+                                alert(body.message || '닉네임이 변경되었습니다.');
+
+                                // 바로 초기 상태로
+                                resetProfileUI();
+                            } else {
+                                passwordError.textContent = body.error || '닉네임 변경에 실패했습니다.';
+                                passwordError.style.display = 'block';
+                            }
+                        } catch (err) {
+                            profileError.textContent = '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                            profileError.style.display = 'block';
+                        }
+                    });
+                }
+
+                // 비밀번호 변경 폼 AJAX 제출
+                if (passwordForm) {
+                    passwordForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        hidePasswordMessages();
+
+                        const formData = new FormData(passwordForm);
+
+                        try {
+                            const res = await fetch(passwordForm.action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: new URLSearchParams(formData)
+                            });
+
+                            const body = await res.json();
+
+                            if (body.success) {
+                                alert(body.message || '비밀번호가 변경되었습니다.');
+
+                                // 바로 초기 상태로
+                                resetPasswordUI();
+                            } else {
+                                passwordError.textContent = body.error || '비밀번호 변경에 실패했습니다.';
+                                passwordError.style.display = 'block';
+                            }
+                        } catch (err) {
+                            passwordError.textContent = '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                            passwordError.style.display = 'block';
+                        }
+                    });
+                }
+
+            })();
+        </script>
+
+    </main>
+</div>
+</body>
+</html>

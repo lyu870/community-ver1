@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- 댓글 트리 목록 -->
+<div th:fragment="list(comments, loginUserId, postId, isAdmin)">
+
+    <div class="comment-tree">
+        <div th:each="c : ${comments}">
+            <div th:replace="~{layout/fragments/commentTree :: node(${c}, 0, ${loginUserId}, ${postId}, ${isAdmin})}"></div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- 개별 댓글 노드 -->
+<div th:fragment="node(comment, depth, loginUserId, postId, isAdmin)">
+
+    <!-- 들여쓰기용 wrapper -->
+    <div class="comment-node"
+         th:style="'margin-left:' + (${depth} * 20) + 'px'">
+
+        <!-- 삭제된 댓글 처리 -->
+        <div th:if="${comment.content == '삭제된 댓글입니다.'}" class="comment-deleted">
+            삭제된 댓글입니다.
+        </div>
+
+        <!-- 일반 댓글 -->
+        <div th:unless="${comment.content == '삭제된 댓글입니다.'}">
+
+            <!-- 작성자 -->
+            <div class="comment-writer">
+                <strong th:text="${comment.writer.displayName}">작성자</strong>
+            </div>
+
+            <!-- 댓글 내용 -->
+            <p class="comment-content"
+               th:text="${comment.content}"
+               th:attr="data-comment-id=${comment.id}">
+            </p>
+
+            <!-- 수정 폼 -->
+            <form class="comment-edit-form"
+                  action="/comment/edit"
+                  method="post"
+                  th:attr="data-comment-id=${comment.id}"
+                  style="display:none;"
+                  th:if="${loginUserId == comment.writer.id}">
+                <input type="hidden" name="id" th:value="${comment.id}">
+                <input type="hidden" name="postId" th:value="${postId}">
+                <textarea name="content" rows="2" th:text="${comment.content}"></textarea>
+                <button type="submit">저장</button>
+                <button type="button" class="comment-edit-cancel">취소</button>
+            </form>
+
+            <!-- 버튼 영역 -->
+            <div class="comment-actions">
+                <button type="button"
+                        class="comment-reply-btn"
+                        th:attr="data-comment-id=${comment.id}">
+                    답글
+                </button>
+
+                <!-- 수정 버튼: 작성자만 -->
+                <span th:if="${loginUserId == comment.writer.id}">
+                    <button type="button"
+                            class="comment-edit-btn"
+                            th:attr="data-comment-id=${comment.id}">
+                        수정
+                    </button>
+                </span>
+
+                <!-- 삭제 버튼: 작성자 + 관리자 -->
+                <span th:if="${isAdmin or loginUserId == comment.writer.id}">
+                    <form action="/comment/delete"
+                          method="post"
+                          class="comment-delete-form"
+                          style="display:inline;">
+                        <input type="hidden" name="id" th:value="${comment.id}">
+                        <input type="hidden" name="postId" th:value="${postId}">
+                        <button type="button" class="comment-delete-btn">삭제</button>
+                    </form>
+                </span>
+            </div>
+
+            <!-- 답글 입력 폼 -->
+            <form class="comment-reply-form"
+                  action="/comment"
+                  method="post"
+                  th:attr="data-parent-id=${comment.id}"
+                  style="display:none;">
+                <input type="hidden" name="postId" th:value="${postId}">
+                <input type="hidden" name="parentId" th:value="${comment.id}">
+                <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
+                <button type="submit">등록</button>
+                <button type="button" class="comment-reply-cancel">취소</button>
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- 자식 댓글 재귀 호출 -->
+    <div th:if="${#lists.size(comment.children) > 0}">
+        <div th:each="child : ${comment.children}">
+            <div th:replace="~{layout/fragments/commentTree :: node(${child}, ${depth+1}, ${loginUserId}, ${postId}, ${isAdmin})}"></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

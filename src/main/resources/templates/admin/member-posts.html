@@ -1,0 +1,58 @@
+<!-- templates/admin/member-posts.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+
+<body>
+<div layout:fragment="content">
+
+    <main class="admin-container">
+
+        <h2 th:text="'회원 게시글 목록 (ID: ' + ${memberId} + ')'">게시글</h2>
+
+        <!-- Notice -->
+        <h3>공지사항</h3>
+        <ul>
+            <li th:each="n : ${notice}">
+                <a th:href="@{|/notice/detail/${n.id}|}"
+                   th:text="${n.title}"></a>
+                <span th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd')}"></span>
+            </li>
+        </ul>
+
+        <!-- News -->
+        <h3>시사 뉴스</h3>
+        <ul>
+            <li th:each="n : ${news}">
+                <a th:href="@{|/news/detail/${n.id}|}"
+                   th:text="${n.title}"></a>
+                <span th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd')}"></span>
+            </li>
+        </ul>
+
+        <!-- Music -->
+        <h3>노래</h3>
+        <ul>
+            <li th:each="m : ${music}">
+                <a th:href="@{|/music/detail/${m.id}|}"
+                   th:text="${m.title}"></a>
+                <span th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd')}"></span>
+            </li>
+        </ul>
+
+        <!-- Item -->
+        <h3>상품</h3>
+        <ul>
+            <li th:each="i : ${items}">
+                <a th:href="@{|/item/detail/${i.id}|}"
+                   th:text="${i.title}"></a>
+                <span th:text="${#temporals.format(i.createdAt, 'yyyy-MM-dd')}"></span>
+            </li>
+        </ul>
+
+    </main>
+
+</div>
+</body>
+</html>

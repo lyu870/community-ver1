@@ -1,0 +1,381 @@
+<!-- member/find-pw.html -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+<head>
+    <title th:with="title='비밀번호 찾기'">비밀번호 찾기</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="board-container">
+
+        <section style="max-width:480px; margin:40px auto 0; border:1px solid #e3e5e8;">
+            <div style="display:flex; border-bottom:1px solid #e3e5e8;">
+                <!-- 아이디 찾기 탭 -->
+                <a href="/find-id"
+                   style="flex:1; text-align:center; padding:14px 0; font-size:15px;
+                          text-decoration:none; color:#888; border-right:1px solid #e3e5e8;">
+                    아이디 찾기
+                </a>
+                <!-- 비밀번호 찾기 탭 (활성) -->
+                <a href="/find-password"
+                   style="flex:1; text-align:center; padding:14px 0; font-size:15px;
+                          text-decoration:none; color:#1f4fff; font-weight:bold;">
+                    비밀번호 찾기
+                </a>
+            </div>
+
+            <div style="padding:30px 40px; background:#fff;">
+
+                <!-- STEP 1: 아이디 + 이메일 + 인증코드 입력 -->
+                <section id="pwStep1Section">
+                    <p style="text-align:center; color:#555; margin-bottom:24px;">
+                        아이디 확인 후 비밀번호를 재설정 할 수 있습니다.
+                    </p>
+
+                    <form id="pwRequestForm">
+                        <!-- 아이디 -->
+                        <label style="display:block; font-size:13px; color:#555; margin-bottom:6px;">
+                            아이디
+                        </label>
+                        <input type="text"
+                               name="username"
+                               placeholder="아이디"
+                               required
+                               style="width:100%; box-sizing:border-box; padding:10px 12px;
+                                      border:1px solid #c5c8ce; border-radius:0; outline:none;">
+
+                        <!-- 이메일 + 코드 전송 버튼 -->
+                        <div style="margin-top:14px;">
+                            <label style="display:block; font-size:13px; color:#555; margin-bottom:6px;">
+                                이메일
+                            </label>
+                            <div style="display:flex;">
+                                <input type="email"
+                                       name="email"
+                                       placeholder="가입 시 사용한 이메일"
+                                       required
+                                       style="flex:1; box-sizing:border-box; padding:10px 12px;
+                                              border:1px solid #c5c8ce; border-radius:0; outline:none;">
+                                <button type="button"
+                                        id="sendPwCodeBtn"
+                                        style="margin-left:8px; padding:0 12px; white-space:nowrap;
+                                               border:1px solid #2c7efb; background:#2c7efb;
+                                               color:#fff; font-size:13px;">
+                                    인증코드 전송
+                                </button>
+                            </div>
+
+                            <!-- 이메일 관련 메시지 (이메일 입력칸 아랫부분) -->
+                            <div id="pwStep1Message"
+                                 style="margin-top:6px; font-size:13px; text-align:left; display:none;"></div>
+                        </div>
+
+                        <!-- 인증코드 입력 -->
+                        <div style="margin-top:14px;">
+                            <label style="display:block; font-size:13px; color:#555; margin-bottom:6px;">
+                                이메일로 받은 인증코드
+                            </label>
+                            <input type="text"
+                                   name="code"
+                                   placeholder="인증코드 6자리"
+                                   required
+                                   style="width:100%; box-sizing:border-box; padding:10px 12px;
+                                          border:1px solid #c5c8ce; border-radius:0; outline:none;">
+                        </div>
+
+                        <div style="margin-top:18px;">
+                            <button type="submit"
+                                    style="width:100%; padding:10px 0; border:1px solid #2c7efb;
+                                           background:#2c7efb; color:#fff; font-size:14px;">
+                                확인
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- STEP 2: 새 비밀번호 설정 -->
+                <section id="pwStep2Section" style="display:none;">
+                    <p style="text-align:center; color:#333; margin-bottom:24px;">
+                        <span id="pwResetUsername" style="font-weight:bold;"></span> 님<br>
+                        새 비밀번호를 입력해 주세요.
+                    </p>
+
+                    <form id="pwResetForm">
+                        <label style="display:block; font-size:13px; color:#555; margin-bottom:6px;">
+                            새 비밀번호
+                        </label>
+                        <input type="password"
+                               name="newPassword"
+                               required
+                               style="width:100%; box-sizing:border-box; padding:10px 12px;
+                                      border:1px solid #c5c8ce; border-radius:0; outline:none;">
+
+                        <div style="margin-top:14px;">
+                            <label style="display:block; font-size:13px; color:#555; margin-bottom:6px;">
+                                새 비밀번호 확인
+                            </label>
+                            <input type="password"
+                                   name="newPasswordConfirm"
+                                   required
+                                   style="width:100%; box-sizing:border-box; padding:10px 12px;
+                                          border:1px solid #c5c8ce; border-radius:0; outline:none;">
+                        </div>
+
+                        <!-- 비밀번호 일치 안내 -->
+                        <div id="pwMatchMsg"
+                             style="margin-top:6px; font-size:12px;"></div>
+
+                        <div style="margin-top:10px; font-size:12px; color:#777;">
+                            비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.
+                        </div>
+
+                        <div style="margin-top:18px;">
+                            <button type="submit"
+                                    style="width:100%; padding:10px 0; border:1px solid #2c7efb;
+                                           background:#2c7efb; color:#fff; font-size:14px;">
+                                비밀번호 변경
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="pwStep2Message"
+                         style="margin-top:10px; font-size:13px; text-align:center; display:none;"></div>
+                </section>
+
+                <!-- STEP 3: 비밀번호 변경 완료 -->
+                <section id="pwStep3Section" style="display:none; text-align:center;">
+                    <p style="margin-bottom:24px; color:#333;">
+                        비밀번호를 변경했습니다.
+                    </p>
+
+                    <div style="display:flex; justify-content:center; gap:10px;">
+                        <a href="/login"
+                           style="flex:1; max-width:160px; text-align:center; padding:10px 0;
+                                  border:1px solid #2c7efb; background:#2c7efb; color:#fff;
+                                  text-decoration:none; font-size:14px;">
+                            로그인
+                        </a>
+                        <a href="/"
+                           style="flex:1; max-width:160px; text-align:center; padding:10px 0;
+                                  border:1px solid #d0d3d9; background:#fff; color:#2c7efb;
+                                  text-decoration:none; font-size:14px;">
+                            홈으로 돌아가기
+                        </a>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+
+        <script>
+            (function () {
+
+                const step1Section = document.getElementById('pwStep1Section');
+                const step2Section = document.getElementById('pwStep2Section');
+                const step3Section = document.getElementById('pwStep3Section');
+
+                const pwRequestForm = document.getElementById('pwRequestForm');
+                const pwResetForm = document.getElementById('pwResetForm');
+
+                const sendPwCodeBtn = document.getElementById('sendPwCodeBtn');
+
+                const pwStep1Message = document.getElementById('pwStep1Message');
+                const pwStep2Message = document.getElementById('pwStep2Message');
+
+                const pwResetUsername = document.getElementById('pwResetUsername');
+
+                const newPwdInput = pwResetForm ? pwResetForm.querySelector('input[name="newPassword"]') : null;
+                const newPwdConfirmInput = pwResetForm ? pwResetForm.querySelector('input[name="newPasswordConfirm"]') : null;
+                const pwMatchMsg = document.getElementById('pwMatchMsg');
+
+                // 1단계에서 입력한 값 저장 (2,3단계에서 사용)
+                let savedUsername = '';
+                let savedEmail = '';
+                let savedCode = '';
+
+                function showStep(step) {
+                    step1Section.style.display = (step === 1) ? 'block' : 'none';
+                    step2Section.style.display = (step === 2) ? 'block' : 'none';
+                    step3Section.style.display = (step === 3) ? 'block' : 'none';
+                }
+
+                function setStep1Message(text, isError) {
+                    if (!pwStep1Message) return;
+                    pwStep1Message.textContent = text || '';
+                    pwStep1Message.style.color = isError ? '#d93025' : '#2c7efb';
+                    pwStep1Message.style.display = text ? 'block' : 'none';
+                }
+
+                function setStep2Message(text, isError) {
+                    if (!pwStep2Message) return;
+                    pwStep2Message.textContent = text || '';
+                    pwStep2Message.style.color = isError ? '#d93025' : '#2c7efb';
+                    pwStep2Message.style.display = text ? 'block' : 'none';
+                }
+
+                function updatePwMatchMsg() {
+                    if (!newPwdInput || !newPwdConfirmInput || !pwMatchMsg) return;
+
+                    const v1 = newPwdInput.value;
+                    const v2 = newPwdConfirmInput.value;
+
+                    if (!v1 && !v2) {
+                        pwMatchMsg.textContent = '';
+                        return;
+                    }
+
+                    if (v1 === v2) {
+                        pwMatchMsg.textContent = '비밀번호가 일치합니다.';
+                        pwMatchMsg.style.color = 'green';
+                    } else {
+                        pwMatchMsg.textContent = '비밀번호가 다릅니다.';
+                        pwMatchMsg.style.color = 'red';
+                    }
+                }
+
+                // 인증코드 전송 버튼
+                if (sendPwCodeBtn && pwRequestForm) {
+                    sendPwCodeBtn.addEventListener('click', async function () {
+                        setStep1Message('전송 중... 잠시만 기다려주세요.', false);
+                        sendPwCodeBtn.disabled = true;
+
+                        const formData = new FormData(pwRequestForm);
+                        const username = formData.get('username');
+                        const email = formData.get('email');
+
+                        if (!username || !email) {
+                            setStep1Message('아이디와 이메일을 모두 입력해주세요.', true);
+                            sendPwCodeBtn.disabled = false;
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch('/member/password-reset/email-code', {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({
+                                    username: username,
+                                    email: email
+                                }).toString()
+                            });
+
+                            const body = await res.json();
+                            sendPwCodeBtn.disabled = false;
+
+                            if (body.success) {
+                                setStep1Message(body.message || '인증코드를 전송했습니다.', false);
+                            } else {
+                                setStep1Message(body.error || '인증코드 전송에 실패했습니다.', true);
+                            }
+                        } catch (err) {
+                            sendPwCodeBtn.disabled = false;
+                            setStep1Message('오류가 발생했습니다. 잠시 후 다시 시도해주세요.', true);
+                        }
+                    });
+                }
+
+                // 1단계 폼 제출: 코드 검증
+                if (pwRequestForm) {
+                    pwRequestForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        setStep1Message('', false);
+
+                        const formData = new FormData(pwRequestForm);
+                        const username = formData.get('username');
+                        const email = formData.get('email');
+                        const code = formData.get('code');
+
+                        try {
+                            const res = await fetch('/member/password-reset/verify', {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({
+                                    username: username,
+                                    email: email,
+                                    code: code
+                                }).toString()
+                            });
+
+                            const body = await res.json();
+
+                            if (body.success) {
+                                // 성공 → 2단계로
+                                savedUsername = username;
+                                savedEmail = email;
+                                savedCode = code;
+
+                                if (pwResetUsername) {
+                                    pwResetUsername.textContent = savedUsername;
+                                }
+
+                                showStep(2);
+                            } else {
+                                setStep1Message(body.error || '인증코드가 올바르지 않습니다.', true);
+                            }
+                        } catch (err) {
+                            setStep1Message('오류가 발생했습니다. 잠시 후 다시 시도해주세요.', true);
+                        }
+                    });
+                }
+
+                // 2단계 비밀번호 일치 체크
+                if (newPwdInput && newPwdConfirmInput) {
+                    newPwdInput.addEventListener('input', updatePwMatchMsg);
+                    newPwdConfirmInput.addEventListener('input', updatePwMatchMsg);
+                }
+
+                // 2단계 폼 제출: 비밀번호 변경
+                if (pwResetForm) {
+                    pwResetForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        setStep2Message('', false);
+
+                        const formData = new FormData(pwResetForm);
+                        const newPassword = formData.get('newPassword');
+                        const newPasswordConfirm = formData.get('newPasswordConfirm');
+
+                        try {
+                            const res = await fetch('/member/password-reset/confirm', {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({
+                                    username: savedUsername,
+                                    email: savedEmail,
+                                    code: savedCode,
+                                    newPassword: newPassword,
+                                    newPasswordConfirm: newPasswordConfirm
+                                }).toString()
+                            });
+
+                            const body = await res.json();
+
+                            if (body.success) {
+                                showStep(3);
+                            } else {
+                                setStep2Message(body.error || '비밀번호 변경에 실패했습니다.', true);
+                            }
+                        } catch (err) {
+                            setStep2Message('오류가 발생했습니다. 잠시 후 다시 시도해주세요.', true);
+                        }
+                    });
+                }
+
+            })();
+        </script>
+
+    </main>
+</div>
+</body>
+</html>

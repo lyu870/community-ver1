@@ -1,0 +1,53 @@
+/* comment.css */
+.comment-box {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      background: #fafafa;
+    }
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+    .comment-content {
+      margin: 4px 0 8px;
+    }
+    .comment-actions {
+      display: flex;
+      gap: 6px;
+      font-size: 0.85rem;
+    }
+    .comment-actions button {
+      cursor: pointer;
+    }
+    .comment-edit-form {
+      margin-top: 4px;
+      display: flex;
+      gap: 4px;
+    }
+    .comment-edit-form input[type="text"] {
+      flex: 1;
+    }
+    /* ★ 내 댓글 하이라이트 */
+    .comment-box.my-comment {
+      border-color: #cce5ff;
+      background: #f0f7ff;
+    }
+    .comment-form {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 6px;
+    }
+    .comment-form input[type="text"] {
+      flex: 1;
+    }
+
+    .comment-edit-form input[type="text"],
+    .comment-form input[type="text"] {
+      box-sizing: border-box;
+    }

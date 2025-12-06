@@ -1,0 +1,145 @@
+<!-- board/notice/list.html -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
+layout:decorate="~{layout/fragments/base}">
+
+<body>
+<div layout:fragment="content">
+
+    <main class="board-container board board-notice">
+
+        <!-- 상단: 검색 + 글쓰기 -->
+        <div class="board-list-top">
+
+            <!-- 검색 폼 -->
+            <form action="/notice/search" method="POST" class="board-search-form">
+                <input name="searchText"
+                       class="board-search-input"
+                       th:value="${query}"
+                       placeholder="검색어를 입력하세요">
+
+                <button type="submit" class="btn-search">검색</button>
+
+                <a th:if="${searchMode}"
+                   href="/notice/list/page/1"
+                   class="board-reset-link">전체 보기</a>
+            </form>
+
+            <!-- 글쓰기 : 관리자만 -->
+            <a href="/notice/write" class="board-write-btn"
+               sec:authorize="hasRole('ADMIN')">🖋 글쓰기</a>
+
+            <!-- 내가 쓴 글 / 전체 글 토글 -->
+            <a th:if="${loginUserId != null and !#bools.isTrue(myMode)}"
+               th:href="@{|/notice/my/page/1|}"
+               class="board-reset-link">
+                내가 쓴 글
+            </a>
+            <a th:if="${loginUserId != null and #bools.isTrue(myMode)}"
+               th:href="@{|/notice/list/page/1|}"
+               class="board-reset-link">
+                전체 글
+            </a>
+        </div>
+
+        <!-- 제목 -->
+        <h2 class="board-title">공지사항</h2>
+
+        <!-- 테이블 -->
+        <section class="board-table-wrapper">
+            <table class="board-table">
+                <thead>
+                <tr>
+                    <th class="col-title">제목</th>
+                    <th class="col-writer">작성자</th>
+                    <th class="col-date">작성시간</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td colspan="3">작성된 공지사항이 없습니다.</td>
+                </tr>
+
+                <tr th:each="post : ${items}">
+                    <td class="col-title">
+                        <a th:href="@{|/notice/detail/${post.id}|}"
+                           class="board-link"
+                           th:text="${post.title}">제목</a>
+                    </td>
+
+                    <!-- 작성자 -->
+                    <td class="col-writer"
+                        th:text="${post.writer.displayName}">
+                        작성자
+                    </td>
+
+                    <td class="col-date"
+                        th:text="${#temporals.format(post.createdAt,'yyyy-MM-dd HH:mm')}">
+                        2025-01-01 00:00
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 페이지네이션 -->
+        <nav class="pagination"
+             th:if="${!#bools.isTrue(searchMode)}">
+
+            <span th:if="${current > 1}">
+                <a th:href="${#bools.isTrue(myMode)} ? @{|/notice/my/page/1|} : @{|/notice/list/page/1|}">첫페이지</a>
+                <a th:href="${#bools.isTrue(myMode)} ? @{|/notice/my/page/${current-1}|} : @{|/notice/list/page/${current-1}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(startPage,endPage)}">
+                <a th:if="${p != current}"
+                   th:href="${#bools.isTrue(myMode)} ? @{|/notice/my/page/${p}|} : @{|/notice/list/page/${p}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == current}"
+                        th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${current < totalPages}">
+                <a th:href="${#bools.isTrue(myMode)} ? @{|/notice/my/page/${current+1}|} : @{|/notice/list/page/${current+1}|}">다음</a>
+                <a th:href="${#bools.isTrue(myMode)} ? @{|/notice/my/page/${totalPages}|} : @{|/notice/list/page/${totalPages}|}">마지막페이지</a>
+            </span>
+
+        </nav>
+
+        <!-- 검색 모드 페이지네이션 -->
+        <nav class="pagination"
+             th:if="${#bools.isTrue(searchMode)}">
+
+            <span th:if="${current > 1}">
+                <a th:href="@{|/notice/search/page/1?q=${query}|}">첫페이지</a>
+                <a th:href="@{|/notice/search/page/${current-1}?q=${query}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(startPage,endPage)}">
+                <a th:if="${p != current}"
+                   th:href="@{|/notice/search/page/${p}?q=${query}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == current}"
+                        th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${current < totalPages}">
+                <a th:href="@{|/notice/search/page/${current+1}?q=${query}|}">다음</a>
+                <a th:href="@{|/notice/search/page/${totalPages}?q=${query}|}">마지막페이지</a>
+            </span>
+
+        </nav>
+
+    </main>
+
+</div>
+</body>
+</html>

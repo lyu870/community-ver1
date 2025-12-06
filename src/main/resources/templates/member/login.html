@@ -1,0 +1,43 @@
+<!-- member/login.html -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+<head>
+    <title th:with="title='로그인'">로그인</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="board-container">
+        <form action="/login" method="POST">
+            <div>
+                <input name="username" placeholder="아이디">
+            </div>
+            <div>
+                <input name="password" type="password" placeholder="비밀번호">
+            </div>
+            <div style="margin-top:10px;">
+                <button type="submit">로그인</button>
+
+                <!-- 회원가입, ID 찾기, PW 찾기 버튼 -->
+                <a href="/register"
+                   style="margin-left:8px; padding:4px 10px; border:1px solid #ddd; border-radius:4px; text-decoration:none; font-size:0.9rem;">회원가입</a>
+
+                <a href="/find-id"
+                   style="margin-left:8px; padding:4px 10px; border:1px solid #ddd; border-radius:4px; text-decoration:none; font-size:0.9rem;">ID 찾기</a>
+
+                <a href="/find-password"
+                   style="margin-left:8px; padding:4px 10px; border:1px solid #ddd; border-radius:4px; text-decoration:none; font-size:0.9rem;">비밀번호 찾기</a>
+            </div>
+            <div th:if="${param.error}" style="color:red; margin-top:8px;">
+                아이디 또는 비밀번호가 올바르지 않습니다.
+            </div>
+            <div th:if="${param.logout}">
+                <p style="color: green;">로그아웃 되었습니다.</p>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

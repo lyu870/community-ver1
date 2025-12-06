@@ -1,0 +1,37 @@
+<!-- layout/fragments/form.html -->
+<!doctype html>
+<html lang=""
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>item form fragment</title>
+</head>
+<body>
+
+<!-- item 글쓰기/수정에서 공통으로 사용할 폼 fragment -->
+<th:block th:fragment="itemForm(actionUrl, buttonLabel)">
+    <form th:action="${actionUrl}" method="POST" class="board-form">
+        <!-- 수정 모드일 때만 hidden id 포함 (data 모델이 있을 때) -->
+        <input type="hidden"
+               name="id"
+               th:if="${data != null}"
+               th:value="${data.id}">
+
+        <input name="title"
+               type="text"
+               placeholder="제목"
+               th:value="${data != null} ? ${data.title} : ''">
+
+        <input name="price"
+               type="text"
+               placeholder="가격"
+               th:value="${data != null} ? ${data.price} : ''">
+
+        <div style="margin-top:8px;">
+            <button type="submit" th:text="${buttonLabel}">저장</button>
+        </div>
+    </form>
+</th:block>
+
+</body>
+</html>

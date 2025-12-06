@@ -1,0 +1,22 @@
+<!-- board/item/edit.html -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+<head>
+    <title th:with="title='Item 수정'">Item 수정</title>
+</head>
+<body class="board board-item">
+<div layout:fragment="content">
+
+    <main class="board-container">
+
+        <h2 class="board-title">아이템 수정</h2>
+        <!-- 공통 form fragment 사용 (data는 컨트롤러에서 넘겨줌) -->
+        <div th:replace="~{layout/fragments/form :: itemForm(@{/item/edit}, '수정완료')}"></div>
+
+    </main>
+</div>
+</body>
+</html>

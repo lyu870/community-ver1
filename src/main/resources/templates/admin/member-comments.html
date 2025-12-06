@@ -1,0 +1,47 @@
+<!-- templates/admin/member-comments.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+
+<body>
+<div layout:fragment="content">
+
+    <main class="admin-container">
+
+        <h2 th:text="'회원 댓글 목록 (ID: ' + ${memberId} + ')'">댓글 목록</h2>
+
+        <ul>
+            <li th:each="c : ${comments}">
+                <a th:href="@{|/post/${c.post.id}|}"
+                   th:text="${c.content}">댓글 내용</a>
+                <span th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd')}"></span>
+            </li>
+        </ul>
+
+        <!-- 페이지네이션 -->
+        <nav class="pagination">
+            <span th:if="${current > 1}">
+                <a th:href="@{|/admin/member/${memberId}/comments?page=1|}">첫페이지</a>
+                <a th:href="@{|/admin/member/${memberId}/comments?page=${current-1}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(startPage, endPage)}">
+                <a th:if="${p != current}"
+                   th:href="@{|/admin/member/${memberId}/comments?page=${p}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == current}" th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${current < totalPages}">
+                <a th:href="@{|/admin/member/${memberId}/comments?page=${current+1}|}">다음</a>
+                <a th:href="@{|/admin/member/${memberId}/comments?page=${totalPages}|}">마지막페이지</a>
+            </span>
+        </nav>
+
+    </main>
+
+</div>
+</body>
+</html>

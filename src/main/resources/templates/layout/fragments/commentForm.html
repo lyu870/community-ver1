@@ -1,0 +1,26 @@
+<!-- /templates/layout/fragments/commentForm.html -->
+<div th:fragment="form(postId, loginUserId)">
+
+    <section class="comment-write-section" style="margin-top:20px;">
+
+        <!-- 로그인 O -->
+        <div th:if="${loginUserId != null}">
+            <form action="/comment" method="post" class="comment-form">
+                <textarea name="content"
+                          placeholder="댓글을 입력하세요"
+                          required
+                          style="width:100%; min-height:70px; resize:vertical;"></textarea>
+
+                <input type="hidden" name="postId" th:value="${postId}">
+                <button type="submit" style="margin-top:6px;">댓글 등록</button>
+            </form>
+        </div>
+
+        <!-- 로그인 X -->
+        <div th:unless="${loginUserId != null}">
+            <p><a href="/login">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
+        </div>
+
+    </section>
+
+</div>
