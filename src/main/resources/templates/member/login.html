@@ -10,33 +10,74 @@
 <body>
 <div layout:fragment="content">
     <main class="board-container">
-        <form action="/login" method="POST">
-            <div>
-                <input name="username" placeholder="아이디">
-            </div>
-            <div>
-                <input name="password" type="password" placeholder="비밀번호">
-            </div>
-            <div style="margin-top:10px;">
-                <button type="submit">로그인</button>
 
-                <!-- 회원가입, ID 찾기, PW 찾기 버튼 -->
+        <section class="auth-card-wrap">
+            <!-- 상단 탭 영역: 로그인 + 회원가입 -->
+            <div class="auth-tabs">
+                <a href="/login"
+                   class="auth-tab auth-tab-active">
+                    로그인
+                </a>
                 <a href="/register"
-                   style="margin-left:8px; padding:4px 10px; border:1px solid #ddd; border-radius:4px; text-decoration:none; font-size:0.9rem;">회원가입</a>
+                   class="auth-tab">
+                    회원가입
+                </a>
+            </div>
 
-                <a href="/find-id"
-                   style="margin-left:8px; padding:4px 10px; border:1px solid #ddd; border-radius:4px; text-decoration:none; font-size:0.9rem;">ID 찾기</a>
+            <!-- 로그인 폼 영역 -->
+            <div class="auth-card-body">
+                <form action="/login" method="POST">
 
-                <a href="/find-password"
-                   style="margin-left:8px; padding:4px 10px; border:1px solid #ddd; border-radius:4px; text-decoration:none; font-size:0.9rem;">비밀번호 찾기</a>
+                    <!-- 아이디 -->
+                    <div style="margin-bottom:14px;">
+                        <label class="auth-label">
+                            아이디
+                        </label>
+                        <input name="username"
+                               placeholder="아이디"
+                               class="auth-input">
+                    </div>
+
+                    <!-- 비밀번호 -->
+                    <div style="margin-bottom:18px;">
+                        <label class="auth-label">
+                            비밀번호
+                        </label>
+                        <input name="password"
+                               type="password"
+                               placeholder="비밀번호"
+                               class="auth-input">
+                    </div>
+
+                    <!-- 로그인 버튼 -->
+                    <div>
+                        <button type="submit"
+                                class="auth-btn-primary">
+                            로그인
+                        </button>
+                    </div>
+
+                    <!-- 하단 링크: ID + PW 찾기 -->
+                    <div class="auth-link-row">
+                        <a href="/find-id" style="color:#555; text-decoration:none;">ID 찾기</a>
+                        <span style="color:#ddd;">|</span>
+                        <a href="/find-password" style="color:#555; text-decoration:none;">비밀번호 찾기</a>
+                    </div>
+
+                    <!-- 에러 + 로그아웃 메시지 -->
+                    <div th:if="${param.error}"
+                         class="msg err mt-12 text-center">
+                        아이디 또는 비밀번호가 올바르지 않습니다.
+                    </div>
+                    <div th:if="${param.logout}"
+                         class="msg ok mt-12 text-center">
+                        로그아웃 되었습니다.
+                    </div>
+
+                </form>
             </div>
-            <div th:if="${param.error}" style="color:red; margin-top:8px;">
-                아이디 또는 비밀번호가 올바르지 않습니다.
-            </div>
-            <div th:if="${param.logout}">
-                <p style="color: green;">로그아웃 되었습니다.</p>
-            </div>
-        </form>
+        </section>
+
     </main>
 </div>
 </body>

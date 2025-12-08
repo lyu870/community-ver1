@@ -10,263 +10,333 @@
 <body>
 <div layout:fragment="content">
     <main class="board-container">
-        <form action="/member" method="POST" id="registerForm">
 
-            <!-- 닉네임 -->
-            <div>
-                <input name="displayName" id="displayName" placeholder="닉네임">
-                <div id="displayNameMsg" class="msg"></div>
+        <section class="auth-card-wrap">
+            <!-- 상단 탭 영역: 로그인 + 회원가입 -->
+            <div class="auth-tabs">
+                <a href="/login"
+                   class="auth-tab auth-tab">
+                    로그인
+                </a>
+                <a href="/register"
+                   class="auth-tab auth-tab-active">
+                    회원가입
+                </a>
             </div>
 
-            <!-- 아이디 -->
-            <div>
-                <input name="username" id="username" placeholder="아이디">
-                <div id="usernameMsg" class="msg"></div>
+            <!-- 회원가입 폼 영역 -->
+            <div class="auth-card-body">
+                <form action="/member" method="POST" id="registerForm">
+
+                    <!-- 닉네임 -->
+                    <div style="margin-bottom:14px;">
+                        <label class="auth-label">
+                            닉네임
+                        </label>
+                        <input name="displayName"
+                               id="displayName"
+                               placeholder="닉네임"
+                               class="auth-input">
+                        <div id="displayNameMsg" class="msg"></div>
+                    </div>
+
+                    <!-- 아이디 -->
+                    <div style="margin-bottom:14px;">
+                        <label class="auth-label">
+                            아이디
+                        </label>
+                        <input name="username"
+                               id="username"
+                               placeholder="아이디"
+                               class="auth-input">
+                        <div id="usernameMsg" class="msg"></div>
+                    </div>
+
+                    <!-- 비밀번호 -->
+                    <div style="margin-bottom:14px;">
+                        <label class="auth-label">
+                            비밀번호
+                        </label>
+                        <input name="password"
+                               id="password"
+                               type="password"
+                               placeholder="비밀번호"
+                               class="auth-input">
+                    </div>
+
+                    <!-- 비밀번호 확인 -->
+                    <div style="margin-bottom:14px;">
+                        <label class="auth-label">
+                            비밀번호 확인
+                        </label>
+                        <input name="passwordConfirm"
+                               id="passwordConfirm"
+                               type="password"
+                               placeholder="비밀번호 확인"
+                               class="auth-input">
+                        <div id="passwordMsg" class="msg"></div>
+                    </div>
+
+                    <!-- 이메일 + 인증번호 전송 버튼 -->
+                    <div style="margin-bottom:14px;">
+                        <label class="auth-label">
+                            이메일
+                        </label>
+                        <div class="flex-row gap-8">
+                            <input name="email"
+                                   id="emailInput"
+                                   type="email"
+                                   placeholder="이메일"
+                                   class="auth-input"
+                                   style="flex:1;">
+                            <button type="button"
+                                    id="emailCodeBtn"
+                                    class="auth-btn-inline-primary">
+                                인증번호 전송
+                            </button>
+                        </div>
+                        <div id="emailCodeMsg" class="msg"></div>
+                    </div>
+
+                    <!-- 이메일 인증코드 + 인증 버튼 -->
+                    <div style="margin-bottom:18px;">
+                        <label class="auth-label">
+                            이메일 인증코드
+                        </label>
+                        <div class="flex-row gap-8">
+                            <input name="emailCode"
+                                   id="emailCodeInput"
+                                   placeholder="인증번호 6자리입력"
+                                   class="auth-input"
+                                   style="flex:1;">
+                            <button type="button"
+                                    id="verifyEmailBtn"
+                                    class="auth-btn-inline-primary">
+                                인증
+                            </button>
+                        </div>
+                        <div id="emailTimer" class="msg"></div>
+                    </div>
+
+                    <!-- 회원가입 버튼 -->
+                    <div>
+                        <button type="submit"
+                                id="registerBtn"
+                                class="auth-btn-primary">
+                            회원가입
+                        </button>
+                    </div>
+
+                </form>
             </div>
+        </section>
 
-            <!-- 비밀번호 -->
-            <div>
-                <input name="password" id="password" type="password" placeholder="비밀번호">
-            </div>
+        <!-- 공통 이메일 코드 유틸 -->
+        <script th:src="@{/js/emailCodeUtil.js}"></script>
 
-            <!-- 비밀번호 확인 -->
-            <div>
-                <input name="passwordConfirm" id="passwordConfirm" type="password" placeholder="비밀번호 확인">
-                <div id="passwordMsg" class="msg"></div>
-            </div>
-
-            <!-- 이메일 -->
-            <div>
-                <input name="email" id="emailInput" type="email" placeholder="이메일">
-                <div id="emailCodeMsg" class="msg"></div>
-                <button type="button" id="emailCodeBtn">인증번호 전송</button>
-            </div>
-
-            <!-- 이메일 인증코드 -->
-            <div>
-                <input name="emailCode" id="emailCodeInput" placeholder="인증번호 6자리입력">
-                <button type="button" id="verifyEmailBtn">인증</button>
-                <div id="emailTimer" class="msg"></div>
-            </div>
-
-            <div style="margin-top:10px;">
-                <button type="submit" id="registerBtn">회원가입</button>
-            </div>
-
-        </form>
-    </main>
-
-    <style>
-        .msg { font-size: 0.9rem; margin-top: 4px; }
-        .msg.ok { color: green; }
-        .msg.err { color: red; }
-    </style>
-
-    <!-- 공통 이메일 코드 유틸 -->
-    <script th:src="@{/js/emailCodeUtil.js}"></script>
-
-    <script>
-        function showMsg(id, text, type) {
-            const el = document.getElementById(id);
-            el.textContent = text;
-            el.className = "msg " + type;
-        }
-
-        async function ajaxPost(url, params) {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(params)
-            });
-            return (await res.text()).replace(/"/g, "").trim();
-        }
-
-        // 닉네임 정규식
-        const nicknameRegex = /^(?=.*[가-힣A-Za-z0-9])[가-힣A-Za-z0-9]{2,8}$/;
-
-        // 아이디 정규식: 영문+숫자 6자 이상
-        const usernameRegex = /^[A-Za-z0-9]{6,}$/;
-
-        // 비밀번호 정규식: 영문+숫자 8자 이상
-        const passwordRegex = /^[A-Za-z0-9]{8,}$/;
-
-        // 이메일 정규식
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-
-        // 실시간 닉네임 자동 중복확인
-        displayName.oninput = async () => {
-            const v = displayName.value.trim();
-
-            if (!nicknameRegex.test(v)) {
-                return showMsg("displayNameMsg", "닉네임은 2~8글자의 한글/영문/숫자만 가능합니다.", "err");
+        <script>
+            function showMsg(id, text, type) {
+                const el = document.getElementById(id);
+                el.textContent = text;
+                el.className = "msg " + type;
             }
 
-            const res = await ajaxPost('/member/check-displayName', { displayName: v });
-
-            if (res === "EMPTY") showMsg("displayNameMsg", "닉네임을 입력하세요.", "err");
-            else if (res === "EXISTS") showMsg("displayNameMsg", "이미 사용 중입니다.", "err");
-            else showMsg("displayNameMsg", "사용 가능합니다.", "ok");
-        };
-
-
-        // 실시간 아이디 자동 중복확인
-        username.oninput = async () => {
-            const v = username.value.trim();
-
-            if (!usernameRegex.test(v)) {
-                return showMsg("usernameMsg", "아이디는 영문+숫자 6자 이상입니다.", "err");
+            async function ajaxPost(url, params) {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams(params)
+                });
+                return (await res.text()).replace(/"/g, "").trim();
             }
 
-            const res = await ajaxPost('/member/check-username', { username: v });
+            // 닉네임 정규식
+            const nicknameRegex = /^(?=.*[가-힣A-Za-z0-9])[가-힣A-Za-z0-9]{2,8}$/;
 
-            if (res === "EMPTY") showMsg("usernameMsg", "아이디를 입력하세요.", "err");
-            else if (res === "EXISTS") showMsg("usernameMsg", "이미 사용 중입니다.", "err");
-            else showMsg("usernameMsg", "사용 가능합니다.", "ok");
-        };
+            // 아이디 정규식: 영문+숫자 6자 이상
+            const usernameRegex = /^[A-Za-z0-9]{6,}$/;
 
+            // 비밀번호 정규식: 영문+숫자 8자 이상
+            const passwordRegex = /^[A-Za-z0-9]{8,}$/;
 
-        // 실시간 비밀번호 체크
-        password.oninput = () => {
-            const v = password.value.trim();
-            if (!passwordRegex.test(v)) {
-                showMsg("passwordMsg", "비밀번호는 영문+숫자 8자 이상", "err");
-            } else {
-                passwordMsg.textContent = "";
-            }
-        };
-
-        passwordConfirm.oninput = () => {
-            if (password.value === passwordConfirm.value)
-                showMsg("passwordMsg", "비밀번호가 일치합니다.", "ok");
-            else
-                showMsg("passwordMsg", "비밀번호가 다릅니다.", "err");
-        };
-
-        // 이메일 중복확인은 기존 버튼 유지
-        document.getElementById("checkEmailBtn")?.remove();
+            // 이메일 정규식
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
-        const emailInput = document.getElementById('emailInput');
-        const emailCodeBtn = document.getElementById('emailCodeBtn');
-        const emailCodeInput = document.getElementById('emailCodeInput');
-        const emailTimerEl = document.getElementById('emailTimer');
+            // 실시간 닉네임 자동 중복확인
+            displayName.oninput = async () => {
+                const v = displayName.value.trim();
 
-        let emailTimerObj = null;
+                if (!nicknameRegex.test(v)) {
+                    return showMsg("displayNameMsg", "닉네임은 2~8글자의 한글/영문/숫자만 가능합니다.", "err");
+                }
 
-        // 이메일 인증코드 전송 버튼
-        document.getElementById('emailCodeBtn').onclick = async () => {
-            const email = emailInput.value.trim();
-            if (!email) {
-                showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
-                return;
-            }
+                const res = await ajaxPost('/member/check-displayName', { displayName: v });
 
-            if (!emailRegex.test(email)) {
-                showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
-                return;
-            }
+                if (res === "EMPTY") showMsg("displayNameMsg", "닉네임을 입력하세요.", "err");
+                else if (res === "EXISTS") showMsg("displayNameMsg", "이미 사용 중입니다.", "err");
+                else showMsg("displayNameMsg", "사용 가능합니다.", "ok");
+            };
 
-            showMsg("emailCodeMsg", "전송 중... 잠시만 기다려주세요.", "ok");
 
-            if (window.EmailCodeUtil) {
-                EmailCodeUtil.setButtonLoading(emailCodeBtn, true, "전송 중...");
-            } else {
-                emailCodeBtn.disabled = true;
-            }
+            // 실시간 아이디 자동 중복확인
+            username.oninput = async () => {
+                const v = username.value.trim();
 
-            const check = await ajaxPost('/member/check-email', { email });
+                if (!usernameRegex.test(v)) {
+                    return showMsg("usernameMsg", "아이디는 영문+숫자 6자 이상입니다.", "err");
+                }
 
-            const endLoading = () => {
-                if (window.EmailCodeUtil) {
-                    EmailCodeUtil.setButtonLoading(emailCodeBtn, false);
+                const res = await ajaxPost('/member/check-username', { username: v });
+
+                if (res === "EMPTY") showMsg("usernameMsg", "아이디를 입력하세요.", "err");
+                else if (res === "EXISTS") showMsg("usernameMsg", "이미 사용 중입니다.", "err");
+                else showMsg("usernameMsg", "사용 가능합니다.", "ok");
+            };
+
+
+            // 실시간 비밀번호 체크
+            password.oninput = () => {
+                const v = password.value.trim();
+                if (!passwordRegex.test(v)) {
+                    showMsg("passwordMsg", "비밀번호는 영문+숫자 8자 이상", "err");
                 } else {
-                    emailCodeBtn.disabled = false;
+                    passwordMsg.textContent = "";
                 }
             };
 
-            if (check === "EMPTY") {
-                endLoading();
-                return showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
-            }
+            passwordConfirm.oninput = () => {
+                if (password.value === passwordConfirm.value)
+                    showMsg("passwordMsg", "비밀번호가 일치합니다.", "ok");
+                else
+                    showMsg("passwordMsg", "비밀번호가 다릅니다.", "err");
+            };
 
-            if (check === "INVALID") {
-                endLoading();
-                return showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
-            }
+            // 이메일 중복확인은 기존 버튼 유지
+            document.getElementById("checkEmailBtn")?.remove();
 
-            if (check === "EXISTS") {
-                endLoading();
-                return showMsg("emailCodeMsg", "이미 사용중인 이메일입니다.", "err");
-            }
 
-            if (check !== "OK") {
-                endLoading();
-                return showMsg("emailCodeMsg", "이메일을 다시 확인해주세요.", "err");
-            }
+            const emailInput = document.getElementById('emailInput');
+            const emailCodeBtn = document.getElementById('emailCodeBtn');
+            const emailCodeInput = document.getElementById('emailCodeInput');
+            const emailTimerEl = document.getElementById('emailTimer');
 
-            const res = await fetch('/member/email-code', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ email })
-            });
+            let emailTimerObj = null;
 
-            if (res.ok) {
-                showMsg("emailCodeMsg", "인증번호를 전송했습니다.", "ok");
-
-                if (window.EmailCodeUtil && emailTimerEl) {
-                    if (!emailTimerObj) {
-                        emailTimerObj = EmailCodeUtil.createTimer(
-                            emailTimerEl,
-                            {
-                                prefix: "남은시간: ",
-                                expiredText: "인증번호 만료"
-                            }
-                        );
-                    }
-                    emailTimerObj.start(300);
+            // 이메일 인증코드 전송 버튼
+            document.getElementById('emailCodeBtn').onclick = async () => {
+                const email = emailInput.value.trim();
+                if (!email) {
+                    showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
+                    return;
                 }
-            } else {
-                showMsg("emailCodeMsg", "전송 실패", "err");
-            }
 
-            endLoading();
-        };
+                if (!emailRegex.test(email)) {
+                    showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
+                    return;
+                }
 
-        verifyEmailBtn.onclick = async () => {
-            const email = emailInput.value.trim();
-            const code = emailCodeInput.value.trim();
+                showMsg("emailCodeMsg", "전송 중... 잠시만 기다려주세요.", "ok");
 
-            const res = await ajaxPost('/member/email-verify', { email, code });
+                if (window.EmailCodeUtil) {
+                    EmailCodeUtil.setButtonLoading(emailCodeBtn, true, "전송 중...");
+                } else {
+                    emailCodeBtn.disabled = true;
+                }
 
-            if (res === "OK") showMsg("emailCodeMsg", "인증되었습니다.", "ok");
-            else showMsg("emailCodeMsg", "잘못된 인증코드입니다.", "err");
-        };
+                const check = await ajaxPost('/member/check-email', { email });
+
+                const endLoading = () => {
+                    if (window.EmailCodeUtil) {
+                        EmailCodeUtil.setButtonLoading(emailCodeBtn, false);
+                    } else {
+                        emailCodeBtn.disabled = false;
+                    }
+                };
+
+                if (check === "EMPTY") {
+                    endLoading();
+                    return showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
+                }
+
+                if (check === "INVALID") {
+                    endLoading();
+                    return showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
+                }
+
+                if (check === "EXISTS") {
+                    endLoading();
+                    return showMsg("emailCodeMsg", "이미 사용중인 이메일입니다.", "err");
+                }
+
+                if (check !== "OK") {
+                    endLoading();
+                    return showMsg("emailCodeMsg", "이메일을 다시 확인해주세요.", "err");
+                }
+
+                const res = await fetch('/member/email-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ email })
+                });
+
+                if (res.ok) {
+                    showMsg("emailCodeMsg", "인증번호를 전송했습니다.", "ok");
+
+                    if (window.EmailCodeUtil && emailTimerEl) {
+                        if (!emailTimerObj) {
+                            emailTimerObj = EmailCodeUtil.createTimer(
+                                emailTimerEl,
+                                {
+                                    prefix: "남은시간: ",
+                                    expiredText: "인증번호 만료"
+                                }
+                            );
+                        }
+                        emailTimerObj.start(300);
+                    }
+                } else {
+                    showMsg("emailCodeMsg", "전송 실패", "err");
+                }
+
+                endLoading();
+            };
+
+            verifyEmailBtn.onclick = async () => {
+                const email = emailInput.value.trim();
+                const code = emailCodeInput.value.trim();
+
+                const res = await ajaxPost('/member/email-verify', { email, code });
+
+                if (res === "OK") showMsg("emailCodeMsg", "인증되었습니다.", "ok");
+                else showMsg("emailCodeMsg", "잘못된 인증코드입니다.", "err");
+            };
 
 
-        // 회원가입 완료 후 안내 및 리다이렉트
-        registerForm.onsubmit = (e) => {
+            // 회원가입 완료 후 안내 및 리다이렉트
+            registerForm.onsubmit = (e) => {
 
-            if (displayNameMsg.classList.contains("err") || displayNameMsg.textContent === "")
-                return alert("닉네임을 다시 확인해주세요."), e.preventDefault();
+                if (displayNameMsg.classList.contains("err") || displayNameMsg.textContent === "")
+                    return alert("닉네임을 다시 확인해주세요."), e.preventDefault();
 
-            if (usernameMsg.classList.contains("err") || usernameMsg.textContent === "")
-                return alert("아이디를 다시 확인해주세요."), e.preventDefault();
+                if (usernameMsg.classList.contains("err") || usernameMsg.textContent === "")
+                    return alert("아이디를 다시 확인해주세요."), e.preventDefault();
 
-            if (!passwordRegex.test(password.value))
-                return alert("비밀번호 형식이 올바르지 않습니다."), e.preventDefault();
+                if (!passwordRegex.test(password.value))
+                    return alert("비밀번호 형식이 올바르지 않습니다."), e.preventDefault();
 
-            if (password.value !== passwordConfirm.value)
-                return alert("비밀번호가 일치하지 않습니다."), e.preventDefault();
+                if (password.value !== passwordConfirm.value)
+                    return alert("비밀번호가 일치하지 않습니다."), e.preventDefault();
 
-            if (emailCodeMsg.textContent !== "인증되었습니다.")
-                return alert("이메일 인증을 완료해주세요."), e.preventDefault();
+                if (emailCodeMsg.textContent !== "인증되었습니다.")
+                    return alert("이메일 인증을 완료해주세요."), e.preventDefault();
 
-            alert("회원가입이 완료되었습니다!");
-            window.location.href = "/login";
-        };
-    </script>
+                alert("회원가입이 완료되었습니다!");
+                window.location.href = "/login";
+            };
+        </script>
 
+    </main>
 </div>
 </body>
 </html>

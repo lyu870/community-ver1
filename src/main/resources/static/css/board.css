@@ -1,5 +1,5 @@
 /* board.css */
-/* ===== 공통 컨테이너 / 제목 ===== */
+/* 공통 컨테이너 / 제목 */
 .board-container {
   max-width: 960px;
   margin: 0 auto;
@@ -12,7 +12,7 @@
   margin-bottom: 12px;
 }
 
-/* ===== 검색 + 글쓰기 버튼 영역 ===== */
+/* 검색 + 글쓰기 버튼 영역 */
 .board-list-top {
   display: flex;
   align-items: center;
@@ -138,12 +138,12 @@
   color: #666;
 }
 
-/* ===== 게시판 타입별 색상 ===== */
+/* 게시판 타입별 색상 */
 body.board-music  .board-title { color: #1db954; }
 body.board-news   .board-title { color: #c62828; }
 body.board-notice .board-title { color: #1565c0; }
 
-/* ===== 공통 페이지네이션 ===== */
+/* 공통 페이지네이션 */
 .pagination {
   display: flex;
   justify-content: center;
@@ -156,7 +156,7 @@ body.board-notice .board-title { color: #1565c0; }
   padding: 3px 7px;
 }
 
-/* ===== 공통 입력 요소 ===== */
+/* 공통 입력 요소 */
 input[type="text"],
 textarea {
   font-size: 1rem;
@@ -166,7 +166,7 @@ textarea {
   box-sizing: border-box;
 }
 
-/* ===== 공통: 글쓰기/수정 폼 스타일 ===== */
+/* 공통: 글쓰기/수정 폼 스타일 */
 .board-form {
   max-width: 960px;
   margin: 0 auto;

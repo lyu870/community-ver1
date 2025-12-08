@@ -12,105 +12,156 @@
 <div layout:fragment="content">
     <main class="board-container">
 
-        <h2>마이페이지</h2>
+        <section class="auth-card-wrap">
+            <div class="auth-card-body">
 
-        <!-- 프로필 정보 영역 -->
-        <section style="margin-top:20px;">
-            <h3>프로필 정보</h3>
+                <h2 style="font-size:1.3rem; margin-bottom:16px;">마이페이지</h2>
 
-            <p>아이디 :
-                <strong th:text="${member.username}">username</strong>
-            </p>
+                <!-- 프로필 정보 영역 -->
+                <section style="margin-top:4px;">
+                    <h3 style="font-size:1rem; margin-bottom:8px;">프로필 정보</h3>
 
-            <p>닉네임 :
-                <strong id="currentNickname" th:text="${member.displayName}">displayName</strong>
-            </p>
+                    <p style="margin-bottom:4px;">아이디 :
+                        <strong th:text="${member.username}">username</strong>
+                    </p>
 
-            <!-- 액션 버튼 영역 -->
-            <div style="margin-top:12px; display:flex; gap:8px;">
-                <button type="button" id="openProfileBtn" style="cursor:pointer;">닉네임 변경</button>
-                <button type="button" id="openPasswordBtn" style="cursor:pointer;">비밀번호 변경</button>
-            </div>
-        </section>
+                    <p>닉네임 :
+                        <strong id="currentNickname" th:text="${member.displayName}">displayName</strong>
+                    </p>
 
-        <!-- 닉네임 변경 영역 -->
-        <section id="profileSection" style="margin-top:24px; display:none;">
-            <h3>닉네임 변경</h3>
+                    <!-- 액션 버튼 영역 -->
+                    <div class="flex-row gap-8 mt-12">
+                        <button type="button"
+                                id="openProfileBtn"
+                                class="auth-btn-secondary"
+                                style="flex:1;">
+                            닉네임 변경
+                        </button>
+                        <button type="button"
+                                id="openPasswordBtn"
+                                class="auth-btn-secondary"
+                                style="flex:1;">
+                            비밀번호 변경
+                        </button>
+                    </div>
+                </section>
 
-            <!-- 닉네임 변경 결과 메시지 -->
-            <div id="profileMessageBox">
-                <div id="profileMessage" style="color:green; display:none;"></div>
-                <div id="profileError" style="color:red; display:none;"></div>
-            </div>
+                <!-- 닉네임 변경 영역 -->
+                <section id="profileSection" style="margin-top:24px; display:none;">
+                    <h3 style="font-size:1rem; margin-bottom:8px;">닉네임 변경</h3>
 
-            <!-- 닉네임 변경 폼 -->
-            <form id="profileForm" th:action="@{/my-page/profile}" method="post" style="margin-top:10px;">
-                <label>
-                    새 닉네임
-                    <input type="text" name="newDisplayName" placeholder="새 닉네임" required>
-                </label>
-                <div style="margin-top:8px;">
-                    <button type="submit">변경하기</button>
-                    <button type="button" id="cancelProfileBtn">취소</button>
-                </div>
-            </form>
-        </section>
+                    <!-- 닉네임변경 결과메시지 -->
+                    <div id="profileMessageBox">
+                        <div id="profileMessage" class="msg ok" style="display:none;"></div>
+                        <div id="profileError" class="msg err" style="display:none;"></div>
+                    </div>
 
-        <!-- 비밀번호 변경 영역 -->
-        <section id="passwordSection" style="margin-top:24px; display:none;">
-            <h3>비밀번호 변경</h3>
+                    <!-- 닉네임 변경 폼 -->
+                    <form id="profileForm"
+                          th:action="@{/my-page/profile}"
+                          method="post"
+                          style="margin-top:10px;">
+                        <label class="auth-label">
+                            새 닉네임
+                        </label>
+                        <input type="text"
+                               name="newDisplayName"
+                               placeholder="새 닉네임"
+                               required
+                               class="auth-input">
+                        <div class="flex-row gap-8 mt-8">
+                            <button type="submit"
+                                    class="auth-btn-primary"
+                                    style="flex:1;">
+                                변경하기
+                            </button>
+                            <button type="button"
+                                    id="cancelProfileBtn"
+                                    class="auth-btn-secondary"
+                                    style="flex:1;">
+                                취소
+                            </button>
+                        </div>
+                    </form>
+                </section>
 
-            <!-- 비밀번호 변경 결과 메시지 -->
-            <div id="passwordMessageBox">
-                <div id="passwordMessage" style="color:green; display:none;"></div>
-                <div id="passwordError" style="color:red; display:none;"></div>
-            </div>
+                <!-- 비밀번호 변경영역 -->
+                <section id="passwordSection" style="margin-top:24px; display:none;">
+                    <h3 style="font-size:1rem; margin-bottom:8px;">비밀번호 변경</h3>
 
-            <form id="passwordForm"
-                  th:action="@{/my-page/password}"
-                  method="post"
-                  style="display:flex; flex-direction:column; gap:8px; max-width:320px; margin-top:10px;">
+                    <!-- 비밀번호 변경결과 메시지 -->
+                    <div id="passwordMessageBox">
+                        <div id="passwordMessage" class="msg ok" style="display:none;"></div>
+                        <div id="passwordError" class="msg err" style="display:none;"></div>
+                    </div>
 
-                <label>
-                    현재 비밀번호
-                    <input type="password" name="currentPassword" required>
-                </label>
+                    <form id="passwordForm"
+                          th:action="@{/my-page/password}"
+                          method="post"
+                          style="display:flex; flex-direction:column; gap:8px; max-width:none; margin-top:10px;">
 
-                <label>
-                    새 비밀번호
-                    <input type="password" name="newPassword" required>
-                </label>
+                        <label class="auth-label">
+                            현재 비밀번호
+                        </label>
+                        <input type="password"
+                               name="currentPassword"
+                               required
+                               class="auth-input">
 
-                <label>
-                    새 비밀번호 확인
-                    <input type="password" name="newPasswordConfirm" required>
-                </label>
+                        <label class="auth-label" style="margin-top:4px;">
+                            새 비밀번호
+                        </label>
+                        <input type="password"
+                               name="newPassword"
+                               required
+                               class="auth-input">
 
-                <!-- 실시간 비밀번호 일치 메시지 영역 -->
-                <div id="passwordMatchMsg" style="font-size:0.9rem; margin-top:4px;"></div>
+                        <label class="auth-label" style="margin-top:4px;">
+                            새 비밀번호 확인
+                        </label>
+                        <input type="password"
+                               name="newPasswordConfirm"
+                               required
+                               class="auth-input">
 
-                <small>비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.</small>
+                        <!-- 비밀번호 일치 메시지 영역 (실시간) -->
+                        <div id="passwordMatchMsg" class="text-sm mt-4"></div>
 
-                <div style="margin-top:8px;">
-                    <button type="submit">변경하기</button>
-                    <button type="button" id="cancelPasswordBtn">취소</button>
-                </div>
-            </form>
-        </section>
+                        <small class="text-xs mt-2">비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.</small>
 
-        <!-- 회원 탈퇴 영역 -->
-        <section id="withdrawSection" style="margin-top:24px;">
-            <h3>회원 탈퇴</h3>
-            <p style="font-size:0.9rem; color:#555;">
-                회원탈퇴 시 회원님이 작성한 게시글과 댓글, 회원 정보가 모두 삭제되며<br>
-                삭제된 데이터는 되돌릴 수 없습니다.
-            </p>
+                        <div class="flex-row gap-8 mt-8">
+                            <button type="submit"
+                                    class="auth-btn-primary"
+                                    style="flex:1;">
+                                변경하기
+                            </button>
+                            <button type="button"
+                                    id="cancelPasswordBtn"
+                                    class="auth-btn-secondary"
+                                    style="flex:1;">
+                                취소
+                            </button>
+                        </div>
+                    </form>
+                </section>
 
-            <div style="margin-top:8px;">
-                <a href="/my-page/withdraw"
-                   style="display:inline-block; padding:6px 12px; color:#fff; background:#d93025; border:1px solid #d93025; text-decoration:none;">
-                    회원탈퇴
-                </a>
+                <!-- 회원 탈퇴 영역 -->
+                <section id="withdrawSection" style="margin-top:24px;">
+                    <h3 style="font-size:1rem; margin-bottom:8px;">회원 탈퇴</h3>
+                    <p class="text-sm" style="color:#555; line-height:1.5;">
+                        회원탈퇴 시 회원님이 작성한 게시글과 댓글, 회원 정보가 모두 삭제되며<br>
+                        삭제된 데이터는 되돌릴 수 없습니다.
+                    </p>
+
+                    <div class="mt-8">
+                        <a href="/my-page/withdraw"
+                           style="display:inline-block; width:100%; text-align:center; padding:8px 0;
+                                  color:#fff; background:#d93025; border:1px solid #d93025; text-decoration:none; font-size:0.9rem;">
+                            회원탈퇴
+                        </a>
+                    </div>
+                </section>
+
             </div>
         </section>
 

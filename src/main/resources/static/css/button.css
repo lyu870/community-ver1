@@ -1,0 +1,45 @@
+/* button.css */
+/* 공통 버튼 베이스 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+/* 기본 스타일 */
+.btn-primary {
+  background: #2c7efb;
+  border-color: #2c7efb;
+  color: #fff;
+}
+
+.btn-outline {
+  background: #f5f6f7;
+  border-color: #d0d3d9;
+  color: #555;
+}
+
+.btn-danger {
+  background: #d93025;
+  border-color: #d93025;
+  color: #fff;
+}
+
+/* 크기 유틸 */
+.btn-full {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+/* disabled */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
