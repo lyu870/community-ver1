@@ -48,27 +48,26 @@ public class CommentService {
             throw new IllegalArgumentException("본인이 작성한 댓글만 삭제 가능합니다.");
         }
 
-        // 대댓글이 있을 경우 → 내용만 삭제처리
-        if (!comment.getChildren().isEmpty()) {
-            comment.setContent("삭제된 댓글입니다.");
-            return;
-        }
-
+        // 자식 댓글이 있어도 해당 댓글 트리 전체 삭제
         commentRepository.delete(comment);
     }
 
-    // 회원탈퇴 시: 해당 회원이 작성한 댓글 전체 정리
-    // - 자식 댓글이 있는 경우: "삭제된 댓글입니다." 로 내용만 변경
-    // - 자식 댓글이 없는 경우: 실제 삭제
+    // 회원탈퇴 시: 해당 회원이 작성한 댓글/대댓글 트리 전체 삭제
     @Transactional
     public void deleteCommentsForWithdraw(Long memberId) {
 
-        List<Comment> comments = commentRepository.findAllByWriterId(memberId);
+        List<Comment> comments = commentRepository.findByWriterId(memberId);
 
         for (Comment comment : comments) {
-            if (!comment.getChildren().isEmpty()) {
-                comment.setContent("삭제된 댓글입니다.");
-            } else {
+            Comment parent = comment.getParent();
+
+            // 부모가 없거나, 부모 작성자가 탈퇴 회원이 아닌 경우에만 루트로 보고 삭제
+            Long parentWriterId = null;
+            if (parent != null && parent.getWriter() != null) {
+                parentWriterId = parent.getWriter().getId();
+            }
+
+            if (parent == null || !memberId.equals(parentWriterId)) {
                 commentRepository.delete(comment);
             }
         }

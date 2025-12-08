@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @Controller
@@ -196,6 +197,18 @@ public class MemberController {
         return "member/mypage";
     }
 
+    // 회원 탈퇴 페이지
+    @GetMapping("/my-page/withdraw")
+    public String withdrawPage(Authentication auth, Model model) {
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUser user)) {
+            return "redirect:/login";
+        }
+
+        MemberDto dto = memberService.getMemberDtoById(user.getId());
+        model.addAttribute("member", dto);
+        return "member/withdraw";
+    }
+
     // 닉네임 변경 : AJAX JSON 응답
     @PostMapping("/my-page/profile")
     @ResponseBody
@@ -288,10 +301,10 @@ public class MemberController {
         }
     }
 
-    // 회원 탈퇴 : AJAX JSON 응답
-    @PostMapping("/my-page/withdraw")
+    // 회원 탈퇴용 인증코드 이메일 전송 : AJAX JSON 응답
+    @PostMapping("/my-page/withdraw/email-code")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> withdraw(Authentication auth) {
+    public ResponseEntity<Map<String, Object>> sendWithdrawEmailCode(Authentication auth) {
 
         if (auth == null || !(auth.getPrincipal() instanceof CustomUser currentUser)) {
             return ResponseEntity.status(401).body(Map.of(
@@ -301,9 +314,41 @@ public class MemberController {
         }
 
         try {
-            memberService.withdrawMember(currentUser.getId());
+            memberService.sendWithdrawCode(currentUser.getId());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "회원탈퇴 인증코드를 이메일로 전송했습니다."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    // 회원 탈퇴 : AJAX JSON 응답
+    @PostMapping("/my-page/withdraw")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> withdraw(@RequestParam String code,
+                                                        Authentication auth,
+                                                        HttpServletRequest request) {
+
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUser currentUser)) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "로그인이 필요합니다."
+            ));
+        }
+
+        try {
+            memberService.withdrawMemberWithCode(currentUser.getId(), code);
 
             SecurityContextHolder.clearContext();
+            if (request.getSession(false) != null) {
+                request.getSession(false).invalidate();
+            }
 
             return ResponseEntity.ok(Map.of(
                     "success", true,

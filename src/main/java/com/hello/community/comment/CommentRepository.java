@@ -20,5 +20,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findByWriterId(Long writerId, Pageable pageable);
 
     // 회원탈퇴용: 특정 회원이 작성한 모든 댓글 조회 (전체)
-    List<Comment> findAllByWriterId(Long writerId);
+    List<Comment> findByWriterId(Long writerId);
 }

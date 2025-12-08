@@ -62,6 +62,9 @@
         .msg.err { color: red; }
     </style>
 
+    <!-- 공통 이메일 코드 유틸 -->
+    <script th:src="@{/js/emailCodeUtil.js}"></script>
+
     <script>
         function showMsg(id, text, type) {
             const el = document.getElementById(id);
@@ -144,68 +147,61 @@
         document.getElementById("checkEmailBtn")?.remove();
 
 
-        // 이메일 인증 타이머 기능
-        let timerInterval = null;
-        let remainingTime = 0;
+        const emailInput = document.getElementById('emailInput');
+        const emailCodeBtn = document.getElementById('emailCodeBtn');
+        const emailCodeInput = document.getElementById('emailCodeInput');
+        const emailTimerEl = document.getElementById('emailTimer');
 
-        function startEmailTimer() {
-            remainingTime = 300;
-            updateEmailTimerUI();
+        let emailTimerObj = null;
 
-            if (timerInterval) clearInterval(timerInterval);
-
-            emailCodeBtn.disabled = true;
-
-            timerInterval = setInterval(() => {
-                remainingTime--;
-                updateEmailTimerUI();
-
-                if (remainingTime <= 0) {
-                    clearInterval(timerInterval);
-                    emailTimer.textContent = "❌ 인증코드 만료";
-                    emailTimer.className = "msg err";
-                    emailCodeBtn.disabled = false;
-                }
-            }, 1000);
-        }
-
-        function updateEmailTimerUI() {
-            const m = String(Math.floor(remainingTime / 60)).padStart(2, "0");
-            const s = String(remainingTime % 60).padStart(2, "0");
-            emailTimer.textContent = `남은시간: ${m}:${s}`;
-            emailTimer.className = "msg ok";
-        }
-
+        // 이메일 인증코드 전송 버튼
         document.getElementById('emailCodeBtn').onclick = async () => {
             const email = emailInput.value.trim();
-            if (!email) return showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
+            if (!email) {
+                showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
+                return;
+            }
 
             if (!emailRegex.test(email)) {
-                return showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
+                showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
+                return;
             }
 
             showMsg("emailCodeMsg", "전송 중... 잠시만 기다려주세요.", "ok");
-            emailCodeBtn.disabled = true;
+
+            if (window.EmailCodeUtil) {
+                EmailCodeUtil.setButtonLoading(emailCodeBtn, true, "전송 중...");
+            } else {
+                emailCodeBtn.disabled = true;
+            }
 
             const check = await ajaxPost('/member/check-email', { email });
 
+            const endLoading = () => {
+                if (window.EmailCodeUtil) {
+                    EmailCodeUtil.setButtonLoading(emailCodeBtn, false);
+                } else {
+                    emailCodeBtn.disabled = false;
+                }
+            };
+
             if (check === "EMPTY") {
-                emailCodeBtn.disabled = false;
+                endLoading();
                 return showMsg("emailCodeMsg", "이메일을 입력해주세요.", "err");
             }
 
             if (check === "INVALID") {
-                emailCodeBtn.disabled = false;
+                endLoading();
                 return showMsg("emailCodeMsg", "유효하지 않은 이메일 주소입니다.", "err");
             }
 
             if (check === "EXISTS") {
-                emailCodeBtn.disabled = false;
+                endLoading();
                 return showMsg("emailCodeMsg", "이미 사용중인 이메일입니다.", "err");
             }
 
             if (check !== "OK") {
-                emailCodeBtn.disabled = false;
+                endLoading();
                 return showMsg("emailCodeMsg", "이메일을 다시 확인해주세요.", "err");
             }
 
@@ -217,11 +213,24 @@
 
             if (res.ok) {
                 showMsg("emailCodeMsg", "인증번호를 전송했습니다.", "ok");
-                startEmailTimer();
+
+                if (window.EmailCodeUtil && emailTimerEl) {
+                    if (!emailTimerObj) {
+                        emailTimerObj = EmailCodeUtil.createTimer(
+                            emailTimerEl,
+                            {
+                                prefix: "남은시간: ",
+                                expiredText: "인증번호 만료"
+                            }
+                        );
+                    }
+                    emailTimerObj.start(300);
+                }
             } else {
                 showMsg("emailCodeMsg", "전송 실패", "err");
-                emailCodeBtn.disabled = false;
             }
+
+            endLoading();
         };
 
         verifyEmailBtn.onclick = async () => {

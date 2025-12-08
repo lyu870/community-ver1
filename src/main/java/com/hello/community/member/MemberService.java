@@ -103,7 +103,7 @@ public class MemberService {
     public MemberDto getMemberDtoById(Long id) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다. id=" + id));
-        return new MemberDto(member.getUsername(), member.getDisplayName(), member.getId());
+        return new MemberDto(member.getUsername(), member.getDisplayName(), member.getId(), member.getEmail());
     }
 
     // 닉네임 변경
@@ -272,14 +272,48 @@ public class MemberService {
         emailVerificationService.deletePasswordResetCode(email);
     }
 
-    // 회원탈퇴: 회원의 댓글/게시글/회원정보 삭제
+    // 회원탈퇴용 인증코드 이메일 전송
+    @Transactional(readOnly = true)
+    public void sendWithdrawCode(Long memberId) throws Exception {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new Exception("회원 정보를 찾을 수 없습니다."));
+
+        emailVerificationService.sendWithdrawCode(member.getEmail());
+    }
+
+    // 회원탈퇴: 회원의 댓글/게시글/회원정보 삭제 (인증코드 포함)
+    @Transactional
+    public void withdrawMemberWithCode(Long memberId, String code) throws Exception {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new Exception("회원 정보를 찾을 수 없습니다."));
+
+        boolean ok = emailVerificationService.verifyWithdrawCode(member.getEmail(), code);
+        if (!ok) {
+            throw new Exception("회원탈퇴 인증코드가 올바르지 않습니다.");
+        }
+
+        doWithdraw(member);
+
+        emailVerificationService.deleteWithdrawCode(member.getEmail());
+    }
+
+    // 회원탈퇴: 회원의 댓글/게시글/회원정보 삭제 (추가 인증 없이 사용되는 내부/관리자용)
     @Transactional
     public void withdrawMember(Long memberId) throws Exception {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new Exception("회원 정보를 찾을 수 없습니다."));
 
-        // 회원이 작성한 댓글 전체 정리 (자식 있으면 "삭제된 댓글입니다.", 아니면 실제 삭제)
+        doWithdraw(member);
+    }
+
+    // 회원탈퇴 공통 처리
+    private void doWithdraw(Member member) {
+
+        Long memberId = member.getId();
+
+        // 회원이 작성한 댓글/대댓글 트리 전체 삭제
         commentService.deleteCommentsForWithdraw(memberId);
 
         // 회원이 작성한 게시글 전체 삭제 (각 게시판 서비스에 위임)
