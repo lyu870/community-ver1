@@ -3,22 +3,24 @@ package com.hello.community.board.music;
 
 import com.hello.community.board.common.PageUtil;
 import com.hello.community.board.recommend.PostRecommendService;
-import com.hello.community.comment.CommentService;
+import com.hello.community.board.recommend.RecommendResponseDto;
 import com.hello.community.comment.CommentRepository;
+import com.hello.community.comment.CommentService;
 import com.hello.community.member.CustomUser;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -237,11 +239,11 @@ public class MusicController {
 
     @PostMapping("/{id}/recommend")
     @ResponseBody
-    public Map<String, Object> recommend(@PathVariable Long id,
-                                         @AuthenticationPrincipal CustomUser user) {
+    public ResponseEntity<RecommendResponseDto> recommend(@PathVariable Long id,
+                                                          @AuthenticationPrincipal CustomUser user) {
 
         if (user == null) {
-            return Map.of("error", "LOGIN_REQUIRED");
+            return ResponseEntity.status(401).build();
         }
 
         Long memberId = user.getId();
@@ -255,9 +257,11 @@ public class MusicController {
 
         Music updated = musicService.findById(id);
 
-        return Map.of(
-                "recommended", nowRecommended,
-                "recommendCount", updated.getRecommendCount()
+        RecommendResponseDto body = new RecommendResponseDto(
+                nowRecommended,
+                updated.getRecommendCount()
         );
+
+        return ResponseEntity.ok(body);
     }
 }

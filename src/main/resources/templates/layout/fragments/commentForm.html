@@ -1,8 +1,7 @@
 <!-- /templates/layout/fragments/commentForm.html -->
 <div th:fragment="form(postId, loginUserId)">
 
-    <section class="comment-write-section"
-             style="margin-top:20px;"
+    <section class="comment-write-section" style="margin-top:20px;"
              data-require-login="comment">
 
         <form action="/comment" method="post" class="comment-form">
@@ -15,11 +14,11 @@
             <button type="submit" style="margin-top:6px;">댓글 등록</button>
         </form>
 
-        <!-- 안내 문구만 로그인 여부에 따라 노출 -->
-        <div th:if="${loginUserId == null}"
-             style="margin-top:6px; font-size:0.9rem; color:#666;">
-            <span>로그인 후 댓글을 작성할 수 있습니다.</span>
-        </div>
+        <!-- 비로그인 안내 문구만 조건부로 표시 -->
+        <p th:if="${loginUserId == null}"
+           style="margin-top:4px; font-size:0.9rem; color:#666;">
+            <a href="/login">로그인</a> 후 댓글을 작성할 수 있습니다.
+        </p>
 
     </section>
 

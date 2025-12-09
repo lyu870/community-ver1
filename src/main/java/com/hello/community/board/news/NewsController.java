@@ -3,22 +3,24 @@ package com.hello.community.board.news;
 
 import com.hello.community.board.common.PageUtil;
 import com.hello.community.board.recommend.PostRecommendService;
-import com.hello.community.comment.CommentService;
+import com.hello.community.board.recommend.RecommendResponseDto;
 import com.hello.community.comment.CommentRepository;
+import com.hello.community.comment.CommentService;
 import com.hello.community.member.CustomUser;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -229,7 +231,7 @@ public class NewsController {
                 ));
         model.addAttribute("commentCounts", commentCounts);
 
-        // [추가] 검색 모드에서도 버튼 상태 유지
+        // 검색 모드에서도 버튼 상태 유지
         Long loginUserId = (user != null) ? user.getId() : null;
         model.addAttribute("loginUserId", loginUserId);
         model.addAttribute("myMode", false);
@@ -239,11 +241,11 @@ public class NewsController {
 
     @PostMapping("/{id}/recommend")
     @ResponseBody
-    public Map<String, Object> recommend(@PathVariable Long id,
-                                         @AuthenticationPrincipal CustomUser user) {
+    public ResponseEntity<RecommendResponseDto> recommend(@PathVariable Long id,
+                                                          @AuthenticationPrincipal CustomUser user) {
 
         if (user == null) {
-            return Map.of("error", "LOGIN_REQUIRED");
+            return ResponseEntity.status(401).build();
         }
 
         Long memberId = user.getId();
@@ -257,9 +259,11 @@ public class NewsController {
 
         News updated = newsService.findById(id);
 
-        return Map.of(
-                "recommended", nowRecommended,
-                "recommendCount", updated.getRecommendCount()
+        RecommendResponseDto body = new RecommendResponseDto(
+                nowRecommended,
+                updated.getRecommendCount()
         );
+
+        return ResponseEntity.ok(body);
     }
 }

@@ -6,12 +6,17 @@
 <div th:fragment="boardHeader(data, comments, recommendCount)">
 
     <section class="post-header">
+        <!-- 1번째 칸 : 제목 -->
         <div class="post-title-row">
             <div class="post-title" th:text="${data.title}">제목</div>
         </div>
+
+        <!-- 2번째 칸 : 작성자 닉네임 + 추천/댓글/조회/작성일 -->
         <div class="post-meta-row">
-            <div class="post-writer" th:text="${data.writer.displayName}">작성자</div>
-            <div class="post-header-right">
+            <div class="post-meta-left">
+                <span class="post-writer" th:text="${data.writer.displayName}">작성자</span>
+            </div>
+            <div class="post-meta-right">
                 <span class="post-meta-item">
                     추천
                     <strong class="js-recommend-count"
@@ -42,12 +47,17 @@
 <div th:fragment="noticeHeader(data)">
 
     <section class="post-header">
+        <!-- 1번째 칸 : 제목 -->
         <div class="post-title-row">
             <div class="post-title" th:text="${data.title}">제목</div>
         </div>
+
+        <!-- 2번째 칸 : 작성자 + 조회/작성일 (흰색 배경) -->
         <div class="post-meta-row">
-            <div class="post-writer" th:text="${data.writer.displayName}">작성자</div>
-            <div class="post-header-right">
+            <div class="post-meta-left">
+                <span class="post-writer" th:text="${data.writer.displayName}">작성자</span>
+            </div>
+            <div class="post-meta-right">
                 <span class="post-meta-item">
                     조회수
                     <strong th:text="${data.viewCount}">0</strong>

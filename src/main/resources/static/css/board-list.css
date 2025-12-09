@@ -1,5 +1,6 @@
-/* board.css */
-/* 공통 컨테이너 / 제목 */
+/* board-list.css */
+
+/* 공통 컨테이너 + 제목 */
 .board-container {
   max-width: 960px;
   margin: 0 auto;
@@ -80,7 +81,7 @@
   margin-left: 6px;
 }
 
-/* 게시판 테이블형 리스트 (사용) */
+/* 게시판 테이블형 리스트 */
 .board-table-wrapper {
   margin-top: 12px;
   border-top: 2px solid #333;
@@ -138,84 +139,10 @@
   color: #666;
 }
 
-/* 게시글 detail페이지 공통 레이아웃 */
-.post-header {
-  margin-top: 8px;
-}
-
-/* 1번째 줄 : 제목만 들어가는 회색 칸 */
-.post-title-row {
-  padding: 10px 12px;
-  background: #f7f7f7;
-  border-top: 2px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.post-title-row .post-title {
-  font-size: 1.2rem;
+/* 댓글 수 [0] 전체 연한 빨간 + 굵게 */
+.board-comment-count {
+  color: #ff7676;
   font-weight: 700;
-}
-
-/* 2번째 줄 : 닉네임 + 메타 정보 */
-.post-meta-row {
-  padding: 8px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e0e0e0;
-  background: #ffffff;
-}
-
-.post-meta-row .post-writer {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.post-header-right {
-  font-size: 0.8rem;
-  color: #666;
-  white-space: nowrap;
-}
-
-.post-meta-item strong {
-  font-weight: 600;
-}
-
-.post-meta-sep {
-  margin: 0 4px;
-  color: #cccccc;
-}
-
-.post-body {
-  padding: 16px 12px 8px;
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-/* 추천 박스 공통 */
-.post-recommend-section {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
-}
-
-.recommend-box {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 160px;
-  padding: 12px 20px;
-  border-radius: 10px;
-  border: 1px solid #e3e5e8;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, .03);
-}
-
-.recommend-box .recommend-count-text {
-  margin-top: 6px;
-  font-size: 0.85rem;
-  color: #555;
 }
 
 /* 게시판 타입별 색상 */
@@ -236,7 +163,7 @@ body.board-notice .board-title { color: #1565c0; }
   padding: 3px 7px;
 }
 
-/* 공통 입력 요소 */
+/* 공통 입력 요소 (리스트에서도 검색창 등에 사용) */
 input[type="text"],
 textarea {
   font-size: 1rem;
@@ -246,58 +173,41 @@ textarea {
   box-sizing: border-box;
 }
 
-/* 공통: 글쓰기/수정 폼 스타일 */
-.board-form {
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* 반응형 (모바일 전용)    */
+@media (max-width: 600px) {
 
-.board-form input[name="title"] {
-  font-size: 1.1rem;
-  padding: 10px;
-}
+  /* 리스트 테이블을 카드형으로 */
+  .board-table thead {
+    display: none;
+  }
 
-.board-form textarea[name="content"] {
-  height: 280px;
-  font-size: 1rem;
-  padding: 12px;
-  line-height: 1.5;
-}
+  .board-table,
+  .board-table tbody,
+  .board-table tr,
+  .board-table td {
+    display: block;
+    width: 100%;
+  }
 
-.board-form button[type="submit"] {
-  width: fit-content;
-  padding: 10px 20px;
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
+  .board-table tbody tr {
+    padding: 8px 4px;
+    border-bottom: 1px solid #eee;
+  }
 
-/* item(상품) 상세 전용 레이아웃 */
-.item-body .item-detail-layout {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-top: 16px;
-}
+  .board-table tbody td {
+    padding: 4px 2px;
+  }
 
-.item-image-box img {
-  max-width: 300px;
-  width: 100%;
-  border: 1px solid #e3e5e8;
-  background: #fafafa;
-}
+  .board-table .col-title,
+  .board-table .col-writer,
+  .board-table .col-date {
+    width: auto;
+    text-align: left;
+  }
 
-.item-info-box {
-  margin-top: 12px;
-  font-size: 1rem;
-}
-
-.item-info-box .item-price {
-  font-size: 1.1rem;
-  font-weight: 600;
+  .board-table .col-date {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 2px;
+  }
 }

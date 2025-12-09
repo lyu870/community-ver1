@@ -6,7 +6,7 @@
         this.intervalId = null;
         this.remaining = 0;
         this.prefix = options && options.prefix ? options.prefix : '남은시간: ';
-        this.expiredText = options && options.expiredText ? options.expiredText : '❌ 인증번호가 만료되었습니다.';
+        this.expiredText = options && options.expiredText ? options.expiredText : '인증번호가 만료되었습니다.';
     }
 
     CodeTimer.prototype.start = function (seconds) {

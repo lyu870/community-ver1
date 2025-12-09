@@ -2,12 +2,13 @@
 package com.hello.community.board.item;
 
 import com.hello.community.board.common.PageUtil;
-import com.hello.community.comment.CommentService;
+import com.hello.community.board.recommend.PostRecommendService;
+import com.hello.community.board.recommend.RecommendResponseDto;
 import com.hello.community.comment.CommentRepository;
+import com.hello.community.comment.CommentService;
 import com.hello.community.member.CustomUser;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
-import com.hello.community.board.recommend.PostRecommendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -253,11 +254,11 @@ public class ItemController {
     // 추천 토글 API (로그인 필요)
     @PostMapping("/{id}/recommend")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> toggleRecommend(@PathVariable Long id,
-                                                               @AuthenticationPrincipal CustomUser user) {
+    public ResponseEntity<RecommendResponseDto> toggleRecommend(@PathVariable Long id,
+                                                                @AuthenticationPrincipal CustomUser user) {
 
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "LOGIN_REQUIRED"));
+            return ResponseEntity.status(401).build();
         }
 
         boolean recommended = postRecommendService.toggleRecommend(id, user.getId());
@@ -270,11 +271,11 @@ public class ItemController {
 
         Item updated = itemService.findItemById(id);
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "recommended", recommended,
-                        "recommendCount", updated.getRecommendCount()
-                )
+        RecommendResponseDto body = new RecommendResponseDto(
+                recommended,
+                updated.getRecommendCount()
         );
+
+        return ResponseEntity.ok(body);
     }
 }

@@ -74,9 +74,11 @@ layout:decorate="~{layout/fragments/base}">
 
                         <!-- 댓글수 · 조회수 · 추천수 -->
                         <span class="board-meta">
-                            [
-                            <span th:text="${(commentCounts != null and commentCounts[post.id] != null) ? commentCounts[post.id] : 0}">0</span>
-                            ]
+                            <span class="board-comment-count">
+                                [
+                                <span th:text="${(commentCounts != null and commentCounts[post.id] != null) ? commentCounts[post.id] : 0}">0</span>
+                                ]
+                            </span>
                             · 조회
                             <span th:text="${post.viewCount}">0</span>
                             · 추천
