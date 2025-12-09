@@ -12,9 +12,10 @@
     <link rel="stylesheet" th:href="@{/css/board.css}">
 </head>
 
-<body>
+<body class="board board-notice">
 <div layout:fragment="content">
-    <main class="board-container board board-notice">
+    <main class="board-container board board-notice"
+          th:data-login="${loginUserId != null}">
 
         <!-- 수정/삭제 버튼 -->
         <div style="margin-bottom:10px;"
@@ -28,27 +29,14 @@
             <form th:action="@{|/notice/delete/${data.id}|}"
                   method="post"
                   style="display:inline;"
-                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                  class="post-delete-form">
                 <input type="hidden" name="_method" value="delete">
                 <button type="submit" class="btn-delete">삭제</button>
             </form>
         </div>
 
-        <!-- 헤더 -->
-        <section class="post-header-bar">
-            <div class="post-header-left">
-                <div class="post-title" th:text="${data.title}">제목</div>
-                <div class="post-writer" th:text="${data.writer.displayName}">작성자</div>
-            </div>
-
-            <div class="post-header-right">
-                <span class="post-meta-item">조회수 <strong th:text="${data.viewCount}">0</strong></span>
-                <span class="post-meta-sep">|</span>
-                <span class="post-meta-item">
-                    작성일 <strong th:text="${#temporals.format(data.createdAt,'yyyy-MM-dd HH:mm')}"></strong>
-                </span>
-            </div>
-        </section>
+        <!-- 헤더 (공지 전용 fragment) -->
+        <section th:replace="~{layout/fragments/postDetailHeader :: noticeHeader(${data})}"></section>
 
         <!-- 본문 -->
         <section class="post-body">

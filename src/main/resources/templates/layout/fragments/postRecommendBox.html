@@ -1,0 +1,30 @@
+<!-- /templates/layout/fragments/postRecommendBox.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="recommendBox(boardType, data, recommended)">
+
+    <section class="post-recommend-section">
+        <div class="recommend-box">
+            <button type="button"
+                    class="btn btn-primary btn-md js-post-action"
+                    th:attr="data-action='recommend'"
+                    th:data-board-type="${boardType}"
+                    th:data-post-id="${data.id}"
+                    th:text="${recommended} ? '추천 취소' : '추천'">
+                추천
+            </button>
+            <div class="recommend-count-text">
+                현재 추천 수 :
+                <span class="js-recommend-count"
+                      th:data-post-id="${data.id}"
+                      th:text="${data.recommendCount}">0</span>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>

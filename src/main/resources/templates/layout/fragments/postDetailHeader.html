@@ -1,0 +1,67 @@
+<!-- /templates/layout/fragments/postDetailHeader.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="boardHeader(data, comments, recommendCount)">
+
+    <section class="post-header">
+        <div class="post-title-row">
+            <div class="post-title" th:text="${data.title}">제목</div>
+        </div>
+        <div class="post-meta-row">
+            <div class="post-writer" th:text="${data.writer.displayName}">작성자</div>
+            <div class="post-header-right">
+                <span class="post-meta-item">
+                    추천
+                    <strong class="js-recommend-count"
+                            th:data-post-id="${data.id}"
+                            th:text="${recommendCount}">0</strong>
+                </span>
+                <span class="post-meta-sep">|</span>
+                <span class="post-meta-item">
+                    댓글
+                    <strong th:text="${#lists.size(comments)}">0</strong>
+                </span>
+                <span class="post-meta-sep">|</span>
+                <span class="post-meta-item">
+                    조회수
+                    <strong th:text="${data.viewCount}">0</strong>
+                </span>
+                <span class="post-meta-sep">|</span>
+                <span class="post-meta-item">
+                    작성일
+                    <strong th:text="${#temporals.format(data.createdAt, 'yyyy-MM-dd HH:mm')}"></strong>
+                </span>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<div th:fragment="noticeHeader(data)">
+
+    <section class="post-header">
+        <div class="post-title-row">
+            <div class="post-title" th:text="${data.title}">제목</div>
+        </div>
+        <div class="post-meta-row">
+            <div class="post-writer" th:text="${data.writer.displayName}">작성자</div>
+            <div class="post-header-right">
+                <span class="post-meta-item">
+                    조회수
+                    <strong th:text="${data.viewCount}">0</strong>
+                </span>
+                <span class="post-meta-sep">|</span>
+                <span class="post-meta-item">
+                    작성일
+                    <strong th:text="${#temporals.format(data.createdAt,'yyyy-MM-dd HH:mm')}"></strong>
+                </span>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>

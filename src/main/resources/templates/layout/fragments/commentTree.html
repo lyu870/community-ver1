@@ -1,3 +1,4 @@
+<!-- /templates/layout/fragments/commentTree.html -->
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
@@ -89,7 +90,8 @@
                   action="/comment"
                   method="post"
                   th:attr="data-parent-id=${comment.id}"
-                  style="display:none;">
+                  style="display:none;"
+                  data-require-login="comment">
                 <input type="hidden" name="postId" th:value="${postId}">
                 <input type="hidden" name="parentId" th:value="${comment.id}">
                 <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>

@@ -80,7 +80,7 @@
   margin-left: 6px;
 }
 
-/* ===== 테이블형 리스트 (music/news/notice 사용) ===== */
+/* 게시판 테이블형 리스트 (사용) */
 .board-table-wrapper {
   margin-top: 12px;
   border-top: 2px solid #333;
@@ -136,6 +136,86 @@
   margin-left: 6px;
   font-size: 0.8rem;
   color: #666;
+}
+
+/* 게시글 detail페이지 공통 레이아웃 */
+.post-header {
+  margin-top: 8px;
+}
+
+/* 1번째 줄 : 제목만 들어가는 회색 칸 */
+.post-title-row {
+  padding: 10px 12px;
+  background: #f7f7f7;
+  border-top: 2px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.post-title-row .post-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* 2번째 줄 : 닉네임 + 메타 정보 */
+.post-meta-row {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  background: #ffffff;
+}
+
+.post-meta-row .post-writer {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.post-header-right {
+  font-size: 0.8rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.post-meta-item strong {
+  font-weight: 600;
+}
+
+.post-meta-sep {
+  margin: 0 4px;
+  color: #cccccc;
+}
+
+.post-body {
+  padding: 16px 12px 8px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* 추천 박스 공통 */
+.post-recommend-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.recommend-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid #e3e5e8;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .03);
+}
+
+.recommend-box .recommend-count-text {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #555;
 }
 
 /* 게시판 타입별 색상 */
@@ -195,4 +275,29 @@ textarea {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+/* item(상품) 상세 전용 레이아웃 */
+.item-body .item-detail-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 16px;
+}
+
+.item-image-box img {
+  max-width: 300px;
+  width: 100%;
+  border: 1px solid #e3e5e8;
+  background: #fafafa;
+}
+
+.item-info-box {
+  margin-top: 12px;
+  font-size: 1rem;
+}
+
+.item-info-box .item-price {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
