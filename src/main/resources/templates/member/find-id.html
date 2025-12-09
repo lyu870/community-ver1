@@ -30,7 +30,7 @@
 
                 <!-- 1단계 : 이메일 + 코드 전송 + 코드 입력 -->
                 <section id="findIdFormSection">
-                    <p class="text-sm text-center" style="color:#555; margin-bottom:24px;">
+                    <p style="text-align:center; color:#555; margin-bottom:24px;">
                         가입 시 등록한 이메일로 아이디를 확인할 수 있습니다.
                     </p>
 
@@ -39,7 +39,7 @@
                         <label class="auth-label">
                             이메일
                         </label>
-                        <div class="flex-row gap-8">
+                        <div style="display:flex;">
                             <input type="email"
                                    name="email"
                                    placeholder="가입 시 사용한 이메일"
@@ -48,18 +48,19 @@
                                    style="flex:1;">
                             <button type="button"
                                     id="sendIdCodeBtn"
-                                    class="auth-btn-inline-primary">
+                                    class="auth-btn-inline-primary btn btn-primary btn-sm"
+                                    style="margin-left:8px;">
                                 인증코드 전송
                             </button>
                         </div>
 
                         <!-- 이메일 관련 메시지 (이메일 입력칸 바로 아래) -->
                         <div id="findIdMessage"
-                             class="msg text-sm"
-                             style="display:none;"></div>
+                             class="msg"
+                             style="display:none; text-align:left;"></div>
 
                         <!-- 인증코드 입력 -->
-                        <div class="mt-14">
+                        <div style="margin-top:14px;">
                             <label class="auth-label">
                                 이메일로 받은 인증코드
                             </label>
@@ -70,9 +71,9 @@
                                    class="auth-input">
                         </div>
 
-                        <div class="mt-18">
+                        <div style="margin-top:18px;">
                             <button type="submit"
-                                    class="auth-btn-primary">
+                                    class="auth-btn-primary btn btn-primary btn-full">
                                 아이디 찾기
                             </button>
                         </div>
@@ -80,8 +81,7 @@
 
                     <!-- 가입된 이메일이 없을 때 보여줄 버튼들 -->
                     <div id="findIdErrorActions"
-                         class="flex-row flex-center gap-10 mt-12"
-                         style="display:none;">
+                         style="margin-top:12px; display:none; justify-content:center; gap:10px;">
                         <a href="/register"
                            style="flex:1; max-width:160px; text-align:center; padding:8px 0;
                                   border:1px solid #2c7efb; background:#fff; color:#2c7efb;
@@ -110,7 +110,7 @@
                         </span>
                     </div>
 
-                    <div class="flex-row gap-10" style="justify-content:center;">
+                    <div style="display:flex; justify-content:center; gap:10px;">
                         <a href="/login"
                            style="flex:1; max-width:160px; text-align:center; padding:10px 0;
                                   border:1px solid #2c7efb; background:#2c7efb; color:#fff;
@@ -155,7 +155,7 @@
                 function setFindIdMessage(text, isError, showActions) {
                     if (!findIdMessage) return;
                     findIdMessage.textContent = text || '';
-                    findIdMessage.className = 'msg text-sm ' + (isError ? 'err' : 'ok');
+                    findIdMessage.className = 'msg ' + (isError ? 'err' : 'ok');
                     findIdMessage.style.display = text ? 'block' : 'none';
 
                     if (findIdErrorActions) {

@@ -1,44 +1,79 @@
 /* button.css */
-/* 공통 버튼 베이스 */
+
+/* 버튼 css 메모 >_<
+   - .btn-primary : 주요/강조 (ex : 로그인, 저장)
+   - .btn-ghost   : 보조/서브 (ex : 취소, 마이페이지)
+   - .btn-danger  : 위험/삭제 (ex : 회원탈퇴, 삭제) */
+
+/* 기본 버튼 */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
   border: 1px solid transparent;
-}
-
-/* 기본 스타일 */
-.btn-primary {
-  background: #2c7efb;
-  border-color: #2c7efb;
-  color: #fff;
-}
-
-.btn-outline {
-  background: #f5f6f7;
-  border-color: #d0d3d9;
-  color: #555;
-}
-
-.btn-danger {
-  background: #d93025;
-  border-color: #d93025;
-  color: #fff;
+  cursor: pointer;
+  background: #ffffff;
+  color: #333;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 /* 크기 유틸 */
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.btn-md {
+  padding: 8px 12px;
+}
+
+.btn-lg {
+  padding: 10px 16px;
+  font-size: 1rem;
+}
+
 .btn-full {
   width: 100%;
 }
 
-.btn-sm {
-  padding: 0 12px;
-  font-size: 13px;
+/* 색상 스타일 */
+.btn-primary {
+  background: #2c7efb;
+  border-color: #2c7efb;
+  color: #ffffff;
 }
 
-/* disabled */
+.btn-primary:hover {
+  background: #1f4fff;
+}
+
+/* 회색 톤의 텍스트 버튼 (드롭다운/서브 액션 등) */
+.btn-ghost {
+  background: #ffffff;
+  border: 1px solid #d0d3d9;
+  color: #555;
+}
+
+.btn-ghost:hover {
+  background: #f5f6f7;
+}
+
+/* 위험 액션용 (삭제/탈퇴 등) */
+.btn-danger {
+  background: #d93025;
+  border-color: #d93025;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background: #c0251c;
+}
+
+/* 비활성화 공통 */
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;

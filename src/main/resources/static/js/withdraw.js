@@ -1,4 +1,4 @@
-// withdraw.js
+// /js/withdraw.js
 (function () {
 
     const withdrawCodeInput = document.getElementById('withdrawCodeInput');
@@ -95,8 +95,40 @@
         }
     }
 
-    // 회원 탈퇴 AJAX 제출
-    async function requestWithdraw() {
+    // 실제 탈퇴 요청 AJAX
+    async function doWithdrawRequest(code) {
+        try {
+            const res = await fetch('/my-page/withdraw', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: new URLSearchParams({ code: code })
+            });
+
+            const body = await res.json();
+
+            if (body.success) {
+                showAppAlert(body.message || '회원탈퇴가 완료되었습니다.', function () {
+                    window.location.href = "/login";
+                });
+            } else {
+                if (withdrawError) {
+                    withdrawError.textContent = body.error || '회원탈퇴에 실패했습니다.';
+                    withdrawError.style.display = 'block';
+                }
+            }
+        } catch (err) {
+            if (withdrawError) {
+                withdrawError.textContent = '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                withdrawError.style.display = 'block';
+            }
+        }
+    }
+
+    // 회원 탈퇴 버튼 클릭 핸들러
+    function requestWithdraw() {
         hideWithdrawMessages();
 
         const code = withdrawCodeInput ? withdrawCodeInput.value.trim() : "";
@@ -117,36 +149,12 @@
             return;
         }
 
-        const ok = confirm("정말로 회원탈퇴 하시겠습니까?\n작성한 게시글과 댓글, 회원 정보가 모두 삭제되며 복구할 수 없습니다.");
-        if (!ok) return;
-
-        try {
-            const res = await fetch('/my-page/withdraw', {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: new URLSearchParams({code: code})
-            });
-
-            const body = await res.json();
-
-            if (body.success) {
-                alert(body.message || '회원탈퇴가 완료되었습니다.');
-                window.location.href = "/login";
-            } else {
-                if (withdrawError) {
-                    withdrawError.textContent = body.error || '회원탈퇴에 실패했습니다.';
-                    withdrawError.style.display = 'block';
-                }
+        showDangerConfirm(
+            "정말로 회원탈퇴 하시겠습니까?\n작성한 게시글과 댓글, 회원 정보가 모두 삭제되며 복구할 수 없습니다.",
+            function () {
+                doWithdrawRequest(code);
             }
-        } catch (err) {
-            if (withdrawError) {
-                withdrawError.textContent = '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-                withdrawError.style.display = 'block';
-            }
-        }
+        );
     }
 
     if (sendWithdrawCodeBtn) {

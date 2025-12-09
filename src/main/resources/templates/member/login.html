@@ -52,7 +52,7 @@
                     <!-- 로그인 버튼 -->
                     <div>
                         <button type="submit"
-                                class="auth-btn-primary">
+                                class="auth-btn-primary btn btn-primary btn-full">
                             로그인
                         </button>
                     </div>
@@ -66,11 +66,13 @@
 
                     <!-- 에러 + 로그아웃 메시지 -->
                     <div th:if="${param.error}"
-                         class="msg err mt-12 text-center">
+                         class="msg err"
+                         style="margin-top:12px; text-align:center;">
                         아이디 또는 비밀번호가 올바르지 않습니다.
                     </div>
                     <div th:if="${param.logout}"
-                         class="msg ok mt-12 text-center">
+                         class="msg ok"
+                         style="margin-top:12px; text-align:center;">
                         로그아웃 되었습니다.
                     </div>
 

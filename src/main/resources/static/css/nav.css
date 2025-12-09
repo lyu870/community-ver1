@@ -54,16 +54,9 @@
 }
 
 .dropdown-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
     font-weight: 500;
-    padding: 6px 10px;
     color: #333;
     font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 4px;
 }
 
 .dropdown-toggle:hover {
@@ -75,4 +68,9 @@
     top: 40px;
     right: 0;
     background-color: white;
+}
+
+.navbar-username {
+    font-weight: 700;
+    color: #7c3aed;
 }

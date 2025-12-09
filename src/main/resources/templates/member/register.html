@@ -82,7 +82,7 @@
                         <label class="auth-label">
                             이메일
                         </label>
-                        <div class="flex-row gap-8">
+                        <div style="display:flex;">
                             <input name="email"
                                    id="emailInput"
                                    type="email"
@@ -91,7 +91,8 @@
                                    style="flex:1;">
                             <button type="button"
                                     id="emailCodeBtn"
-                                    class="auth-btn-inline-primary">
+                                    class="auth-btn-inline-primary btn btn-primary btn-sm"
+                                    style="margin-left:8px;">
                                 인증번호 전송
                             </button>
                         </div>
@@ -103,7 +104,7 @@
                         <label class="auth-label">
                             이메일 인증코드
                         </label>
-                        <div class="flex-row gap-8">
+                        <div style="display:flex;">
                             <input name="emailCode"
                                    id="emailCodeInput"
                                    placeholder="인증번호 6자리입력"
@@ -111,7 +112,8 @@
                                    style="flex:1;">
                             <button type="button"
                                     id="verifyEmailBtn"
-                                    class="auth-btn-inline-primary">
+                                    class="auth-btn-inline-primary btn btn-primary btn-sm"
+                                    style="margin-left:8px;">
                                 인증
                             </button>
                         </div>
@@ -122,7 +124,7 @@
                     <div>
                         <button type="submit"
                                 id="registerBtn"
-                                class="auth-btn-primary">
+                                class="auth-btn-primary btn btn-primary btn-full">
                             회원가입
                         </button>
                     </div>
@@ -317,22 +319,24 @@
             registerForm.onsubmit = (e) => {
 
                 if (displayNameMsg.classList.contains("err") || displayNameMsg.textContent === "")
-                    return alert("닉네임을 다시 확인해주세요."), e.preventDefault();
+                    return showAppAlert("닉네임을 다시 확인해주세요."), e.preventDefault();
 
                 if (usernameMsg.classList.contains("err") || usernameMsg.textContent === "")
-                    return alert("아이디를 다시 확인해주세요."), e.preventDefault();
+                    return showAppAlert("아이디를 다시 확인해주세요."), e.preventDefault();
 
                 if (!passwordRegex.test(password.value))
-                    return alert("비밀번호 형식이 올바르지 않습니다."), e.preventDefault();
+                    return showAppAlert("비밀번호 형식이 올바르지 않습니다."), e.preventDefault();
 
                 if (password.value !== passwordConfirm.value)
-                    return alert("비밀번호가 일치하지 않습니다."), e.preventDefault();
+                    return showAppAlert("비밀번호가 일치하지 않습니다."), e.preventDefault();
 
                 if (emailCodeMsg.textContent !== "인증되었습니다.")
-                    return alert("이메일 인증을 완료해주세요."), e.preventDefault();
+                    return showAppAlert("이메일 인증을 완료해주세요."), e.preventDefault();
 
-                alert("회원가입이 완료되었습니다!");
-                window.location.href = "/login";
+                showAppAlert("회원가입이 완료되었습니다!", function () {
+                    window.location.href = "/login";
+                });
+                e.preventDefault();
             };
         </script>
 

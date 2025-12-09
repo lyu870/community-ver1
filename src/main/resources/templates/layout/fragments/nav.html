@@ -5,7 +5,7 @@
          xmlns:th="http://www.thymeleaf.org"
          xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 
-        <!-- 좌측: 로고 -->
+        <!-- 좌측 : 로고 -->
         <div class="navbar-left">
             <a href="/" class="logo">Community</a>
         </div>
@@ -18,7 +18,7 @@
             <a href="/news/list">시사뉴스</a>
         </div>
 
-        <!-- 우측: 로그인 or 드롭다운 -->
+        <!-- 우측 : 로그인 or 드롭다운 -->
         <div class="navbar-right">
 
             <!-- 비회원 -->
@@ -28,16 +28,24 @@
 
             <!-- 회원 -->
             <div class="dropdown" sec:authorize="isAuthenticated()">
-                <button class="dropdown-toggle">
-                    <span sec:authentication="principal.displayName"></span>님 반갑습니다 ▼
+                <button class="dropdown-toggle" type="button">
+                    <span class="navbar-username">
+                        <span sec:authentication="principal.displayName"></span>
+                    </span>님 반갑습니다▼
                 </button>
                 <div class="dropdown-menu">
-                    <a href="/my-page">마이페이지</a>
+                    <a href="/my-page"
+                       class="btn btn-ghost btn-full btn-sm dropdown-item">
+                        마이페이지
+                    </a>
 
                     <!-- POST 방식 로그아웃 -->
                     <form id="logoutForm" action="/logout" method="post" style="display:none;">
                     </form>
-                    <a href="#" onclick="document.getElementById('logoutForm').submit()">로그아웃</a>
+                    <a href="#"
+                       class="btn btn-ghost btn-full btn-sm dropdown-item dropdown-logout-link">
+                        로그아웃
+                    </a>
                 </div>
             </div>
 
@@ -55,7 +63,7 @@
             const toggle = document.querySelector(".dropdown-toggle");
             const dropdown = document.querySelector(".dropdown");
 
-            if (toggle) {
+            if (toggle && dropdown) {
                 toggle.addEventListener("click", () => {
                     dropdown.classList.toggle("open");
                 });
@@ -63,6 +71,31 @@
                 document.addEventListener("click", (e) => {
                     if (!dropdown.contains(e.target)) {
                         dropdown.classList.remove("open");
+                    }
+                });
+            }
+
+            // 로그아웃 확인
+            const logoutLink = document.querySelector(".dropdown-logout-link");
+            const logoutForm = document.getElementById("logoutForm");
+
+            if (logoutLink && logoutForm) {
+                logoutLink.addEventListener("click", function (e) {
+                    e.preventDefault();
+
+                    if (window.AppModal && AppModal.confirm) {
+                        AppModal.confirm(
+                            "로그아웃 하시겠습니까?",
+                            function () {
+                                logoutForm.submit();
+                            },
+                            null,
+                            { danger: false }
+                        );
+                    } else {
+                        if (confirm("로그아웃 하시겠습니까?")) {
+                            logoutForm.submit();
+                        }
                     }
                 });
             }

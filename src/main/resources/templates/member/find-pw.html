@@ -29,7 +29,7 @@
 
                 <!-- 1단계 : 아이디 + 이메일 + 인증코드 입력 -->
                 <section id="pwStep1Section">
-                    <p class="text-sm text-center" style="color:#555; margin-bottom:24px;">
+                    <p style="text-align:center; color:#555; margin-bottom:24px;">
                         아이디 확인 후 비밀번호를 재설정 할 수 있습니다.
                     </p>
 
@@ -45,11 +45,11 @@
                                class="auth-input">
 
                         <!-- 이메일 + 코드 전송 버튼 -->
-                        <div class="mt-14">
+                        <div style="margin-top:14px;">
                             <label class="auth-label">
                                 이메일
                             </label>
-                            <div class="flex-row gap-8">
+                            <div style="display:flex;">
                                 <input type="email"
                                        name="email"
                                        placeholder="가입 시 사용한 이메일"
@@ -58,19 +58,20 @@
                                        style="flex:1;">
                                 <button type="button"
                                         id="sendPwCodeBtn"
-                                        class="auth-btn-inline-primary">
+                                        class="auth-btn-inline-primary btn btn-primary btn-sm"
+                                        style="margin-left:8px;">
                                     인증코드 전송
                                 </button>
                             </div>
 
                             <!-- 이메일 관련 메시지 (이메일 입력칸 아랫부분) -->
                             <div id="pwStep1Message"
-                                 class="msg text-sm"
-                                 style="display:none;"></div>
+                                 class="msg"
+                                 style="display:none; text-align:left;"></div>
                         </div>
 
                         <!-- 인증코드 입력 -->
-                        <div class="mt-14">
+                        <div style="margin-top:14px;">
                             <label class="auth-label">
                                 이메일로 받은 인증코드
                             </label>
@@ -83,7 +84,7 @@
 
                         <div style="margin-top:18px;">
                             <button type="submit"
-                                    class="auth-btn-primary">
+                                    class="auth-btn-primary btn btn-primary btn-full">
                                 확인
                             </button>
                         </div>
@@ -92,7 +93,7 @@
 
                 <!-- 2단계 : 새 비밀번호 설정 -->
                 <section id="pwStep2Section" style="display:none;">
-                    <p class="text-center" style="color:#333; margin-bottom:24px;">
+                    <p style="text-align:center; color:#333; margin-bottom:24px;">
                         <span id="pwResetUsername" style="font-weight:bold;"></span> 님<br>
                         새 비밀번호를 입력해 주세요.
                     </p>
@@ -106,7 +107,7 @@
                                required
                                class="auth-input">
 
-                        <div class="mt-14">
+                        <div style="margin-top:14px;">
                             <label class="auth-label">
                                 새 비밀번호 확인
                             </label>
@@ -118,22 +119,22 @@
 
                         <!-- 비밀번호 일치 안내 -->
                         <div id="pwMatchMsg"
-                             class="text-xs mt-4"></div>
+                             style="margin-top:6px; font-size:12px;"></div>
 
-                        <div class="text-xs mt-8" style="color:#777;">
+                        <div style="margin-top:10px; font-size:12px; color:#777;">
                             비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.
                         </div>
 
                         <div style="margin-top:18px;">
                             <button type="submit"
-                                    class="auth-btn-primary">
+                                    class="auth-btn-primary btn btn-primary btn-full">
                                 비밀번호 변경
                             </button>
                         </div>
                     </form>
 
                     <div id="pwStep2Message"
-                         class="msg text-sm"
+                         class="msg"
                          style="display:none; text-align:center;"></div>
                 </section>
 
@@ -143,7 +144,7 @@
                         비밀번호를 변경했습니다.
                     </p>
 
-                    <div class="flex-row gap-10" style="justify-content:center;">
+                    <div style="display:flex; justify-content:center; gap:10px;">
                         <a href="/login"
                            style="flex:1; max-width:160px; text-align:center; padding:10px 0;
                                   border:1px solid #2c7efb; background:#2c7efb; color:#fff;
@@ -197,14 +198,14 @@
                 function setStep1Message(text, isError) {
                     if (!pwStep1Message) return;
                     pwStep1Message.textContent = text || '';
-                    pwStep1Message.className = 'msg text-sm ' + (isError ? 'err' : 'ok');
+                    pwStep1Message.className = 'msg ' + (isError ? 'err' : 'ok');
                     pwStep1Message.style.display = text ? 'block' : 'none';
                 }
 
                 function setStep2Message(text, isError) {
                     if (!pwStep2Message) return;
                     pwStep2Message.textContent = text || '';
-                    pwStep2Message.className = 'msg text-sm ' + (isError ? 'err' : 'ok');
+                    pwStep2Message.className = 'msg ' + (isError ? 'err' : 'ok');
                     pwStep2Message.style.display = text ? 'block' : 'none';
                 }
 

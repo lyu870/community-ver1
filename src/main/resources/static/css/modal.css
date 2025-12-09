@@ -1,0 +1,39 @@
+/* modal.css */
+/* 공통 모달 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-dialog {
+  min-width: 260px;
+  max-width: 360px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+/* 위험 경고용 모달 (상단 강조) */
+.modal-dialog--danger {
+  border-top: 4px solid #d93025;
+}
+
+.modal-message {
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

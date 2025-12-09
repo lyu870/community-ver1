@@ -30,16 +30,16 @@
                     </p>
 
                     <!-- 액션 버튼 영역 -->
-                    <div class="flex-row gap-8 mt-12">
+                    <div style="margin-top:12px; display:flex; gap:8px;">
                         <button type="button"
                                 id="openProfileBtn"
-                                class="auth-btn-secondary"
+                                class="auth-btn-secondary btn btn-ghost"
                                 style="flex:1;">
                             닉네임 변경
                         </button>
                         <button type="button"
                                 id="openPasswordBtn"
-                                class="auth-btn-secondary"
+                                class="auth-btn-secondary btn btn-ghost"
                                 style="flex:1;">
                             비밀번호 변경
                         </button>
@@ -69,15 +69,15 @@
                                placeholder="새 닉네임"
                                required
                                class="auth-input">
-                        <div class="flex-row gap-8 mt-8">
+                        <div style="margin-top:8px; display:flex; gap:8px;">
                             <button type="submit"
-                                    class="auth-btn-primary"
+                                    class="auth-btn-primary btn btn-primary"
                                     style="flex:1;">
                                 변경하기
                             </button>
                             <button type="button"
                                     id="cancelProfileBtn"
-                                    class="auth-btn-secondary"
+                                    class="auth-btn-secondary btn btn-ghost"
                                     style="flex:1;">
                                 취소
                             </button>
@@ -125,19 +125,19 @@
                                class="auth-input">
 
                         <!-- 비밀번호 일치 메시지 영역 (실시간) -->
-                        <div id="passwordMatchMsg" class="text-sm mt-4"></div>
+                        <div id="passwordMatchMsg" style="font-size:0.9rem; margin-top:4px;"></div>
 
-                        <small class="text-xs mt-2">비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.</small>
+                        <small style="margin-top:2px;">비밀번호는 영문 + 숫자 조합 8자 이상이어야 합니다.</small>
 
-                        <div class="flex-row gap-8 mt-8">
+                        <div style="margin-top:8px; display:flex; gap:8px;">
                             <button type="submit"
-                                    class="auth-btn-primary"
+                                    class="auth-btn-primary btn btn-primary"
                                     style="flex:1;">
                                 변경하기
                             </button>
                             <button type="button"
                                     id="cancelPasswordBtn"
-                                    class="auth-btn-secondary"
+                                    class="auth-btn-secondary btn btn-ghost"
                                     style="flex:1;">
                                 취소
                             </button>
@@ -148,12 +148,12 @@
                 <!-- 회원 탈퇴 영역 -->
                 <section id="withdrawSection" style="margin-top:24px;">
                     <h3 style="font-size:1rem; margin-bottom:8px;">회원 탈퇴</h3>
-                    <p class="text-sm" style="color:#555; line-height:1.5;">
+                    <p style="font-size:0.9rem; color:#555; line-height:1.5;">
                         회원탈퇴 시 회원님이 작성한 게시글과 댓글, 회원 정보가 모두 삭제되며<br>
                         삭제된 데이터는 되돌릴 수 없습니다.
                     </p>
 
-                    <div class="mt-8">
+                    <div style="margin-top:8px;">
                         <a href="/my-page/withdraw"
                            style="display:inline-block; width:100%; text-align:center; padding:8px 0;
                                   color:#fff; background:#d93025; border:1px solid #d93025; text-decoration:none; font-size:0.9rem;">

@@ -1,4 +1,4 @@
-// mypage.js
+// /js/mypage.js
 (function () {
 
     const openProfileBtn = document.getElementById('openProfileBtn');
@@ -141,9 +141,9 @@
                         currentNicknameEl.textContent = body.newDisplayName;
                     }
 
-                    alert(body.message || '닉네임이 변경되었습니다.');
-
-                    resetProfileUI();
+                    showAppAlert(body.message || '닉네임이 변경되었습니다.', function () {
+                        resetProfileUI();
+                    });
                 } else {
                     profileError.textContent = body.error || '닉네임 변경에 실패했습니다.';
                     profileError.style.display = 'block';
@@ -175,9 +175,9 @@
                 const body = await res.json();
 
                 if (body.success) {
-                    alert(body.message || '비밀번호가 변경되었습니다.');
-
-                    resetPasswordUI();
+                    showAppAlert(body.message || '비밀번호가 변경되었습니다.', function () {
+                        resetPasswordUI();
+                    });
                 } else {
                     passwordError.textContent = body.error || '비밀번호 변경에 실패했습니다.';
                     passwordError.style.display = 'block';
