@@ -1,4 +1,3 @@
-<!-- layout/fragments/nav.html -->
 <th:block th:fragment="navbar">
 
     <div class="navbar"
@@ -75,6 +74,36 @@
                 });
             }
 
+            // 로그아웃 처리 공통 함수
+            function handleLogout() {
+                const logoutForm = document.getElementById("logoutForm");
+                const path = window.location.pathname || "";
+                const writingPattern = /(notice|item|music|news)\/(write|edit)/;
+                const isWritingPage = writingPattern.test(path);
+
+                if (window.fetch) {
+                    fetch("/logout", {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }).then(function () {
+                    }).catch(function () {
+                        if (logoutForm) {
+                            logoutForm.submit();
+                        }
+                    }).finally(function () {
+                        if (isWritingPage) {
+                            window.location.href = "/";
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                } else if (logoutForm) {
+                    logoutForm.submit();
+                }
+            }
+
             // 로그아웃 확인
             const logoutLink = document.querySelector(".dropdown-logout-link");
             const logoutForm = document.getElementById("logoutForm");
@@ -87,14 +116,14 @@
                         AppModal.confirm(
                             "로그아웃 하시겠습니까?",
                             function () {
-                                logoutForm.submit();
+                                handleLogout();
                             },
                             null,
                             { danger: false }
                         );
                     } else {
                         if (confirm("로그아웃 하시겠습니까?")) {
-                            logoutForm.submit();
+                            handleLogout();
                         }
                     }
                 });

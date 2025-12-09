@@ -6,13 +6,19 @@
 
     function requireLogin(message) {
         const msg = message || '로그인이 필요합니다.\n로그인 페이지로 이동합니다.';
-        if (window.showAppAlert) {
-            showAppAlert(msg, function () {
-                window.location.href = '/login';
-            });
-        } else {
-            alert(msg);
+
+        function goLogin() {
             window.location.href = '/login';
+        }
+
+        if (window.showAppConfirm) {
+            showAppConfirm(msg, goLogin);
+        } else if (window.showDangerConfirm) {
+            showDangerConfirm(msg, goLogin);
+        } else {
+            if (confirm(msg)) {
+                goLogin();
+            }
         }
     }
 
