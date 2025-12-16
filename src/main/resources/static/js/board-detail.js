@@ -1,6 +1,6 @@
 // /js/board-detail.js
 (function () {
-// 스크랩이나 북마크기능 안넣을거면 나중에 아래 위치 메모해둔거 지우기.
+// 스크랩이나 북마크기능 안넣을거면 나중에 아래 위치 메모해둔거 지우기. 주석해놨음.
     const rootMain = document.querySelector('main.board-container');
     const isLoggedIn = !!(rootMain && rootMain.dataset.login === 'true');
 
@@ -21,6 +21,271 @@
             if (confirm(msg)) {
                 goLogin();
             }
+        }
+    }
+
+    function showReplyLoadFail() {
+        if (window.showAppToast) {
+            showAppToast('답글을 불러오지 못했습니다.', {
+                variant: 'warning',
+                duration: 2000
+            });
+        } else {
+            alert('답글을 불러오지 못했습니다.');
+        }
+    }
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) {
+            return '';
+        }
+        return String(str)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function getCommentContext() {
+        const tree = document.querySelector('.comment-tree');
+        if (!tree) {
+            return null;
+        }
+
+        const postId = tree.dataset.postId;
+        const loginUserId = tree.dataset.loginUserId || '';
+        const isAdmin = tree.dataset.isAdmin || '';
+
+        if (!postId) {
+            return null;
+        }
+
+        return {
+            postId: postId,
+            loginUserId: loginUserId,
+            isAdmin: isAdmin
+        };
+    }
+
+    function canEdit(writerId) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return false;
+        }
+
+        if (!ctx.loginUserId) {
+            return false;
+        }
+
+        return String(writerId) === String(ctx.loginUserId);
+    }
+
+    function canDelete(writerId) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return false;
+        }
+
+        const isAdmin = (String(ctx.isAdmin) === 'true');
+
+        if (isAdmin) {
+            return true;
+        }
+
+        if (!ctx.loginUserId) {
+            return false;
+        }
+
+        return String(writerId) === String(ctx.loginUserId);
+    }
+
+    function isEdited(createdAt, updatedAt) {
+        if (!createdAt || !updatedAt) {
+            return false;
+        }
+
+        const c = new Date(createdAt);
+        const u = new Date(updatedAt);
+
+        if (isNaN(c.getTime()) || isNaN(u.getTime())) {
+            return false;
+        }
+
+        return u.getTime() > c.getTime();
+    }
+
+    function renderCommentNode(child, depth) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return '';
+        }
+
+        const id = child.id;
+        const writerId = child.writerId;
+        const writerName = escapeHtml(child.writerDisplayName || '');
+        const contentRaw = (child.content || '');
+        const content = escapeHtml(contentRaw).replaceAll('\n', '<br>');
+
+        const createdAt = child.createdAt;
+        const updatedAt = child.updatedAt;
+
+        const replyCount = Number(child.replyCount || 0);
+        const edited = isEdited(createdAt, updatedAt);
+
+        if (contentRaw === '삭제된 댓글입니다.') {
+            return `
+    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}">
+        <div class="comment-item">
+            <div class="comment-body">
+                <div class="comment-deleted">삭제된 댓글입니다.</div>
+            </div>
+        </div>
+    </div>
+`;
+        }
+
+        const editBtnHtml = canEdit(writerId)
+            ? `
+                        <span>
+                            <button type="button" class="comment-edit-btn" data-comment-id="${id}">수정</button>
+                        </span>
+`
+            : '';
+
+        const deleteBtnHtml = canDelete(writerId)
+            ? `
+                        <span>
+                            <form action="/comment/delete" method="post" class="comment-delete-form" style="display:inline;">
+                                <input type="hidden" name="id" value="${id}">
+                                <input type="hidden" name="postId" value="${ctx.postId}">
+                                <button type="button" class="comment-delete-btn">삭제</button>
+                            </form>
+                        </span>
+`
+            : '';
+
+        const repliesToggleHtml = (replyCount > 0)
+            ? `
+                <div>
+                    <button type="button"
+                            class="comment-replies-toggle"
+                            data-comment-id="${id}"
+                            data-reply-count="${replyCount}"
+                            data-depth="${depth + 1}">
+                        답글 <span>${replyCount}</span>개
+                    </button>
+
+                    <div class="comment-children" data-parent-id="${id}"></div>
+                </div>
+`
+            : '';
+
+        return `
+    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}">
+        <div class="comment-item">
+            <div class="comment-body">
+
+                <div class="comment-writer">
+                    <strong>${writerName}</strong>
+                    <span class="comment-time js-timeago" data-time="${escapeHtml(createdAt || '')}">방금 전</span>
+                    ${edited ? '<span class="comment-edited">(수정됨)</span>' : ''}
+                </div>
+
+                <p class="comment-content" data-comment-id="${id}">${content}</p>
+
+                ${canEdit(writerId) ? `
+                <form class="comment-edit-form"
+                      action="/comment/edit"
+                      method="post"
+                      data-comment-id="${id}"
+                      style="display:none;">
+                    <input type="hidden" name="id" value="${id}">
+                    <input type="hidden" name="postId" value="${ctx.postId}">
+                    <textarea name="content" rows="2">${escapeHtml(contentRaw)}</textarea>
+                    <button type="submit">저장</button>
+                    <button type="button" class="comment-edit-cancel">취소</button>
+                </form>
+                ` : ''}
+
+                <div class="comment-actions">
+                    <button type="button" class="comment-reply-btn" data-comment-id="${id}">답글</button>
+                    ${editBtnHtml}
+                    ${deleteBtnHtml}
+                </div>
+
+                <form class="comment-reply-form"
+                      action="/comment"
+                      method="post"
+                      data-parent-id="${id}"
+                      style="display:none;"
+                      data-require-login="comment">
+                    <input type="hidden" name="postId" value="${ctx.postId}">
+                    <input type="hidden" name="parentId" value="${id}">
+                    <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
+
+                    <div class="comment-reply-actions">
+                        <button type="button" class="comment-reply-cancel">취소</button>
+                        <button type="submit">등록</button>
+                    </div>
+                </form>
+
+                ${repliesToggleHtml}
+
+            </div>
+        </div>
+    </div>
+`;
+    }
+
+    async function loadChildrenIntoBox(parentId, depth, childrenBox) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            showReplyLoadFail();
+            return false;
+        }
+
+        if (childrenBox.dataset.loaded === 'true') {
+            return true;
+        }
+
+        try {
+            const url =
+                '/comment/children?postId=' + encodeURIComponent(ctx.postId)
+                + '&parentId=' + encodeURIComponent(parentId);
+
+            const res = await fetch(url, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!res.ok) {
+                showReplyLoadFail();
+                return false;
+            }
+
+            const list = await res.json();
+
+            if (!Array.isArray(list)) {
+                showReplyLoadFail();
+                return false;
+            }
+
+            const html = list.map(function (child) {
+                return renderCommentNode(child, Number(depth));
+            }).join('');
+
+            childrenBox.innerHTML = html;
+            childrenBox.dataset.loaded = 'true';
+
+            // 새로 붙은 답글들 timeago 즉시 반영
+            updateTimeAgoAll();
+
+            return true;
+
+        } catch (e) {
+            showReplyLoadFail();
+            return false;
         }
     }
 
@@ -208,7 +473,7 @@
     });
 
     // 댓글 수정/답글 토글 공통 처리
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async function (e) {
 
         // 댓글 수정 버튼
         if (e.target.classList.contains('comment-edit-btn')) {
@@ -256,6 +521,50 @@
             return;
         }
 
+        // 답글 n개 보기/숨기기
+        const toggleBtn = e.target.closest('.comment-replies-toggle');
+        if (toggleBtn) {
+            const commentId = toggleBtn.dataset.commentId;
+            const replyCount = toggleBtn.dataset.replyCount;
+            const depth = toggleBtn.dataset.depth;
+
+            const childrenBox = document.querySelector('.comment-children[data-parent-id="' + commentId + '"]');
+            if (!childrenBox) {
+                return;
+            }
+
+            const isOpen = childrenBox.classList.toggle('is-open');
+
+            if (isOpen) {
+                toggleBtn.textContent = '답글 숨기기';
+
+                // 답글이 처음 열릴 때만 서버에서 가져와서 붙이기
+                const ok = await loadChildrenIntoBox(commentId, depth, childrenBox);
+                if (!ok) {
+                    childrenBox.classList.remove('is-open');
+                    toggleBtn.textContent = '답글 ' + replyCount + '개';
+                }
+            } else {
+                toggleBtn.textContent = '답글 ' + replyCount + '개';
+            }
+            return;
+        }
+
+        // 댓글 작성창 취소
+        const cancelBtn = e.target.closest('.js-comment-cancel');
+        if (cancelBtn) {
+            const form = cancelBtn.closest('.js-comment-form');
+            if (!form) {
+                return;
+            }
+            const textarea = form.querySelector('.js-comment-input');
+            if (textarea) {
+                textarea.value = '';
+            }
+            form.classList.remove('comment-form-active');
+            return;
+        }
+
     });
 
     // 댓글 작성/답글: 비로그인 시 공통 로그인 안내
@@ -271,6 +580,21 @@
 
         e.preventDefault();
         requireLogin('댓글 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+    });
+
+    // 댓글 작성창: 포커스 시 버튼 노출
+    document.addEventListener('focusin', function (e) {
+        const input = e.target.closest('.js-comment-input');
+        if (!input) {
+            return;
+        }
+
+        const form = input.closest('.js-comment-form');
+        if (!form) {
+            return;
+        }
+
+        form.classList.add('comment-form-active');
     });
 
     // 댓글 작성시간 “몇분전/몇시간전/며칠전” 표기
@@ -314,9 +638,39 @@
         });
     }
 
+    // 답글 작성 후 자동으로 해당 답글 영역 펼치기
+    function openRepliesFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const parentId = params.get('openReplyParentId');
+        if (!parentId) {
+            return;
+        }
+
+        const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
+        if (toggleBtn) {
+            toggleBtn.click();
+
+            const node = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
+            if (node && node.scrollIntoView) {
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // URL 깔끔하게 정리
+        params.delete('openReplyParentId');
+        const qs = params.toString();
+        const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, nextUrl);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         updateTimeAgoAll();
         setInterval(updateTimeAgoAll, 60000);
+
+        // 답글 작성 후 펼치기
+        openRepliesFromQuery();
     });
 
 })();

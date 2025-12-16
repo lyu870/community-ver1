@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -36,5 +38,16 @@ public class PostRecommendService {
             postRecommendRepository.save(rec);
             return true;  // 추천한 상태
         }
+    }
+
+    // 회원탈퇴 시: 해당 회원이 남긴 추천 기록 전체 삭제
+    @Transactional
+    public void deleteRecommendsForWithdraw(Long memberId) {
+        postRecommendRepository.deleteByMemberId(memberId);
+    }
+
+    // 필요하면 탈퇴 전에 추천 기록 목록이 필요한 경우를 대비
+    public List<PostRecommend> getRecommendsByMemberId(Long memberId) {
+        return postRecommendRepository.findAllByMemberId(memberId);
     }
 }

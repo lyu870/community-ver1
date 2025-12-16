@@ -3,6 +3,7 @@ package com.hello.community.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -83,6 +84,13 @@ public class SecurityConfig {
                         "/js/**",
                         "/images/**",
                         "/webjars/**"
+                ).permitAll()
+
+                // 답글 조회 비로그인도 가능
+                .requestMatchers(HttpMethod.GET,
+                        "/comment/children",
+                        "/comment/children-fragment",
+                        "/children"
                 ).permitAll()
 
                 // notice게시판의 나머지 URL은 관리자만 사용 가능

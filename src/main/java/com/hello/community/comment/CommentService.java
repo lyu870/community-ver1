@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -19,9 +19,34 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostFinder postFinder;
 
+    // 게시글 상세: 루트 댓글만 가져오고, replyCount(전체 답글 수)만 세팅
     public List<Comment> getComment(Long postId) {
         BasePost post = postFinder.findPost(postId);
-        return commentRepository.findAllByPostAndParentIsNullOrderByIdAsc(post);
+
+        List<Comment> roots = commentRepository.findRootByPostWithWriter(post);
+        Map<Long, Long> replyCountMap = buildReplyCountMap(post);
+
+        for (Comment c : roots) {
+            long cnt = replyCountMap.getOrDefault(c.getId(), 0L);
+            c.setReplyCount(cnt);
+        }
+
+        return roots;
+    }
+
+    // lazy 로딩: 특정 부모의 직계 답글만 반환 (각 자식도 replyCount 세팅)
+    public List<Comment> getChildren(Long postId, Long parentId) {
+        BasePost post = postFinder.findPost(postId);
+
+        List<Comment> children = commentRepository.findChildrenByPostAndParentIdWithWriter(post, parentId);
+        Map<Long, Long> replyCountMap = buildReplyCountMap(post);
+
+        for (Comment c : children) {
+            long cnt = replyCountMap.getOrDefault(c.getId(), 0L);
+            c.setReplyCount(cnt);
+        }
+
+        return children;
     }
 
     @Transactional
@@ -90,5 +115,51 @@ public class CommentService {
 
         comment.setContent(newContent);
         comment.setUpdatedAt(LocalDateTime.now());
+    }
+
+    // 답글 "전체 개수" 계산 (해당 댓글의 모든 자손 개수)
+    private Map<Long, Long> buildReplyCountMap(BasePost post) {
+        List<CommentRepository.CommentIdParentView> rows = commentRepository.findIdAndParentIdByPost(post);
+
+        Map<Long, List<Long>> childrenMap = new HashMap<>();
+        Set<Long> allIds = new HashSet<>();
+
+        for (var r : rows) {
+            Long id = r.getId();
+            Long parentId = r.getParentId();
+            allIds.add(id);
+
+            if (parentId != null) {
+                childrenMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(id);
+            }
+        }
+
+        Map<Long, Long> memo = new HashMap<>();
+        for (Long id : allIds) {
+            dfsCount(id, childrenMap, memo);
+        }
+
+        return memo;
+    }
+
+    private long dfsCount(Long id,
+                          Map<Long, List<Long>> childrenMap,
+                          Map<Long, Long> memo) {
+
+        if (memo.containsKey(id)) {
+            return memo.get(id);
+        }
+
+        long sum = 0L;
+        List<Long> children = childrenMap.get(id);
+        if (children != null) {
+            for (Long childId : children) {
+                sum += 1L; // 직계 1개
+                sum += dfsCount(childId, childrenMap, memo); // 자손들
+            }
+        }
+
+        memo.put(id, sum);
+        return sum;
     }
 }

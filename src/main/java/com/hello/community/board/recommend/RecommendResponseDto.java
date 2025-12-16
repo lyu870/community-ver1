@@ -1,4 +1,4 @@
-// /board/recommend/RecommendResponseDto.java
+// RecommendResponseDto.java
 package com.hello.community.board.recommend;
 
 import lombok.AllArgsConstructor;

@@ -5,6 +5,7 @@ import com.hello.community.board.item.ItemService;
 import com.hello.community.board.music.MusicService;
 import com.hello.community.board.news.NewsService;
 import com.hello.community.board.notice.NoticeService;
+import com.hello.community.board.recommend.PostRecommendService;
 import com.hello.community.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,7 @@ public class MemberService {
     private final ItemService itemService;
     private final NewsService newsService;
     private final NoticeService noticeService;
+    private final PostRecommendService postRecommendService;
 
     public void saveMember(String username,
                            String password,
@@ -312,6 +314,9 @@ public class MemberService {
     private void doWithdraw(Member member) {
 
         Long memberId = member.getId();
+
+        // 회원이 남긴 추천 기록 삭제
+        postRecommendService.deleteRecommendsForWithdraw(memberId);
 
         // 회원이 작성한 댓글/대댓글 트리 전체 삭제
         commentService.deleteCommentsForWithdraw(memberId);

@@ -45,6 +45,10 @@ public class Comment {
     // 댓글 수정시간
     private LocalDateTime updatedAt;
 
+    // 댓글의 전체 답글 수 (lazy 로딩용, DB 컬럼 아님)
+    @Transient
+    private long replyCount;
+
     // 저장 시 자동 시간 세팅
     @PrePersist
     public void prePersist() {
