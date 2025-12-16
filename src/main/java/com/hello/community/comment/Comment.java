@@ -6,6 +6,8 @@ import com.hello.community.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,30 @@ public class Comment {
     // 자식 댓글 리스트
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Comment> children = new ArrayList<>();
+
+    // 댓글 작성시간
+    private LocalDateTime createdAt;
+
+    // 댓글 수정시간
+    private LocalDateTime updatedAt;
+
+    // 저장 시 자동 시간 세팅
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = now;
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = now;
+        }
+    }
+
+    // 수정 시 자동 시간 세팅
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     // 댓글 생성 메서드 (편의성) → 생성때마다 setPost(), setWriter()호출 안하게해줌.
     public static Comment create(BasePost post, Member writer, String content, Comment parent) {

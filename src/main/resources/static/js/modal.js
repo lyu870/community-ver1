@@ -15,17 +15,41 @@
     let okHandler = null;
     let cancelHandler = null;
 
-    function setDanger(isDanger) {
+    function setVariant(variant) {
         if (!dialog) return;
-        if (isDanger) dialog.classList.add('modal-dialog--danger');
-        else dialog.classList.remove('modal-dialog--danger');
+
+        dialog.classList.remove(
+            'modal-dialog--danger',
+            'modal-dialog--info',
+            'modal-dialog--warning',
+            'modal-dialog--success'
+        );
+
+        if (!variant) {
+            return;
+        }
+
+        if (variant === 'danger') {
+            dialog.classList.add('modal-dialog--danger');
+        } else if (variant === 'info') {
+            dialog.classList.add('modal-dialog--info');
+        } else if (variant === 'warning') {
+            dialog.classList.add('modal-dialog--warning');
+        } else if (variant === 'success') {
+            dialog.classList.add('modal-dialog--success');
+        }
+    }
+
+    // 기존 코드 호환용
+    function setDanger(isDanger) {
+        setVariant(isDanger ? 'danger' : null);
     }
 
     function closeModal() {
         overlay.style.display = 'none';
         okHandler = null;
         cancelHandler = null;
-        setDanger(false);
+        setVariant(null);
     }
 
     okBtn.addEventListener('click', function () {
@@ -57,20 +81,27 @@
             cancelBtn.style.display = 'none';
             okHandler = typeof onOk === 'function' ? onOk : null;
             cancelHandler = null;
-            setDanger(false);
+            setVariant(null);
             overlay.style.display = 'flex';
         },
 
         // 확인/취소 선택 모달
-        // options: { danger: true } 형태로 전달하면 빨간 상단 라인 표시
+        //  danger: true, variant: 'info' | 'warning'|  'success' 등
         confirm: function (text, onOk, onCancel, options) {
             messageEl.textContent = text || '';
             cancelBtn.style.display = 'inline-flex';
             okHandler = typeof onOk === 'function' ? onOk : null;
             cancelHandler = typeof onCancel === 'function' ? onCancel : null;
 
+            const variantFromOption = options && options.variant ? options.variant : null;
             const isDanger = options && options.danger === true;
-            setDanger(isDanger);
+            const finalVariant = variantFromOption || (isDanger ? 'danger' : null);
+
+            if (finalVariant) {
+                setVariant(finalVariant);
+            } else {
+                setVariant(null);
+            }
 
             overlay.style.display = 'flex';
         },

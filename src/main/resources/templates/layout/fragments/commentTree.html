@@ -33,6 +33,18 @@
             <!-- 작성자 -->
             <div class="comment-writer">
                 <strong th:text="${comment.writer.displayName}">작성자</strong>
+
+                <span class="comment-time js-timeago"
+                      th:attr="data-time=${#temporals.format(comment.createdAt, 'yyyy-MM-dd''T''HH:mm:ss')}"
+                      style="margin-left:8px; font-size:0.85rem; color:#888;">
+                    방금 전
+                </span>
+
+                <span class="comment-edited"
+                      th:if="${comment.updatedAt != null and comment.createdAt != null and comment.updatedAt.isAfter(comment.createdAt)}"
+                      style="margin-left:6px; font-size:0.8rem; color:#999;">
+                    (수정됨)
+                </span>
             </div>
 
             <!-- 댓글 내용 -->

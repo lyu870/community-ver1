@@ -1,3 +1,4 @@
+<!-- layout/fragments/nav.html -->
 <th:block th:fragment="navbar">
 
     <div class="navbar"
@@ -81,6 +82,14 @@
                 const writingPattern = /(notice|item|music|news)\/(write|edit)/;
                 const isWritingPage = writingPattern.test(path);
 
+                function goNext() {
+                    if (isWritingPage) {
+                        window.location.href = "/";
+                    } else {
+                        window.location.reload();
+                    }
+                }
+
                 if (window.fetch) {
                     fetch("/logout", {
                         method: "POST",
@@ -93,10 +102,14 @@
                             logoutForm.submit();
                         }
                     }).finally(function () {
-                        if (isWritingPage) {
-                            window.location.href = "/";
+                        if (window.showAppToast) {
+                            showAppToast("로그아웃 되었습니다.", {
+                                variant: "info",
+                                duration: 2000
+                            });
+                            setTimeout(goNext, 2000);
                         } else {
-                            window.location.reload();
+                            goNext();
                         }
                     });
                 } else if (logoutForm) {
@@ -119,7 +132,7 @@
                                 handleLogout();
                             },
                             null,
-                            { danger: false }
+                            { variant: "warning" }
                         );
                     } else {
                         if (confirm("로그아웃 하시겠습니까?")) {

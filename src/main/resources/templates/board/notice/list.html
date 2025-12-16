@@ -4,12 +4,13 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
-layout:decorate="~{layout/fragments/base}">
+      layout:decorate="~{layout/fragments/base}">
 
 <body>
 <div layout:fragment="content">
 
-    <main class="board-container board board-notice">
+    <main class="board-container board board-notice"
+          th:attr="data-login=${loginUserId != null}">
 
         <!-- 상단: 검색 + 글쓰기 -->
         <div class="board-list-top">
@@ -28,21 +29,24 @@ layout:decorate="~{layout/fragments/base}">
                    class="board-reset-link">전체 보기</a>
             </form>
 
-            <!-- 글쓰기 : 관리자만 -->
-            <a href="/notice/write" class="board-write-btn"
-               sec:authorize="hasRole('ADMIN')">🖋 글쓰기</a>
+            <div class="board-list-actions">
+                <!-- 글쓰기 : 관리자만 -->
+                <a href="/notice/write"
+                   class="btn-search board-action-btn"
+                   sec:authorize="hasRole('ADMIN')">🖋 글쓰기</a>
 
-            <!-- 내가 쓴 글 / 전체 글 토글 -->
-            <a th:if="${loginUserId != null and !#bools.isTrue(myMode)}"
-               th:href="@{|/notice/my/page/1|}"
-               class="board-reset-link">
-                내가 쓴 글
-            </a>
-            <a th:if="${loginUserId != null and #bools.isTrue(myMode)}"
-               th:href="@{|/notice/list/page/1|}"
-               class="board-reset-link">
-                전체 글
-            </a>
+                <!-- 내가 쓴 글 / 전체 글 토글 -->
+                <a th:if="${loginUserId != null and !#bools.isTrue(myMode)}"
+                   th:href="@{|/notice/my/page/1|}"
+                   class="btn-search board-action-btn">
+                    내가 쓴 글
+                </a>
+                <a th:if="${loginUserId != null and #bools.isTrue(myMode)}"
+                   th:href="@{|/notice/list/page/1|}"
+                   class="btn-search board-action-btn">
+                    전체 글
+                </a>
+            </div>
         </div>
 
         <!-- 제목 -->

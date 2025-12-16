@@ -24,6 +24,19 @@
   border-top: 4px solid #d93025;
 }
 
+/* 정보/주의/성공 모달 상단 강조 */
+.modal-dialog--info {
+  border-top: 4px solid #2c7efb;
+}
+
+.modal-dialog--warning {
+  border-top: 4px solid #f9a825;
+}
+
+.modal-dialog--success {
+  border-top: 4px solid #2e7d32;
+}
+
 .modal-message {
   font-size: 0.95rem;
   color: #333;
@@ -32,8 +45,55 @@
   word-break: keep-all;
 }
 
+/* 타입별 아이콘 (위쪽에 작게 표시) */
+.modal-dialog--info .modal-message::before,
+.modal-dialog--warning .modal-message::before,
+.modal-dialog--danger .modal-message::before,
+.modal-dialog--success .modal-message::before {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+}
+
+.modal-dialog--info .modal-message::before {
+  content: "ℹ";
+  color: #2c7efb;
+}
+
+.modal-dialog--warning .modal-message::before {
+  content: "!";
+  color: #f9a825;
+}
+
+.modal-dialog--danger .modal-message::before {
+  content: "!";
+  color: #d93025;
+}
+
+.modal-dialog--success .modal-message::before {
+  content: "✓";
+  color: #2e7d32;
+}
+
 .modal-actions {
   display: flex;
   justify-content: center;
   gap: 8px;
+}
+
+/* 상단 토스트 */
+.app-toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #333333;
+  color: #ffffff;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  z-index: 200;
+  display: none;
+  white-space: nowrap;
 }

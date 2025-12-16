@@ -47,6 +47,9 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-search:hover {
@@ -79,6 +82,19 @@
 .board-reset-link {
   font-size: 0.9rem;
   margin-left: 6px;
+}
+
+/* 글쓰기/내가쓴글 버튼 오른쪽 정렬용 */
+.board-list-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 글쓰기/내가쓴글 버튼(a태그)도 검색 버튼 스타일 사용 */
+.board-action-btn {
+  text-decoration: none;
 }
 
 /* 게시판 테이블형 리스트 */

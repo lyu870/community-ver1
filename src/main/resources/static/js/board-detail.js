@@ -1,6 +1,6 @@
 // /js/board-detail.js
 (function () {
-
+// 스크랩이나 북마크기능 안넣을거면 나중에 아래 위치 메모해둔거 지우기.
     const rootMain = document.querySelector('main.board-container');
     const isLoggedIn = !!(rootMain && rootMain.dataset.login === 'true');
 
@@ -11,7 +11,9 @@
             window.location.href = '/login';
         }
 
-        if (window.showAppConfirm) {
+        if (window.showInfoConfirm) {
+            showInfoConfirm(msg, goLogin);
+        } else if (window.showAppConfirm) {
             showAppConfirm(msg, goLogin);
         } else if (window.showDangerConfirm) {
             showDangerConfirm(msg, goLogin);
@@ -40,6 +42,27 @@
             handleOrder(actionBtn);
         }
         // 향후 scrap / bookmark 등도 여기서 분기 ㄱㄱ
+    });
+
+    // 로그인 필요 링크 (글쓰기 / 내가 쓴 글 등)
+    document.addEventListener('click', function (e) {
+        const loginLink = e.target.closest('.js-login-required-link');
+        if (!loginLink) {
+            return;
+        }
+
+        // 로그인 상태면 그냥 통과
+        if (isLoggedIn) {
+            return;
+        }
+
+        // 비로그인 상태면 기본 이동 막고 로그인 안내
+        e.preventDefault();
+
+        const msg = loginLink.dataset.loginMessage
+            || '로그인이 필요한 기능입니다.\n로그인 페이지로 이동합니다.';
+
+        requireLogin(msg);
     });
 
     // 추천 처리
@@ -248,6 +271,52 @@
 
         e.preventDefault();
         requireLogin('댓글 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+    });
+
+    // 댓글 작성시간 “몇분전/몇시간전/며칠전” 표기
+    function formatTimeAgo(fromDate, nowDate) {
+        const diffMs = nowDate.getTime() - fromDate.getTime();
+        if (diffMs < 0) {
+            return '방금 전';
+        }
+
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return '방금 전';
+        if (diffMin < 60) return diffMin + '분 전';
+
+        const diffHour = Math.floor(diffMin / 60);
+        if (diffHour < 24) return diffHour + '시간 전';
+
+        const diffDay = Math.floor(diffHour / 24);
+        return diffDay + '일 전';
+    }
+
+    function updateTimeAgoAll() {
+        const els = document.querySelectorAll('.js-timeago[data-time]');
+        if (!els.length) {
+            return;
+        }
+
+        const now = new Date();
+
+        els.forEach(function (el) {
+            const raw = el.getAttribute('data-time');
+            if (!raw) {
+                return;
+            }
+
+            const dt = new Date(raw);
+            if (isNaN(dt.getTime())) {
+                return;
+            }
+
+            el.textContent = formatTimeAgo(dt, now);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateTimeAgoAll();
+        setInterval(updateTimeAgoAll, 60000);
     });
 
 })();
