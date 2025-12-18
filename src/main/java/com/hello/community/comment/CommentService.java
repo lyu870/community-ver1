@@ -36,7 +36,7 @@ public class CommentService {
         return roots;
     }
 
-    // lazy 로딩: 특정 부모의 직계 답글만 반환 (각 자식댓글도 replyCount 세팅ㅇ)
+    // lazy 로딩: 특정 부모의 직계 답글만 반환 (각 자식댓글도 replyCount 세팅)
     public List<Comment> getChildren(Long postId, Long parentId) {
         BasePost post = postFinder.findPost(postId);
 
@@ -74,7 +74,7 @@ public class CommentService {
     // 답글/댓글 수정 후 "어느 답글보기(parent)를 열어야 하는지" 판단용
     public Long findParentId(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다.")); // 댓글/게시글 저장 시 사용
 
         Comment parent = comment.getParent();
         if (parent == null) {
@@ -84,19 +84,15 @@ public class CommentService {
         return parent.getId();
     }
 
-    // 답글/대대댓글까지 포함: root -> ... -> targetId(포함) 경로 생성
-    public List<Long> buildAncestorPathInclusive(Long targetId) {
-        if (targetId == null) {
-            return List.of();
-        }
+    // openReplyPath용: parentId의 조상 경로(root -> ... -> parentId) 생성
+    public List<Long> buildAncestorPathInclusive(Long parentId) {
+        Comment current = commentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다.")); // 댓글/게시글 저장 시 사용
 
         List<Long> path = new ArrayList<>();
-        Comment cur = commentRepository.findById(targetId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
-
-        while (cur != null) {
-            path.add(cur.getId());
-            cur = cur.getParent();
+        while (current != null) {
+            path.add(current.getId());
+            current = current.getParent();
         }
 
         Collections.reverse(path);
@@ -111,7 +107,7 @@ public class CommentService {
         Comment parent = null;
         if (parentId != null) {
             parent = commentRepository.findById(parentId)
-                    .orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다.")); // 댓글/게시글 저장 시 사용
         }
 
         Comment c = Comment.create(post, writer, content, parent);
@@ -124,7 +120,7 @@ public class CommentService {
     public void deleteComment(Long commentId, Member loginUser) {
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다.")); // 댓글/게시글 저장 시 사용
 
         if (!comment.getWriter().getId().equals(loginUser.getId())) {
             throw new IllegalArgumentException("본인이 작성한 댓글만 삭제 가능합니다.");
@@ -159,7 +155,7 @@ public class CommentService {
     public void editComment(Long commentId, Member loginUser, String newContent) {
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다.")); // 댓글/게시글 저장 시 사용
 
         if (!comment.getWriter().getId().equals(loginUser.getId())) {
             throw new IllegalArgumentException("본인이 작성한 댓글만 수정 가능합니다.");

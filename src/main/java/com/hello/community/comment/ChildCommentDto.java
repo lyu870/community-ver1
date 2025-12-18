@@ -1,8 +1,6 @@
 // ChildCommentDto.java
 package com.hello.community.comment;
 
-import com.hello.community.comment.Comment;
-
 public class ChildCommentDto {
 
     private Long id;
@@ -29,7 +27,6 @@ public class ChildCommentDto {
         this.replyCount = replyCount;
     }
 
-    // 댓글/게시글 저장 시 사용
     public static ChildCommentDto from(Comment c) {
         Long writerId = (c.getWriter() != null) ? c.getWriter().getId() : null;
         String writerDisplayName = (c.getWriter() != null) ? c.getWriter().getDisplayName() : "";

@@ -5,14 +5,14 @@ import java.util.List;
 
 public class ChildrenPageResponseDto {
 
-    private List<com.hello.community.comment.ChildCommentDto> items;
+    private List<ChildCommentDto> items;
     private int page;
     private int size;
     private long totalElements;
     private int totalPages;
     private boolean hasNext;
 
-    public ChildrenPageResponseDto(List<com.hello.community.comment.ChildCommentDto> items,
+    public ChildrenPageResponseDto(List<ChildCommentDto> items,
                                    int page,
                                    int size,
                                    long totalElements,
@@ -26,7 +26,7 @@ public class ChildrenPageResponseDto {
         this.hasNext = hasNext;
     }
 
-    public List<com.hello.community.comment.ChildCommentDto> getItems() {
+    public List<ChildCommentDto> getItems() {
         return items;
     }
 

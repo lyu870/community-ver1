@@ -203,11 +203,8 @@
                     <input type="hidden" name="id" value="${id}">
                     <input type="hidden" name="postId" value="${ctx.postId}">
                     <textarea name="content" rows="2">${escapeHtml(contentRaw)}</textarea>
-
-                    <div class="comment-reply-actions">
-                        <button type="button" class="btn btn-ghost btn-sm comment-edit-cancel">취소</button>
-                        <button type="submit" class="btn btn-primary btn-sm">저장</button>
-                    </div>
+                    <button type="submit">저장</button>
+                    <button type="button" class="comment-edit-cancel">취소</button>
                 </form>
                 ` : ''}
 
@@ -228,8 +225,8 @@
                     <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
 
                     <div class="comment-reply-actions">
-                        <button type="button" class="btn btn-ghost btn-sm comment-reply-cancel">취소</button>
-                        <button type="submit" class="btn btn-primary btn-sm">등록</button>
+                        <button type="button" class="comment-reply-cancel">취소</button>
+                        <button type="submit">등록</button>
                     </div>
                 </form>
 
@@ -282,7 +279,7 @@
 
         try {
             const url =
-                '/comment/children?postId=' + encodeURIComponent(ctx.postId)
+                '/api/comment/children?postId=' + encodeURIComponent(ctx.postId)
                 + '&parentId=' + encodeURIComponent(parentId)
                 + '&page=' + encodeURIComponent(targetPage)
                 + '&size=' + encodeURIComponent(size);
@@ -333,43 +330,6 @@
         } catch (e) {
             showReplyLoadFail();
             return false;
-        }
-    }
-
-    // openReplyPath 경로를 순서대로 열기 (로드 포함)
-    async function openRepliesByPath(pathIds, invalidParentId) {
-        if (!Array.isArray(pathIds) || pathIds.length === 0) {
-            return;
-        }
-
-        for (let i = 0; i < pathIds.length; i++) {
-            const id = String(pathIds[i]);
-
-            const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + id + '"]');
-            const childrenBox = document.querySelector('.comment-children[data-parent-id="' + id + '"]');
-
-            if (!toggleBtn || !childrenBox) {
-                return;
-            }
-
-            // 답글 작성 후 최신 로딩을 위한 캐시 무효화
-            if (invalidParentId && String(invalidParentId) === id) {
-                invalidateChildrenCache(id);
-            }
-
-            if (!childrenBox.classList.contains('is-open')) {
-                childrenBox.classList.add('is-open');
-                toggleBtn.textContent = '답글 숨기기';
-            }
-
-            if (childrenBox.dataset.loaded !== 'true') {
-                const depth = toggleBtn.dataset.depth;
-                const ok = await loadChildrenIntoBox(id, depth, childrenBox, 0);
-                if (!ok) {
-                    childrenBox.classList.remove('is-open');
-                    return;
-                }
-            }
         }
     }
 
@@ -566,7 +526,7 @@
             const formEl = document.querySelector('.comment-edit-form[data-comment-id="' + id + '"]');
             if (contentEl && formEl) {
                 contentEl.style.display = 'none';
-                formEl.style.display = 'block';
+                formEl.style.display = 'flex';
             }
             return;
         }
@@ -759,68 +719,38 @@
         });
     }
 
-    // 답글/수정 후 자동 열기 + 자동 스크롤
-    async function openRepliesFromQuery() {
+    // 답글 작성 후 자동으로 해당 답글 영역 펼치기
+    function openRepliesFromQuery() {
         const params = new URLSearchParams(window.location.search);
+        const parentId = params.get('openReplyParentId');
+        if (!parentId) {
+            return;
+        }
 
-        const rawPath = params.get('openReplyPath');
-        const focusCommentId = params.get('focusCommentId');
-        const parentIdLegacy = params.get('openReplyParentId');
-
-        let invalidParentId = null;
+        // 답글 작성 후에는 해당 parent 답글을 최신으로 다시 로딩하도록 캐시 무효화
         try {
-            invalidParentId = sessionStorage.getItem('invalidateReplyParentId');
+            const invalidParentId = sessionStorage.getItem('invalidateReplyParentId');
+            if (invalidParentId && String(invalidParentId) === String(parentId)) {
+                invalidateChildrenCache(parentId);
+                sessionStorage.removeItem('invalidateReplyParentId');
+            }
         } catch (err) {
         }
 
-        // openReplyPath 우선 처리 (대대댓글 포함)
-        if (rawPath) {
-            const pathIds = rawPath.split(',')
-                .map(function (v) { return v.trim(); })
-                .filter(function (v) { return v !== ''; });
+        const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
+        if (toggleBtn) {
+            toggleBtn.click();
 
-            await openRepliesByPath(pathIds, invalidParentId);
-
-            if (invalidParentId) {
-                try {
-                    sessionStorage.removeItem('invalidateReplyParentId');
-                } catch (err) {
-                }
-            }
-        } else if (parentIdLegacy) {
-            // 기존 openReplyParentId 호환
-            const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentIdLegacy + '"]');
-            const childrenBox = document.querySelector('.comment-children[data-parent-id="' + parentIdLegacy + '"]');
-
-            if (toggleBtn && childrenBox) {
-                if (!childrenBox.classList.contains('is-open')) {
-                    childrenBox.classList.add('is-open');
-                    toggleBtn.textContent = '답글 숨기기';
-                }
-
-                if (childrenBox.dataset.loaded !== 'true') {
-                    const depth = toggleBtn.dataset.depth;
-                    await loadChildrenIntoBox(parentIdLegacy, depth, childrenBox, 0);
-                }
-            }
-        }
-
-        // 수정/작성 후 해당 댓글로 자동 스크롤
-        if (focusCommentId) {
-            const node = document.querySelector('.comment-node[data-comment-id="' + focusCommentId + '"]');
+            const node = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
             if (node && node.scrollIntoView) {
                 node.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
         // URL 깔끔하게 정리
-        params.delete('openReplyPath');
         params.delete('openReplyParentId');
-        params.delete('focusCommentId');
-
         const qs = params.toString();
         const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
-
         if (window.history && window.history.replaceState) {
             window.history.replaceState({}, document.title, nextUrl);
         }
@@ -830,7 +760,7 @@
         updateTimeAgoAll();
         setInterval(updateTimeAgoAll, 60000);
 
-        // 답글/수정 후 펼치기 + 스크롤
+        // 답글 작성 후 펼치기
         openRepliesFromQuery();
     });
 

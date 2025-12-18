@@ -5,11 +5,8 @@ import com.hello.community.board.common.PostFinder;
 import com.hello.community.member.CustomUser;
 import com.hello.community.member.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
@@ -102,44 +99,6 @@ public class CommentController {
         return "redirect:" + detailUrl + "?focusCommentId=" + id;
     }
 
-    // 답글 lazy 로딩: JSON API방식 (페이징)
-    @GetMapping({"/comment/children", "/children"})
-    @ResponseBody
-    public ResponseEntity<ChildrenPageResponseDto> loadChildrenJson(@RequestParam Long postId,
-                                                                    @RequestParam Long parentId,
-                                                                    @RequestParam(defaultValue = "0") int page,
-                                                                    @RequestParam(defaultValue = "10") int size) {
-
-        if (size < 1) {
-            size = 10;
-        }
-
-        if (size > 50) {
-            size = 50;
-        }
-
-        if (page < 0) {
-            page = 0;
-        }
-
-        Page<Comment> childrenPage = commentService.getChildrenPage(postId, parentId, page, size);
-
-        List<ChildCommentDto> items = childrenPage.getContent().stream()
-                .map(ChildCommentDto::from)
-                .toList();
-
-        ChildrenPageResponseDto body = new ChildrenPageResponseDto(
-                items,
-                childrenPage.getNumber(),
-                childrenPage.getSize(),
-                childrenPage.getTotalElements(),
-                childrenPage.getTotalPages(),
-                childrenPage.hasNext()
-        );
-
-        return ResponseEntity.ok(body);
-    }
-
     // 답글 lazy 로딩: fragment방식
     @GetMapping("/comment/children-fragment")
     public String loadChildrenFragment(@RequestParam Long postId,
@@ -147,7 +106,7 @@ public class CommentController {
                                        @RequestParam int depth,
                                        @RequestParam(required = false) Long loginUserId,
                                        @RequestParam(required = false) boolean isAdmin,
-                                       Model model) {
+                                       org.springframework.ui.Model model) {
 
         var children = commentService.getChildren(postId, parentId);
 
