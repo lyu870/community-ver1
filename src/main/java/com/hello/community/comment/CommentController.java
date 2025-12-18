@@ -5,12 +5,15 @@ import com.hello.community.board.common.PostFinder;
 import com.hello.community.member.CustomUser;
 import com.hello.community.member.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Controller
@@ -31,16 +34,25 @@ public class CommentController {
         }
 
         Member writer = user.getMember();
-        commentService.addComment(postId, writer, content, parentId);
+        Long savedCommentId = commentService.addComment(postId, writer, content, parentId);
 
         String detailUrl = postFinder.buildDetailUrl(postId);
 
-        // 답글 작성 후에는 해당 부모댓글의 답글이 펼쳐진 상태로 리로드
+        // 답글/대대댓글 작성 후: root -> ... -> parentId 경로를 열고, 새 댓글로 스크롤
         if (parentId != null) {
-            return "redirect:" + detailUrl + "?openReplyParentId=" + parentId;
+            List<Long> path = commentService.buildAncestorPathInclusive(parentId);
+            String pathParam = URLEncoder.encode(
+                    String.join(",", path.stream().map(String::valueOf).toList()),
+                    StandardCharsets.UTF_8
+            );
+
+            return "redirect:" + detailUrl
+                    + "?openReplyPath=" + pathParam
+                    + "&focusCommentId=" + savedCommentId;
         }
 
-        return "redirect:" + detailUrl;
+        // 루트 댓글 작성 후: 작성한 댓글로 스크롤
+        return "redirect:" + detailUrl + "?focusCommentId=" + savedCommentId;
     }
 
     @PostMapping("/comment/delete")
@@ -71,20 +83,59 @@ public class CommentController {
         Member writer = user.getMember();
         commentService.editComment(id, writer, content);
 
-        return "redirect:" + postFinder.buildDetailUrl(postId);
+        String detailUrl = postFinder.buildDetailUrl(postId);
+
+        // 댓글/답글 수정 후: 수정한 댓글로 자동 스크롤
+        Long parentId = commentService.findParentId(id);
+        if (parentId != null) {
+            List<Long> path = commentService.buildAncestorPathInclusive(parentId);
+            String pathParam = URLEncoder.encode(
+                    String.join(",", path.stream().map(String::valueOf).toList()),
+                    StandardCharsets.UTF_8
+            );
+
+            return "redirect:" + detailUrl
+                    + "?openReplyPath=" + pathParam
+                    + "&focusCommentId=" + id;
+        }
+
+        return "redirect:" + detailUrl + "?focusCommentId=" + id;
     }
 
-    // 답글 lazy 로딩: JSON API 방식
+    // 답글 lazy 로딩: JSON API방식 (페이징)
     @GetMapping({"/comment/children", "/children"})
     @ResponseBody
-    public ResponseEntity<List<ChildCommentDto>> loadChildrenJson(@RequestParam Long postId,
-                                                                  @RequestParam Long parentId) {
+    public ResponseEntity<ChildrenPageResponseDto> loadChildrenJson(@RequestParam Long postId,
+                                                                    @RequestParam Long parentId,
+                                                                    @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "10") int size) {
 
-        var children = commentService.getChildren(postId, parentId);
+        if (size < 1) {
+            size = 10;
+        }
 
-        List<ChildCommentDto> body = children.stream()
+        if (size > 50) {
+            size = 50;
+        }
+
+        if (page < 0) {
+            page = 0;
+        }
+
+        Page<Comment> childrenPage = commentService.getChildrenPage(postId, parentId, page, size);
+
+        List<ChildCommentDto> items = childrenPage.getContent().stream()
                 .map(ChildCommentDto::from)
                 .toList();
+
+        ChildrenPageResponseDto body = new ChildrenPageResponseDto(
+                items,
+                childrenPage.getNumber(),
+                childrenPage.getSize(),
+                childrenPage.getTotalElements(),
+                childrenPage.getTotalPages(),
+                childrenPage.hasNext()
+        );
 
         return ResponseEntity.ok(body);
     }
@@ -109,7 +160,6 @@ public class CommentController {
         return "layout/fragments/commentTree :: childrenList";
     }
 
-    // 답글 JSON 반환용 DTO
     static class ChildCommentDto {
 
         private Long id;
@@ -179,6 +229,54 @@ public class CommentController {
 
         public long getReplyCount() {
             return replyCount;
+        }
+    }
+
+    static class ChildrenPageResponseDto {
+
+        private List<ChildCommentDto> items;
+        private int page;
+        private int size;
+        private long totalElements;
+        private int totalPages;
+        private boolean hasNext;
+
+        public ChildrenPageResponseDto(List<ChildCommentDto> items,
+                                       int page,
+                                       int size,
+                                       long totalElements,
+                                       int totalPages,
+                                       boolean hasNext) {
+            this.items = items;
+            this.page = page;
+            this.size = size;
+            this.totalElements = totalElements;
+            this.totalPages = totalPages;
+            this.hasNext = hasNext;
+        }
+
+        public List<ChildCommentDto> getItems() {
+            return items;
+        }
+
+        public int getPage() {
+            return page;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public long getTotalElements() {
+            return totalElements;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public boolean isHasNext() {
+            return hasNext;
         }
     }
 }

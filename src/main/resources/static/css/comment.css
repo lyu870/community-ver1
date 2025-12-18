@@ -123,9 +123,10 @@
 }
 
 /* 답글/수정/댓글 폼 버튼 스타일 통일 */
-.comment-form-actions button,
-.comment-edit-form button,
-.comment-reply-actions button {
+/* btn 시스템(.btn, .btn-primary 등)을 사용하는 버튼은 덮어쓰지 않음 */
+.comment-form-actions button:not(.btn),
+.comment-edit-form button:not(.btn),
+.comment-reply-actions button:not(.btn) {
   height: 32px;
   padding: 0 12px;
   border-radius: 16px;
@@ -133,11 +134,12 @@
   background: #fff;
   cursor: pointer;
   font-size: 0.85rem;
+  color: #333;
 }
 
-.comment-form-actions button:hover,
-.comment-edit-form button:hover,
-.comment-reply-actions button:hover {
+.comment-form-actions button:not(.btn):hover,
+.comment-edit-form button:not(.btn):hover,
+.comment-reply-actions button:not(.btn):hover {
   background: #f2f2f2;
 }
 

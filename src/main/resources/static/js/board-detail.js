@@ -1,6 +1,6 @@
 // /js/board-detail.js
 (function () {
-// 스크랩이나 북마크기능 안넣을거면 나중에 아래 위치 메모해둔거 지우기. 주석해놨음.
+// 스크랩이나 북마크기능 안넣을거면 나중에 아래 위치 메모해둔거 지우기.
     const rootMain = document.querySelector('main.board-container');
     const isLoggedIn = !!(rootMain && rootMain.dataset.login === 'true');
 
@@ -203,8 +203,11 @@
                     <input type="hidden" name="id" value="${id}">
                     <input type="hidden" name="postId" value="${ctx.postId}">
                     <textarea name="content" rows="2">${escapeHtml(contentRaw)}</textarea>
-                    <button type="submit">저장</button>
-                    <button type="button" class="comment-edit-cancel">취소</button>
+
+                    <div class="comment-reply-actions">
+                        <button type="button" class="btn btn-ghost btn-sm comment-edit-cancel">취소</button>
+                        <button type="submit" class="btn btn-primary btn-sm">저장</button>
+                    </div>
                 </form>
                 ` : ''}
 
@@ -225,8 +228,8 @@
                     <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
 
                     <div class="comment-reply-actions">
-                        <button type="button" class="comment-reply-cancel">취소</button>
-                        <button type="submit">등록</button>
+                        <button type="button" class="btn btn-ghost btn-sm comment-reply-cancel">취소</button>
+                        <button type="submit" class="btn btn-primary btn-sm">등록</button>
                     </div>
                 </form>
 
@@ -238,21 +241,51 @@
 `;
     }
 
-    async function loadChildrenIntoBox(parentId, depth, childrenBox) {
+    function removeMoreButton(childrenBox) {
+        const moreBtn = childrenBox.querySelector('.comment-children-more');
+        if (moreBtn) {
+            moreBtn.remove();
+        }
+    }
+
+    function renderMoreButton(parentId, nextPage, depth, childrenBox) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'comment-children-more';
+        btn.dataset.parentId = parentId;
+        btn.dataset.nextPage = String(nextPage);
+        btn.dataset.depth = String(depth);
+        btn.textContent = '답글 더보기';
+        childrenBox.appendChild(btn);
+    }
+
+    function invalidateChildrenCache(parentId) {
+        const childrenBox = document.querySelector('.comment-children[data-parent-id="' + parentId + '"]');
+        if (!childrenBox) {
+            return;
+        }
+
+        childrenBox.dataset.loaded = '';
+        childrenBox.dataset.pageMax = '';
+        childrenBox.innerHTML = '';
+    }
+
+    async function loadChildrenIntoBox(parentId, depth, childrenBox, page) {
         const ctx = getCommentContext();
         if (!ctx) {
             showReplyLoadFail();
             return false;
         }
 
-        if (childrenBox.dataset.loaded === 'true') {
-            return true;
-        }
+        const targetPage = (typeof page === 'number') ? page : 0;
+        const size = 10;
 
         try {
             const url =
                 '/comment/children?postId=' + encodeURIComponent(ctx.postId)
-                + '&parentId=' + encodeURIComponent(parentId);
+                + '&parentId=' + encodeURIComponent(parentId)
+                + '&page=' + encodeURIComponent(targetPage)
+                + '&size=' + encodeURIComponent(size);
 
             const res = await fetch(url, {
                 method: 'GET',
@@ -264,19 +297,33 @@
                 return false;
             }
 
-            const list = await res.json();
+            const body = await res.json();
 
-            if (!Array.isArray(list)) {
+            if (!body || !Array.isArray(body.items)) {
                 showReplyLoadFail();
                 return false;
             }
 
-            const html = list.map(function (child) {
+            // 더보기 버튼 중복 방지
+            removeMoreButton(childrenBox);
+
+            const html = body.items.map(function (child) {
                 return renderCommentNode(child, Number(depth));
             }).join('');
 
-            childrenBox.innerHTML = html;
-            childrenBox.dataset.loaded = 'true';
+            if (targetPage === 0) {
+                childrenBox.innerHTML = html;
+                childrenBox.dataset.loaded = 'true';
+                childrenBox.dataset.pageMax = '0';
+            } else {
+                childrenBox.insertAdjacentHTML('beforeend', html);
+                childrenBox.dataset.loaded = 'true';
+                childrenBox.dataset.pageMax = String(targetPage);
+            }
+
+            if (body.hasNext) {
+                renderMoreButton(parentId, targetPage + 1, depth, childrenBox);
+            }
 
             // 새로 붙은 답글들 timeago 즉시 반영
             updateTimeAgoAll();
@@ -286,6 +333,43 @@
         } catch (e) {
             showReplyLoadFail();
             return false;
+        }
+    }
+
+    // openReplyPath 경로를 순서대로 열기 (로드 포함)
+    async function openRepliesByPath(pathIds, invalidParentId) {
+        if (!Array.isArray(pathIds) || pathIds.length === 0) {
+            return;
+        }
+
+        for (let i = 0; i < pathIds.length; i++) {
+            const id = String(pathIds[i]);
+
+            const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + id + '"]');
+            const childrenBox = document.querySelector('.comment-children[data-parent-id="' + id + '"]');
+
+            if (!toggleBtn || !childrenBox) {
+                return;
+            }
+
+            // 답글 작성 후 최신 로딩을 위한 캐시 무효화
+            if (invalidParentId && String(invalidParentId) === id) {
+                invalidateChildrenCache(id);
+            }
+
+            if (!childrenBox.classList.contains('is-open')) {
+                childrenBox.classList.add('is-open');
+                toggleBtn.textContent = '답글 숨기기';
+            }
+
+            if (childrenBox.dataset.loaded !== 'true') {
+                const depth = toggleBtn.dataset.depth;
+                const ok = await loadChildrenIntoBox(id, depth, childrenBox, 0);
+                if (!ok) {
+                    childrenBox.classList.remove('is-open');
+                    return;
+                }
+            }
         }
     }
 
@@ -482,7 +566,7 @@
             const formEl = document.querySelector('.comment-edit-form[data-comment-id="' + id + '"]');
             if (contentEl && formEl) {
                 contentEl.style.display = 'none';
-                formEl.style.display = 'flex';
+                formEl.style.display = 'block';
             }
             return;
         }
@@ -538,15 +622,33 @@
             if (isOpen) {
                 toggleBtn.textContent = '답글 숨기기';
 
-                // 답글이 처음 열릴 때만 서버에서 가져와서 붙이기
-                const ok = await loadChildrenIntoBox(commentId, depth, childrenBox);
-                if (!ok) {
-                    childrenBox.classList.remove('is-open');
-                    toggleBtn.textContent = '답글 ' + replyCount + '개';
+                // 답글이 처음 열릴 때만 서버에서 가져와서 붙이기 (page=0)
+                if (childrenBox.dataset.loaded !== 'true') {
+                    const ok = await loadChildrenIntoBox(commentId, depth, childrenBox, 0);
+                    if (!ok) {
+                        childrenBox.classList.remove('is-open');
+                        toggleBtn.textContent = '답글 ' + replyCount + '개';
+                    }
                 }
             } else {
                 toggleBtn.textContent = '답글 ' + replyCount + '개';
             }
+            return;
+        }
+
+        // 답글 더보기
+        const moreBtn = e.target.closest('.comment-children-more');
+        if (moreBtn) {
+            const parentId = moreBtn.dataset.parentId;
+            const nextPage = Number(moreBtn.dataset.nextPage);
+            const depth = moreBtn.dataset.depth;
+
+            const childrenBox = document.querySelector('.comment-children[data-parent-id="' + parentId + '"]');
+            if (!childrenBox) {
+                return;
+            }
+
+            await loadChildrenIntoBox(parentId, depth, childrenBox, nextPage);
             return;
         }
 
@@ -565,6 +667,25 @@
             return;
         }
 
+    });
+
+    // 답글 작성 직전에 해당 부모답글 캐ㅐ시무효화 (리로드/뒤로가기 포함UX 보강)
+    document.addEventListener('submit', function (e) {
+        const replyForm = e.target.closest('.comment-reply-form');
+        if (!replyForm) {
+            return;
+        }
+
+        const parentId = replyForm.dataset.parentId;
+        if (!parentId) {
+            return;
+        }
+
+        // 답글 작성 후 다시 열릴 때 최신으로 로딩되도록 무효화 플래그 저장
+        try {
+            sessionStorage.setItem('invalidateReplyParentId', String(parentId));
+        } catch (err) {
+        }
     });
 
     // 댓글 작성/답글: 비로그인 시 공통 로그인 안내
@@ -638,28 +759,68 @@
         });
     }
 
-    // 답글 작성 후 자동으로 해당 답글 영역 펼치기
-    function openRepliesFromQuery() {
+    // 답글/수정 후 자동 열기 + 자동 스크롤
+    async function openRepliesFromQuery() {
         const params = new URLSearchParams(window.location.search);
-        const parentId = params.get('openReplyParentId');
-        if (!parentId) {
-            return;
+
+        const rawPath = params.get('openReplyPath');
+        const focusCommentId = params.get('focusCommentId');
+        const parentIdLegacy = params.get('openReplyParentId');
+
+        let invalidParentId = null;
+        try {
+            invalidParentId = sessionStorage.getItem('invalidateReplyParentId');
+        } catch (err) {
         }
 
-        const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
-        if (toggleBtn) {
-            toggleBtn.click();
+        // openReplyPath 우선 처리 (대대댓글 포함)
+        if (rawPath) {
+            const pathIds = rawPath.split(',')
+                .map(function (v) { return v.trim(); })
+                .filter(function (v) { return v !== ''; });
 
-            const node = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
+            await openRepliesByPath(pathIds, invalidParentId);
+
+            if (invalidParentId) {
+                try {
+                    sessionStorage.removeItem('invalidateReplyParentId');
+                } catch (err) {
+                }
+            }
+        } else if (parentIdLegacy) {
+            // 기존 openReplyParentId 호환
+            const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentIdLegacy + '"]');
+            const childrenBox = document.querySelector('.comment-children[data-parent-id="' + parentIdLegacy + '"]');
+
+            if (toggleBtn && childrenBox) {
+                if (!childrenBox.classList.contains('is-open')) {
+                    childrenBox.classList.add('is-open');
+                    toggleBtn.textContent = '답글 숨기기';
+                }
+
+                if (childrenBox.dataset.loaded !== 'true') {
+                    const depth = toggleBtn.dataset.depth;
+                    await loadChildrenIntoBox(parentIdLegacy, depth, childrenBox, 0);
+                }
+            }
+        }
+
+        // 수정/작성 후 해당 댓글로 자동 스크롤
+        if (focusCommentId) {
+            const node = document.querySelector('.comment-node[data-comment-id="' + focusCommentId + '"]');
             if (node && node.scrollIntoView) {
                 node.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
         // URL 깔끔하게 정리
+        params.delete('openReplyPath');
         params.delete('openReplyParentId');
+        params.delete('focusCommentId');
+
         const qs = params.toString();
         const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
+
         if (window.history && window.history.replaceState) {
             window.history.replaceState({}, document.title, nextUrl);
         }
@@ -669,7 +830,7 @@
         updateTimeAgoAll();
         setInterval(updateTimeAgoAll, 60000);
 
-        // 답글 작성 후 펼치기
+        // 답글/수정 후 펼치기 + 스크롤
         openRepliesFromQuery();
     });
 
