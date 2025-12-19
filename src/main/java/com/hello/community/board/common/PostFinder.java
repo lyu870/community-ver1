@@ -1,7 +1,6 @@
 //PostFinder.java
 package com.hello.community.board.common;
 
-import com.hello.community.board.item.ItemRepository;
 import com.hello.community.board.music.MusicRepository;
 import com.hello.community.board.news.NewsRepository;
 import com.hello.community.board.notice.NoticeRepository;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PostFinder {
 
-    private final ItemRepository itemRepository;
     private final MusicRepository musicRepository;
     private final NewsRepository newsRepository;
     private final NoticeRepository noticeRepository;
@@ -25,11 +23,8 @@ public class PostFinder {
      */
     public BasePost findPost(Long id) {
 
-        return itemRepository.findById(id)
+        return musicRepository.findById(id)
                 .map(post -> (BasePost) post)
-
-                .or(() -> musicRepository.findById(id)
-                        .map(post -> (BasePost) post))
 
                 .or(() -> newsRepository.findById(id)
                         .map(post -> (BasePost) post))
@@ -43,9 +38,6 @@ public class PostFinder {
     // 댓글 redirect URL 자동 생성
     public String buildDetailUrl(Long id) {
 
-        if (itemRepository.findById(id).isPresent()) {
-            return "/item/detail/" + id;
-        }
         if (musicRepository.findById(id).isPresent()) {
             return "/music/detail/" + id;
         }

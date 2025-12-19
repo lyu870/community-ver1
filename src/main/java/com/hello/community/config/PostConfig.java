@@ -2,8 +2,6 @@
 package com.hello.community.config;
 
 import com.hello.community.board.common.BasePostService;
-import com.hello.community.board.item.Item;
-import com.hello.community.board.item.ItemRepository;
 import com.hello.community.board.music.Music;
 import com.hello.community.board.music.MusicRepository;
 import com.hello.community.board.news.News;
@@ -15,11 +13,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PostConfig {
-
-    @Bean
-    public BasePostService<Item> itemPostService(ItemRepository repo) {
-        return new BasePostService<>(repo);
-    }
 
     @Bean
     public BasePostService<Music> musicPostService(MusicRepository repo) {

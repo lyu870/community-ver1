@@ -33,6 +33,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/",
+                        "/post/**",
                         "/login",
                         "/register",
                         "/member",
@@ -52,12 +53,6 @@ public class SecurityConfig {
                         "/member/password-reset/confirm",
 
                         // 게시판: 목록/검색/상세페이지 공개
-                        "/item/list",
-                        "/item/list/**",
-                        "/item/search",
-                        "/item/search/**",
-                        "/item/detail/**",
-
                         "/notice/list",
                         "/notice/list/**",
                         "/notice/search",
@@ -88,18 +83,14 @@ public class SecurityConfig {
 
                 // 답글 조회 비로그인도 가능
                 .requestMatchers(HttpMethod.GET,
-                        "/api/comment/children",
-                        "/api/children",
                         "/comment/children",
                         "/comment/children-fragment",
-                        "/children"
+                        "/children",
+                        "/api/comment/children"
                 ).permitAll()
 
                 // notice게시판의 나머지 URL은 관리자만 사용 가능
                 .requestMatchers("/notice/**").hasRole("ADMIN")
-
-                // item 글쓰기/등록은 관리자만 사용 가능
-                .requestMatchers("/item/write", "/item/add").hasRole("ADMIN")
 
                 // 댓글 작성은 로그인 필요
                 .requestMatchers("/comment", "/comment/**").authenticated()

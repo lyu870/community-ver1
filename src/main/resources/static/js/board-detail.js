@@ -333,7 +333,7 @@
         }
     }
 
-    // 액션 디스패처 (추천/주문 등)
+    // 액션 디스패처 (추천 등)
     document.addEventListener('click', function (e) {
         const actionBtn = e.target.closest('.js-post-action');
         if (!actionBtn) {
@@ -347,8 +347,6 @@
 
         if (action === 'recommend') {
             handleRecommend(actionBtn);
-        } else if (action === 'order') {
-            handleOrder(actionBtn);
         }
         // 향후 scrap / bookmark 등도 여기서 분기 ㄱㄱ
     });
@@ -428,35 +426,6 @@
                 showAppAlert('네트워크 오류가 발생했습니다.');
             } else {
                 alert('네트워크 오류가 발생했습니다.');
-            }
-        }
-    }
-
-    // 주문 처리 (item)
-    function handleOrder(button) {
-        const form = button.closest('form');
-        if (!form) {
-            return;
-        }
-
-        if (!isLoggedIn) {
-            requireLogin('주문 기능은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
-            return;
-        }
-
-        function doOrder() {
-            form.submit();
-        }
-
-        const msg = '주문하시겠습니까?\n선택하신 상품을 주문합니다.';
-
-        if (window.showDangerConfirm) {
-            showDangerConfirm(msg, doOrder);
-        } else if (window.AppModal && window.AppModal.confirm) {
-            AppModal.confirm(msg, doOrder);
-        } else {
-            if (confirm(msg)) {
-                doOrder();
             }
         }
     }
@@ -629,7 +598,7 @@
 
     });
 
-    // 답글 작성 직전에 해당 부모답글 캐ㅐ시무효화 (리로드/뒤로가기 포함UX 보강)
+    // 답글 작성 직전에 해당 부모답글 캐시무효화 (리로드/뒤로가기 포함UX 보강)
     document.addEventListener('submit', function (e) {
         const replyForm = e.target.closest('.comment-reply-form');
         if (!replyForm) {

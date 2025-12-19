@@ -41,16 +41,6 @@
             </li>
         </ul>
 
-        <!-- Item -->
-        <h3>상품</h3>
-        <ul>
-            <li th:each="i : ${items}">
-                <a th:href="@{|/item/detail/${i.id}|}"
-                   th:text="${i.title}"></a>
-                <span th:text="${#temporals.format(i.createdAt, 'yyyy-MM-dd')}"></span>
-            </li>
-        </ul>
-
     </main>
 
 </div>

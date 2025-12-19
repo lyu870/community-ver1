@@ -333,10 +333,11 @@
                 if (emailCodeMsg.textContent !== "인증되었습니다.")
                     return showAppAlert("이메일 인증을 완료해주세요."), e.preventDefault();
 
-                showAppAlert("회원가입이 완료되었습니다!", function () {
-                    window.location.href = "/login";
-                });
                 e.preventDefault();
+
+                showAppAlert("회원가입이 완료되었습니다!", function () {
+                    registerForm.submit();
+                });
             };
         </script>
 

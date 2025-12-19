@@ -1,8 +1,6 @@
 // AdminController.java
 package com.hello.community.admin;
 
-import com.hello.community.board.item.Item;
-import com.hello.community.board.item.ItemRepository;
 import com.hello.community.board.music.Music;
 import com.hello.community.board.music.MusicRepository;
 import com.hello.community.board.news.News;
@@ -20,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +33,6 @@ public class AdminController {
     private final NewsRepository newsRepository;
     private final MusicRepository musicRepository;
     private final NoticeRepository noticeRepository;
-    private final ItemRepository itemRepository;
     private final CommentRepository commentRepository;
 
     /* ===========================================
@@ -71,12 +67,10 @@ public class AdminController {
         Page<News> news = newsRepository.findByWriterId(id, PageRequest.of(page - 1, pageSize));
         Page<Music> music = musicRepository.findByWriterId(id, PageRequest.of(page - 1, pageSize));
         Page<Notice> notice = noticeRepository.findByWriterId(id, PageRequest.of(page - 1, pageSize));
-        Page<Item> items = itemRepository.findByWriterId(id, PageRequest.of(page - 1, pageSize));
 
         model.addAttribute("news", news.getContent());
         model.addAttribute("music", music.getContent());
         model.addAttribute("notice", notice.getContent());
-        model.addAttribute("items", items.getContent());
 
         model.addAttribute("memberId", id);
 

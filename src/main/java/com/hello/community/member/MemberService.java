@@ -1,7 +1,6 @@
 // MemberService.java
 package com.hello.community.member;
 
-import com.hello.community.board.item.ItemService;
 import com.hello.community.board.music.MusicService;
 import com.hello.community.board.news.NewsService;
 import com.hello.community.board.notice.NoticeService;
@@ -21,7 +20,6 @@ public class MemberService {
     private final EmailVerificationService emailVerificationService;
     private final CommentService commentService;
     private final MusicService musicService;
-    private final ItemService itemService;
     private final NewsService newsService;
     private final NoticeService noticeService;
     private final PostRecommendService postRecommendService;
@@ -323,7 +321,6 @@ public class MemberService {
 
         // 회원이 작성한 게시글 전체 삭제 (각 게시판 서비스에 위임)
         musicService.deleteAllByWriter(memberId);
-        itemService.deleteAllByWriter(memberId);
         newsService.deleteAllByWriter(memberId);
         noticeService.deleteAllByWriter(memberId);
 
