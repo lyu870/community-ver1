@@ -173,7 +173,7 @@
                     return showMsg("displayNameMsg", "닉네임은 2~8글자의 한글/영문/숫자만 가능합니다.", "err");
                 }
 
-                const res = await ajaxPost('/member/check-displayName', { displayName: v });
+                const res = await ajaxPost('/api/member/check-displayName', { displayName: v });
 
                 if (res === "EMPTY") showMsg("displayNameMsg", "닉네임을 입력하세요.", "err");
                 else if (res === "EXISTS") showMsg("displayNameMsg", "이미 사용 중입니다.", "err");
@@ -189,7 +189,7 @@
                     return showMsg("usernameMsg", "아이디는 영문+숫자 6자 이상입니다.", "err");
                 }
 
-                const res = await ajaxPost('/member/check-username', { username: v });
+                const res = await ajaxPost('/api/member/check-username', { username: v });
 
                 if (res === "EMPTY") showMsg("usernameMsg", "아이디를 입력하세요.", "err");
                 else if (res === "EXISTS") showMsg("usernameMsg", "이미 사용 중입니다.", "err");
@@ -246,7 +246,7 @@
                     emailCodeBtn.disabled = true;
                 }
 
-                const check = await ajaxPost('/member/check-email', { email });
+                const check = await ajaxPost('/api/member/check-email', { email });
 
                 const endLoading = () => {
                     if (window.EmailCodeUtil) {
@@ -276,7 +276,7 @@
                     return showMsg("emailCodeMsg", "이메일을 다시 확인해주세요.", "err");
                 }
 
-                const res = await fetch('/member/email-code', {
+                const res = await fetch('/api/member/email-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({ email })
@@ -308,7 +308,7 @@
                 const email = emailInput.value.trim();
                 const code = emailCodeInput.value.trim();
 
-                const res = await ajaxPost('/member/email-verify', { email, code });
+                const res = await ajaxPost('/api/member/email-verify', { email, code });
 
                 if (res === "OK") showMsg("emailCodeMsg", "인증되었습니다.", "ok");
                 else showMsg("emailCodeMsg", "잘못된 인증코드입니다.", "err");

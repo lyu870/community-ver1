@@ -48,7 +48,8 @@
         }
 
         try {
-            const res = await fetch('/my-page/withdraw/email-code', {
+            // 변경: 구 경로 제거, /api/member 기준 통일
+            const res = await fetch('/api/member/withdraw/email-code', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -98,7 +99,8 @@
     // 실제 탈퇴 요청 AJAX
     async function doWithdrawRequest(code) {
         try {
-            const res = await fetch('/my-page/withdraw', {
+            // 변경: 구 경로 제거, /api/member 기준 통일
+            const res = await fetch('/api/member/withdraw', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
