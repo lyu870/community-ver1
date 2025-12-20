@@ -3,7 +3,6 @@ package com.hello.community.board.music;
 
 import com.hello.community.board.common.PageUtil;
 import com.hello.community.board.recommend.PostRecommendService;
-import com.hello.community.board.recommend.RecommendResponseDto;
 import com.hello.community.comment.CommentRepository;
 import com.hello.community.comment.CommentService;
 import com.hello.community.member.CustomUser;
@@ -11,7 +10,6 @@ import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -235,33 +233,5 @@ public class MusicController {
         model.addAttribute("myMode", false);
 
         return "board/music/list";
-    }
-
-    @PostMapping("/{id}/recommend")
-    @ResponseBody
-    public ResponseEntity<RecommendResponseDto> recommend(@PathVariable Long id,
-                                                          @AuthenticationPrincipal CustomUser user) {
-
-        if (user == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        Long memberId = user.getId();
-        boolean nowRecommended = postRecommendService.toggleRecommend(id, memberId);
-
-        if (nowRecommended) {
-            musicService.increaseRecommendCount(id);
-        } else {
-            musicService.decreaseRecommendCount(id);
-        }
-
-        Music updated = musicService.findById(id);
-
-        RecommendResponseDto body = new RecommendResponseDto(
-                nowRecommended,
-                updated.getRecommendCount()
-        );
-
-        return ResponseEntity.ok(body);
     }
 }

@@ -387,7 +387,7 @@
         }
 
         try {
-            const res = await fetch(`/${boardType}/${postId}/recommend`, {
+            const res = await fetch(`/api/${boardType}/${postId}/recommend`, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
@@ -408,16 +408,27 @@
 
             const body = await res.json();
 
+            if (!body || body.success !== true || !body.data) {
+                if (window.showAppAlert) {
+                    showAppAlert((body && body.error) ? body.error : '요청 처리 중 오류가 발생했습니다.');
+                } else {
+                    alert((body && body.error) ? body.error : '요청 처리 중 오류가 발생했습니다.');
+                }
+                return;
+            }
+
+            const data = body.data;
+
             // 추천 상태에 따라 스타일 토글
-            button.classList.toggle('recommend-box-active', !!body.recommended);
+            button.classList.toggle('recommend-box-active', !!data.recommended);
 
             // 추천 수 갱신 (헤더 + 추천 박스 모두)
-            if (typeof body.recommendCount === 'number') {
+            if (typeof data.recommendCount === 'number') {
                 const countEls = document.querySelectorAll(
                         '.js-recommend-count[data-post-id="' + postId + '"]'
                 );
                 countEls.forEach(function (el) {
-                    el.textContent = body.recommendCount;
+                    el.textContent = data.recommendCount;
                 });
             }
 
