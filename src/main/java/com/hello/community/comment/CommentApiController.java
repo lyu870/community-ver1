@@ -1,6 +1,7 @@
 // CommentApiController.java
 package com.hello.community.comment;
 
+import com.hello.community.board.common.ApiResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +16,11 @@ public class CommentApiController {
     private final CommentService commentService;
 
     // 답글 lazy 로딩: JSON API방식 (페이징)
-    @GetMapping({
-            "/api/comment/children",
-            "/api/children",
-            "/comment/children",
-            "/children"
-    })
-    public ResponseEntity<ChildrenPageResponseDto> loadChildrenJson(@RequestParam Long postId,
-                                                                    @RequestParam Long parentId,
-                                                                    @RequestParam(defaultValue = "0") int page,
-                                                                    @RequestParam(defaultValue = "10") int size) {
+    @GetMapping("/api/comment/children")
+    public ResponseEntity<ApiResponseDto<ChildrenPageResponseDto>> loadChildrenJson(@RequestParam Long postId,
+                                                                                    @RequestParam Long parentId,
+                                                                                    @RequestParam(defaultValue = "0") int page,
+                                                                                    @RequestParam(defaultValue = "10") int size) {
 
         if (size < 1) {
             size = 10;
@@ -53,6 +49,6 @@ public class CommentApiController {
                 childrenPage.hasNext()
         );
 
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(ApiResponseDto.ok(body));
     }
 }

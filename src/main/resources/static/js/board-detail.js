@@ -296,7 +296,7 @@
 
             const body = await res.json();
 
-            if (!body || !Array.isArray(body.items)) {
+            if (!body || body.success !== true || !body.data || !Array.isArray(body.data.items)) {
                 showReplyLoadFail();
                 return false;
             }
@@ -304,7 +304,7 @@
             // 더보기 버튼 중복 방지
             removeMoreButton(childrenBox);
 
-            const html = body.items.map(function (child) {
+            const html = body.data.items.map(function (child) {
                 return renderCommentNode(child, Number(depth));
             }).join('');
 
@@ -318,7 +318,7 @@
                 childrenBox.dataset.pageMax = String(targetPage);
             }
 
-            if (body.hasNext) {
+            if (body.data.hasNext) {
                 renderMoreButton(parentId, targetPage + 1, depth, childrenBox);
             }
 

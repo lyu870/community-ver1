@@ -137,8 +137,10 @@
                 const body = await res.json();
 
                 if (body.success) {
-                    if (body.newDisplayName && currentNicknameEl) {
-                        currentNicknameEl.textContent = body.newDisplayName;
+                    const newDisplayName = (body.data && body.data.newDisplayName) ? body.data.newDisplayName : null;
+
+                    if (newDisplayName && currentNicknameEl) {
+                        currentNicknameEl.textContent = newDisplayName;
                     }
 
                     showAppAlert(body.message || '닉네임이 변경되었습니다.', function () {

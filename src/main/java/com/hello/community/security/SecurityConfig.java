@@ -84,9 +84,7 @@ public class SecurityConfig {
 
                 // 답글 조회 비로그인도 가능
                 .requestMatchers(HttpMethod.GET,
-                        "/comment/children",
                         "/comment/children-fragment",
-                        "/children",
                         "/api/comment/children"
                 ).permitAll()
 

@@ -232,7 +232,7 @@
 
                             if (body.success) {
                                 if (foundUsernameEl) {
-                                    foundUsernameEl.textContent = body.username || '';
+                                    foundUsernameEl.textContent = (body.data && body.data.username) ? body.data.username : '';
                                 }
                                 showResult();
                             } else {

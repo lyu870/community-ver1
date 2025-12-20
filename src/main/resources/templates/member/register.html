@@ -308,10 +308,20 @@
                 const email = emailInput.value.trim();
                 const code = emailCodeInput.value.trim();
 
-                const res = await ajaxPost('/api/member/email-verify', { email, code });
+                try {
+                    const res = await fetch('/api/member/email-verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ email, code })
+                    });
 
-                if (res === "OK") showMsg("emailCodeMsg", "인증되었습니다.", "ok");
-                else showMsg("emailCodeMsg", "잘못된 인증코드입니다.", "err");
+                    const body = await res.json();
+
+                    if (body.success) showMsg("emailCodeMsg", "인증되었습니다.", "ok");
+                    else showMsg("emailCodeMsg", body.error || "잘못된 인증코드입니다.", "err");
+                } catch (e) {
+                    showMsg("emailCodeMsg", "오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "err");
+                }
             };
 
 

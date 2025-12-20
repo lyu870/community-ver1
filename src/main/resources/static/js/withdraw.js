@@ -48,7 +48,6 @@
         }
 
         try {
-            // 변경: 구 경로 제거, /api/member 기준 통일
             const res = await fetch('/api/member/withdraw/email-code', {
                 method: 'POST',
                 headers: {
@@ -99,7 +98,6 @@
     // 실제 탈퇴 요청 AJAX
     async function doWithdrawRequest(code) {
         try {
-            // 변경: 구 경로 제거, /api/member 기준 통일
             const res = await fetch('/api/member/withdraw', {
                 method: 'POST',
                 headers: {
