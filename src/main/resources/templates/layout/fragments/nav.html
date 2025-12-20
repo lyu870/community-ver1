@@ -38,6 +38,12 @@
                         마이페이지
                     </a>
 
+                    <a href="/admin/members"
+                       class="btn btn-ghost btn-full btn-sm dropdown-item"
+                       sec:authorize="hasRole('ADMIN')">
+                        관리자페이지
+                    </a>
+
                     <!-- POST 방식 로그아웃 -->
                     <form id="logoutForm" action="/logout" method="post" style="display:none;">
                     </form>

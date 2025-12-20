@@ -183,9 +183,27 @@ input[type="checkbox"] {
   border: 1px solid #e3e5e8;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0,0,0,.06);
-  padding: 0;              /* ← 좌우 여백 제거 */
+  padding: 0;
   display: none;
   z-index: 50;
+}
+
+.dropdown.open .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  margin: 0;
+}
+
+.dropdown-menu a + a {
+  margin-top: 0;
+  border-top: 1px solid #e3e5e8;
 }
 
 /* 드롭다운이 오픈되면 메뉴 보여주기 */

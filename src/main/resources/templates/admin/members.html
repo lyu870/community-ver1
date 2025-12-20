@@ -30,7 +30,7 @@
                 <td th:text="${m.username}">user</td>
                 <td th:text="${m.displayName}">닉네임</td>
                 <td th:text="${m.email}">test@test.com</td>
-                <td th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
+                <td th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'yyyy-MM-dd') : '-'}">2025-01-01</td>
 
                 <td>
                     <a th:href="@{|/admin/member/${m.id}/posts|}">작성한 게시글</a>

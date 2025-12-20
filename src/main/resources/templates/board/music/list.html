@@ -11,6 +11,11 @@
     <main class="board-container board board-music"
           th:attr="data-login=${loginUserId != null}">
 
+        <div th:if="${adminMemberDisplayName != null and !#strings.isEmpty(#strings.trim(adminMemberDisplayName))}"
+             style="margin-bottom:12px; text-align:center; color:#555;">
+            <strong th:text="${adminMemberDisplayName}">닉네임</strong>님의 게시글목록
+        </div>
+
         <!-- 상단: 검색 + 글쓰기 버튼 한 줄 -->
         <div class="board-list-top">
 

@@ -38,11 +38,10 @@ dependencies {
 
 	implementation 'org.postgresql:postgresql:42.7.4'
 
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
-
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
 	implementation 'io.jsonwebtoken:jjwt-gson:0.12.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
+
 }
 
 tasks.named('test') {
