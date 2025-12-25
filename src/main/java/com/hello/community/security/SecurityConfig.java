@@ -1,6 +1,10 @@
 // SecurityConfig.java
 package com.hello.community.security;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,11 +13,22 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.net.URI;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final String LOGIN_REDIRECT_URL = "LOGIN_REDIRECT_URL";
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -26,9 +41,51 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            RequestCache requestCache = new HttpSessionRequestCache();
+            SavedRequest savedRequest = requestCache.getRequest(request, response);
+
+            if (savedRequest != null) {
+                response.sendRedirect(savedRequest.getRedirectUrl());
+                return;
+            }
+
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            if (httpRequest.getSession(false) != null) {
+                Object target = httpRequest.getSession(false).getAttribute(LOGIN_REDIRECT_URL);
+                if (target instanceof String targetUrl && !targetUrl.isBlank()) {
+                    httpRequest.getSession(false).removeAttribute(LOGIN_REDIRECT_URL);
+                    response.sendRedirect(targetUrl);
+                    return;
+                }
+            }
+
+            response.sendRedirect("/");
+        };
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable());
+
+        http.addFilterBefore(new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+                if ("GET".equals(request.getMethod()) && "/login".equals(request.getRequestURI())) {
+                    String referer = request.getHeader("Referer");
+                    String targetUrl = getSafeTargetUrl(request, referer);
+
+                    if (targetUrl != null) {
+                        request.getSession(true).setAttribute(LOGIN_REDIRECT_URL, targetUrl);
+                    }
+                }
+
+                filterChain.doFilter(request, response);
+            }
+        }, UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
@@ -100,7 +157,7 @@ public class SecurityConfig {
         http.formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/", true)
+                .successHandler(authenticationSuccessHandler())
                 .failureUrl("/login?error")
                 .permitAll()
         );
@@ -114,5 +171,41 @@ public class SecurityConfig {
         );
 
         return http.build();
+    }
+
+    private String getSafeTargetUrl(HttpServletRequest request, String referer) {
+        if (referer == null || referer.isBlank()) {
+            return null;
+        }
+
+        try {
+            URI uri = URI.create(referer);
+
+            if (uri.getHost() == null) {
+                return null;
+            }
+
+            if (!request.getServerName().equalsIgnoreCase(uri.getHost())) {
+                return null;
+            }
+
+            String path = uri.getRawPath();
+            if (path == null || path.isBlank()) {
+                return null;
+            }
+
+            if (path.startsWith("/login") || path.startsWith("/logout")) {
+                return null;
+            }
+
+            String query = uri.getRawQuery();
+            if (query != null && !query.isBlank()) {
+                return path + "?" + query;
+            }
+
+            return path;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }
