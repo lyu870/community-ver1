@@ -1,0 +1,80 @@
+/* dropdown.css */
+
+/* navbar 드롭다운 스타일 */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e3e5e8;
+  background: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.dropdown-toggle:hover {
+  background: #f5f6f7;
+}
+
+.avatar-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #2c7efb;
+  color: #fff;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  min-width: 160px;
+  background: #ffffff;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  padding: 0;
+  display: none;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.dropdown.open .dropdown-menu {
+  display: block;
+}
+
+/* 드롭다운 항목: 버튼처럼 보이되, 서로 붙도록 */
+.dropdown-menu .dropdown-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background: #f5f6f7;
+}
+
+.dropdown-menu .dropdown-item {
+  border-top: 1px solid #e3e5e8;
+}
+
+.dropdown-menu .dropdown-item:first-child {
+  border-top: 0;
+}
