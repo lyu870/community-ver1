@@ -35,6 +35,50 @@
         }
     }
 
+    function showReplySubmitFail() {
+        if (window.showAppToast) {
+            showAppToast('답글을 등록하지 못했습니다.', {
+                variant: 'warning',
+                duration: 2000
+            });
+        } else {
+            alert('답글을 등록하지 못했습니다.');
+        }
+    }
+
+    function showCommentSubmitFail() {
+        if (window.showAppToast) {
+            showAppToast('댓글을 등록하지 못했습니다.', {
+                variant: 'warning',
+                duration: 2000
+            });
+        } else {
+            alert('댓글을 등록하지 못했습니다.');
+        }
+    }
+
+    function showCommentEditFail() {
+        if (window.showAppToast) {
+            showAppToast('댓글을 수정하지 못했습니다.', {
+                variant: 'warning',
+                duration: 2000
+            });
+        } else {
+            alert('댓글을 수정하지 못했습니다.');
+        }
+    }
+
+    function showCommentDeleteFail() {
+        if (window.showAppToast) {
+            showAppToast('댓글을 삭제하지 못했습니다.', {
+                variant: 'warning',
+                duration: 2000
+            });
+        } else {
+            alert('댓글을 삭제하지 못했습니다.');
+        }
+    }
+
     function escapeHtml(str) {
         if (str === null || str === undefined) {
             return '';
@@ -115,6 +159,145 @@
         return u.getTime() > c.getTime();
     }
 
+    function getMetaCsrfToken() {
+        const meta = document.querySelector('meta[name="_csrf"]');
+        if (!meta) {
+            return '';
+        }
+        return meta.getAttribute('content') || '';
+    }
+
+    function getMetaCsrfHeader() {
+        const meta = document.querySelector('meta[name="_csrf_header"]');
+        if (!meta) {
+            return '';
+        }
+        return meta.getAttribute('content') || '';
+    }
+
+    function applyCsrf(headers) {
+        const token = getMetaCsrfToken();
+        const headerName = getMetaCsrfHeader();
+
+        if (!token || !headerName) {
+            return;
+        }
+
+        headers[headerName] = token;
+    }
+
+    async function createCommentApi(postId, content, parentId) {
+        const body = new URLSearchParams();
+        body.append('postId', String(postId));
+        body.append('content', String(content || ''));
+
+        if (parentId !== null && parentId !== undefined && String(parentId) !== '') {
+            body.append('parentId', String(parentId));
+        }
+
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        applyCsrf(headers);
+
+        const res = await fetch('/api/comment', {
+            method: 'POST',
+            headers: headers,
+            body: body.toString()
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            requireLogin('댓글 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return null;
+        }
+
+        if (res.redirected && res.url && res.url.indexOf('/login') !== -1) {
+            requireLogin('댓글 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return null;
+        }
+
+        if (!res.ok) {
+            return null;
+        }
+
+        const json = await res.json();
+        if (!json || json.success !== true || !json.data) {
+            return null;
+        }
+
+        return json.data;
+    }
+
+    async function updateCommentApi(commentId, content) {
+        const body = new URLSearchParams();
+        body.append('content', String(content || ''));
+
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        applyCsrf(headers);
+
+        const res = await fetch('/api/comment/' + encodeURIComponent(commentId), {
+            method: 'PUT',
+            headers: headers,
+            body: body.toString()
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            requireLogin('댓글 수정은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return null;
+        }
+
+        if (res.redirected && res.url && res.url.indexOf('/login') !== -1) {
+            requireLogin('댓글 수정은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return null;
+        }
+
+        if (!res.ok) {
+            return null;
+        }
+
+        const json = await res.json();
+        if (!json || json.success !== true || !json.data) {
+            return null;
+        }
+
+        return json.data;
+    }
+
+    async function deleteCommentApi(commentId) {
+        const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+        applyCsrf(headers);
+
+        const res = await fetch('/api/comment/' + encodeURIComponent(commentId), {
+            method: 'DELETE',
+            headers: headers
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            requireLogin('댓글 삭제는 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return false;
+        }
+
+        if (res.redirected && res.url && res.url.indexOf('/login') !== -1) {
+            requireLogin('댓글 삭제는 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return false;
+        }
+
+        if (!res.ok) {
+            return false;
+        }
+
+        const json = await res.json();
+        if (!json || json.success !== true) {
+            return false;
+        }
+
+        return true;
+    }
+
     function renderCommentNode(child, depth) {
         const ctx = getCommentContext();
         if (!ctx) {
@@ -135,7 +318,7 @@
 
         if (contentRaw === '삭제된 댓글입니다.') {
             return `
-    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}">
+    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}" data-writer-id="${writerId}" data-created-at="${escapeHtml(createdAt || '')}">
         <div class="comment-item">
             <div class="comment-body">
                 <div class="comment-deleted">삭제된 댓글입니다.</div>
@@ -182,7 +365,7 @@
             : '';
 
         return `
-    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}">
+    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}" data-writer-id="${writerId}" data-created-at="${escapeHtml(createdAt || '')}">
         <div class="comment-item">
             <div class="comment-body">
 
@@ -387,9 +570,12 @@
         }
 
         try {
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            applyCsrf(headers);
+
             const res = await fetch(`/api/${boardType}/${postId}/recommend`, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: headers
             });
 
             if (res.status === 401) {
@@ -466,7 +652,288 @@
         });
     });
 
-    // 댓글 삭제 공통 모달
+    function normalizeText(str) {
+        if (str === null || str === undefined) {
+            return '';
+        }
+        return String(str).replace(/\s+/g, ' ').trim();
+    }
+
+    function getCommentNodeDepth(node) {
+        if (!node) {
+            return 0;
+        }
+
+        const style = node.getAttribute('style') || '';
+        const m = style.match(/margin-left\s*:\s*(\d+)px/i);
+        if (!m) {
+            return 0;
+        }
+
+        const px = Number(m[1]);
+        if (!isFinite(px) || px < 0) {
+            return 0;
+        }
+
+        return Math.round(px / 20);
+    }
+
+    function ensureRepliesUi(parentId) {
+        const parentNode = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
+        if (!parentNode) {
+            return null;
+        }
+
+        let toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
+        let childrenBox = document.querySelector('.comment-children[data-parent-id="' + parentId + '"]');
+
+        let depth = 1;
+
+        if (!toggleBtn || !childrenBox) {
+            const parentDepth = getCommentNodeDepth(parentNode);
+            depth = parentDepth + 1;
+
+            const target = parentNode.querySelector('.comment-body') || parentNode;
+
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `
+                <div>
+                    <button type="button"
+                            class="comment-replies-toggle"
+                            data-comment-id="${parentId}"
+                            data-reply-count="0"
+                            data-depth="${depth}">
+                        답글 <span>0</span>개
+                    </button>
+
+                    <div class="comment-children" data-parent-id="${parentId}"></div>
+                </div>
+`;
+
+            target.appendChild(wrap.firstElementChild);
+
+            toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
+            childrenBox = document.querySelector('.comment-children[data-parent-id="' + parentId + '"]');
+        } else {
+            depth = Number(toggleBtn.dataset.depth || '1');
+            if (!isFinite(depth) || depth < 1) {
+                depth = 1;
+            }
+        }
+
+        return {
+            toggleBtn: toggleBtn,
+            childrenBox: childrenBox,
+            depth: depth
+        };
+    }
+
+    function findReplyNodeById(childrenBox, commentId) {
+        if (!childrenBox || !commentId) {
+            return null;
+        }
+
+        return childrenBox.querySelector('.comment-node[data-comment-id="' + commentId + '"]');
+    }
+
+    async function loadChildrenUntilFoundById(parentId, depth, childrenBox, targetId) {
+        let page = 0;
+        let guard = 0;
+
+        while (guard < 10) {
+            const ok = await loadChildrenIntoBox(parentId, depth, childrenBox, page);
+            if (!ok) {
+                return null;
+            }
+
+            const found = findReplyNodeById(childrenBox, targetId);
+            if (found) {
+                return found;
+            }
+
+            const moreBtn = childrenBox.querySelector('.comment-children-more');
+            if (!moreBtn) {
+                break;
+            }
+
+            page += 1;
+            guard += 1;
+        }
+
+        return null;
+    }
+
+    async function submitReplyFormAjax(replyForm, parentId) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return;
+        }
+
+        const textarea = replyForm.querySelector('textarea[name="content"]');
+        const content = textarea ? textarea.value : '';
+
+        const submitBtn = replyForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+        }
+
+        try {
+            const saved = await createCommentApi(ctx.postId, content, parentId);
+            if (!saved || !saved.id) {
+                showReplySubmitFail();
+                return;
+            }
+
+            const ui = ensureRepliesUi(parentId);
+            if (!ui || !ui.childrenBox) {
+                showReplySubmitFail();
+                return;
+            }
+
+            ui.childrenBox.classList.add('is-open');
+            if (ui.toggleBtn) {
+                ui.toggleBtn.textContent = '답글 숨기기';
+            }
+
+            invalidateChildrenCache(parentId);
+
+            const found = await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, String(saved.id));
+
+            const count = ui.childrenBox.querySelectorAll('.comment-node').length;
+            if (ui.toggleBtn) {
+                ui.toggleBtn.dataset.replyCount = String(Math.max(Number(ui.toggleBtn.dataset.replyCount || '0'), count));
+            }
+
+            if (found && found.scrollIntoView) {
+                found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                const parentNode = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
+                if (parentNode && parentNode.scrollIntoView) {
+                    parentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            if (textarea) {
+                textarea.value = '';
+            }
+            replyForm.style.display = 'none';
+
+        } catch (e) {
+            showReplySubmitFail();
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    async function submitRootCommentAjax(form) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return;
+        }
+
+        const textarea = form.querySelector('textarea[name="content"]');
+        const content = textarea ? textarea.value : '';
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+        }
+
+        try {
+            const saved = await createCommentApi(ctx.postId, content, null);
+            if (!saved || !saved.id) {
+                showCommentSubmitFail();
+                return;
+            }
+
+            const tree = document.querySelector('.comment-tree');
+            if (!tree) {
+                showCommentSubmitFail();
+                return;
+            }
+
+            const html = renderCommentNode(saved, 0);
+            tree.insertAdjacentHTML('beforeend', html);
+
+            updateTimeAgoAll();
+
+            const node = document.querySelector('.comment-node[data-comment-id="' + saved.id + '"]');
+            if (node && node.scrollIntoView) {
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            if (textarea) {
+                textarea.value = '';
+            }
+
+            form.classList.remove('comment-form-active');
+
+        } catch (e) {
+            showCommentSubmitFail();
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    async function submitEditFormAjax(editForm, commentId) {
+        const textarea = editForm.querySelector('textarea[name="content"]');
+        const content = textarea ? textarea.value : '';
+
+        const submitBtn = editForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+        }
+
+        try {
+            const updated = await updateCommentApi(commentId, content);
+            if (!updated) {
+                showCommentEditFail();
+                return;
+            }
+
+            const node = document.querySelector('.comment-node[data-comment-id="' + commentId + '"]');
+            if (!node) {
+                showCommentEditFail();
+                return;
+            }
+
+            const contentEl = node.querySelector('.comment-content[data-comment-id="' + commentId + '"]');
+            if (contentEl) {
+                contentEl.innerHTML = escapeHtml(updated.content || '').replaceAll('\n', '<br>');
+                contentEl.style.display = '';
+            }
+
+            editForm.style.display = 'none';
+
+            const writerBox = node.querySelector('.comment-writer');
+            if (writerBox) {
+                let editedEl = writerBox.querySelector('.comment-edited');
+                if (!editedEl) {
+                    editedEl = document.createElement('span');
+                    editedEl.className = 'comment-edited';
+                    editedEl.textContent = '(수정됨)';
+                    writerBox.appendChild(editedEl);
+                }
+            }
+
+            if (node.scrollIntoView) {
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+        } catch (e) {
+            showCommentEditFail();
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    // 댓글 삭제 공통 모달 + AJAX
     document.addEventListener('click', function (e) {
         if (!e.target.classList.contains('comment-delete-btn')) {
             return;
@@ -477,21 +944,56 @@
             return;
         }
 
+        const idInput = form.querySelector('input[name="id"]');
+        const commentId = idInput ? idInput.value : '';
+        if (!commentId) {
+            return;
+        }
+
         e.preventDefault();
 
-        function doSubmit() {
-            form.submit();
+        function doDelete() {
+            deleteCommentApi(commentId).then(function (ok) {
+                if (!ok) {
+                    showCommentDeleteFail();
+                    return;
+                }
+
+                const node = document.querySelector('.comment-node[data-comment-id="' + commentId + '"]');
+                if (!node) {
+                    return;
+                }
+
+                const childrenBox = node.closest('.comment-children[data-parent-id]');
+                const removedCount = 1 + node.querySelectorAll('.comment-node').length;
+
+                node.remove();
+
+                if (childrenBox) {
+                    const parentId = childrenBox.dataset.parentId;
+                    const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
+                    if (toggleBtn) {
+                        const prev = Number(toggleBtn.dataset.replyCount || '0');
+                        const next = Math.max(0, prev - removedCount);
+                        toggleBtn.dataset.replyCount = String(next);
+
+                        if (toggleBtn.textContent !== '답글 숨기기') {
+                            toggleBtn.textContent = '답글 ' + next + '개';
+                        }
+                    }
+                }
+            });
         }
 
         const msg = '댓글을 삭제하시겠습니까?';
 
         if (window.showDangerConfirm) {
-            showDangerConfirm(msg, doSubmit);
+            showDangerConfirm(msg, doDelete);
         } else if (window.AppModal && window.AppModal.confirm) {
-            AppModal.confirm(msg, doSubmit);
+            AppModal.confirm(msg, doDelete);
         } else {
             if (confirm(msg)) {
-                doSubmit();
+                doDelete();
             }
         }
     });
@@ -609,26 +1111,7 @@
 
     });
 
-    // 답글 작성 직전에 해당 부모답글 캐시무효화 (리로드/뒤로가기 포함UX 보강)
-    document.addEventListener('submit', function (e) {
-        const replyForm = e.target.closest('.comment-reply-form');
-        if (!replyForm) {
-            return;
-        }
-
-        const parentId = replyForm.dataset.parentId;
-        if (!parentId) {
-            return;
-        }
-
-        // 답글 작성 후 다시 열릴 때 최신으로 로딩되도록 무효화 플래그 저장
-        try {
-            sessionStorage.setItem('invalidateReplyParentId', String(parentId));
-        } catch (err) {
-        }
-    });
-
-    // 댓글 작성/답글: 비로그인 시 공통 로그인 안내
+    // 댓글/답글: 비로그인 시 공통 로그인 안내
     document.addEventListener('focusin', function (e) {
         if (isLoggedIn) {
             return;
@@ -699,40 +1182,139 @@
         });
     }
 
-    // 답글 작성 후 자동으로 해당 답글 영역 펼치기
-    function openRepliesFromQuery() {
-        const params = new URLSearchParams(window.location.search);
-        const parentId = params.get('openReplyParentId');
+    // 댓글 작성 AJAX (루트)
+    document.addEventListener('submit', function (e) {
+        const form = e.target.closest('.js-comment-form');
+        if (!form) {
+            return;
+        }
+
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return;
+        }
+
+        if (!isLoggedIn) {
+            e.preventDefault();
+            requireLogin('댓글 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return;
+        }
+
+        e.preventDefault();
+        submitRootCommentAjax(form);
+    });
+
+    // 댓글 수정 AJAX
+    document.addEventListener('submit', function (e) {
+        const editForm = e.target.closest('.comment-edit-form');
+        if (!editForm) {
+            return;
+        }
+
+        const commentId = editForm.dataset.commentId;
+        if (!commentId) {
+            return;
+        }
+
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return;
+        }
+
+        if (!isLoggedIn) {
+            e.preventDefault();
+            requireLogin('댓글 수정은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return;
+        }
+
+        e.preventDefault();
+        submitEditFormAjax(editForm, commentId);
+    });
+
+    // 답글 작성 AJAX
+    document.addEventListener('submit', function (e) {
+        const replyForm = e.target.closest('.comment-reply-form');
+        if (!replyForm) {
+            return;
+        }
+
+        const parentId = replyForm.dataset.parentId;
         if (!parentId) {
             return;
         }
 
-        // 답글 작성 후에는 해당 parent 답글을 최신으로 다시 로딩하도록 캐시 무효화
-        try {
-            const invalidParentId = sessionStorage.getItem('invalidateReplyParentId');
-            if (invalidParentId && String(invalidParentId) === String(parentId)) {
-                invalidateChildrenCache(parentId);
-                sessionStorage.removeItem('invalidateReplyParentId');
-            }
-        } catch (err) {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return;
         }
 
-        const toggleBtn = document.querySelector('.comment-replies-toggle[data-comment-id="' + parentId + '"]');
-        if (toggleBtn) {
-            toggleBtn.click();
-
-            const node = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
-            if (node && node.scrollIntoView) {
-                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+        if (!isLoggedIn) {
+            e.preventDefault();
+            requireLogin('댓글 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동합니다.');
+            return;
         }
 
-        // URL 깔끔하게 정리
-        params.delete('openReplyParentId');
-        const qs = params.toString();
-        const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState({}, document.title, nextUrl);
+        e.preventDefault();
+        submitReplyFormAjax(replyForm, parentId);
+    });
+
+    // 답글 작성 후 자동으로 해당 답글 영역 펼치기
+    async function openRepliesFromQuery() {
+        const ctx = getCommentContext();
+        if (!ctx) {
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+
+        const openReplyPath = params.get('openReplyPath');
+        const focusCommentId = params.get('focusCommentId');
+
+        if (openReplyPath) {
+            let path = [];
+            try {
+                path = decodeURIComponent(openReplyPath).split(',').map(function (v) {
+                    return String(v || '').trim();
+                }).filter(Boolean);
+            } catch (e) {
+                path = [];
+            }
+
+            if (path.length) {
+                for (let i = 0; i < path.length; i++) {
+                    const parentId = path[i];
+                    const ui = ensureRepliesUi(parentId);
+                    if (!ui || !ui.childrenBox || !ui.toggleBtn) {
+                        continue;
+                    }
+
+                    ui.childrenBox.classList.add('is-open');
+                    ui.toggleBtn.textContent = '답글 숨기기';
+
+                    const nextId = (i + 1 < path.length) ? path[i + 1] : null;
+                    if (nextId) {
+                        await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, nextId);
+                    } else {
+                        await loadChildrenIntoBox(parentId, ui.depth, ui.childrenBox, 0);
+                    }
+                }
+
+                const targetId = focusCommentId ? String(focusCommentId) : String(path[path.length - 1]);
+                const targetNode = document.querySelector('.comment-node[data-comment-id="' + targetId + '"]');
+                if (targetNode && targetNode.scrollIntoView) {
+                    targetNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            params.delete('openReplyPath');
+            params.delete('focusCommentId');
+            const qs = params.toString();
+            const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, nextUrl);
+            }
+
+            return;
         }
     }
 

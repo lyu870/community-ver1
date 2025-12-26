@@ -19,6 +19,7 @@
             </div>
 
             <input type="hidden" name="postId" th:value="${postId}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         </form>
 
         <!-- 비로그인 안내 문구만 조건부로 표시 -->

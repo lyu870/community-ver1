@@ -66,6 +66,7 @@
                           th:if="${loginUserId == comment.writer.id}">
                         <input type="hidden" name="id" th:value="${comment.id}">
                         <input type="hidden" name="postId" th:value="${postId}">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <textarea name="content" rows="2" th:text="${comment.content}"></textarea>
 
                         <!-- 수정 버튼/텍스트박스 스타일을 답글과 동일하게 -->
@@ -100,6 +101,7 @@
                                   style="display:inline;">
                                 <input type="hidden" name="id" th:value="${comment.id}">
                                 <input type="hidden" name="postId" th:value="${postId}">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                 <button type="button" class="comment-delete-btn">삭제</button>
                             </form>
                         </span>
@@ -114,6 +116,7 @@
                           data-require-login="comment">
                         <input type="hidden" name="postId" th:value="${postId}">
                         <input type="hidden" name="parentId" th:value="${comment.id}">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
 
                         <!-- 답글 등록/취소 버튼 영역 -->
