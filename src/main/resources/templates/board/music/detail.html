@@ -25,14 +25,14 @@
             <!-- 수정 버튼: 작성자 본인에게만 노출 -->
             <a th:href="@{|/music/edit/${data.id}|}"
                th:if="${loginUserId != null and loginUserId == data.writer.id}"
-               class="btn-edit" style="margin-right:8px;"> 수정 </a>
+               class="btn-search board-action-btn" style="margin-right:8px;"> 수정 </a>
 
             <form th:action="@{|/music/delete/${data.id}|}"
                   method="post"
                   style="display:inline;"
                   class="post-delete-form">
                 <input type="hidden" name="_method" value="delete">
-                <button type="submit" class="btn-delete"> 삭제 </button>
+                <button type="submit" class="btn-search board-action-btn"> 삭제 </button>
             </form>
         </div>
 
