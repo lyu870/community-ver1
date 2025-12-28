@@ -659,6 +659,28 @@
         return String(str).replace(/\s+/g, ' ').trim();
     }
 
+    function flashNode(targetNode) {
+        if (!targetNode || !targetNode.classList) {
+            return;
+        }
+
+        targetNode.classList.remove('comment-focus');
+        targetNode.classList.remove('comment-flash');
+
+        targetNode.offsetHeight;
+
+        targetNode.classList.add('comment-focus');
+        targetNode.classList.add('comment-flash');
+
+        setTimeout(function () {
+            targetNode.classList.remove('comment-flash');
+        }, 900);
+
+        setTimeout(function () {
+            targetNode.classList.remove('comment-focus');
+        }, 2400);
+    }
+
     function getCommentNodeDepth(node) {
         if (!node) {
             return 0;
@@ -806,10 +828,12 @@
 
             if (found && found.scrollIntoView) {
                 found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                flashNode(found);
             } else {
                 const parentNode = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
                 if (parentNode && parentNode.scrollIntoView) {
                     parentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    flashNode(parentNode);
                 }
             }
 
@@ -862,6 +886,7 @@
             const node = document.querySelector('.comment-node[data-comment-id="' + saved.id + '"]');
             if (node && node.scrollIntoView) {
                 node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                flashNode(node);
             }
 
             if (textarea) {
@@ -1267,48 +1292,8 @@
 
         const params = new URLSearchParams(window.location.search);
 
-        let openReplyPath = params.get('openReplyPath');
-        let focusCommentId = params.get('focusCommentId');
-
-        const commentId = params.get('commentId');
-        const parentId = params.get('parentId');
-
-        if (!focusCommentId && commentId) {
-            focusCommentId = String(commentId);
-        }
-
-        if (!openReplyPath && parentId) {
-            openReplyPath = String(parentId);
-        }
-
-        function cleanupQuery() {
-            params.delete('openReplyPath');
-            params.delete('focusCommentId');
-            params.delete('commentId');
-            params.delete('parentId');
-
-            const qs = params.toString();
-            const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
-
-            if (window.history && window.history.replaceState) {
-                window.history.replaceState({}, document.title, nextUrl);
-            }
-        }
-
-        function flashNode(targetNode) {
-            const item = targetNode.querySelector('.comment-item') || targetNode;
-
-            const prevBoxShadow = item.style.boxShadow;
-            const prevBg = item.style.backgroundColor;
-
-            item.style.boxShadow = '0 0 0 2px rgba(44, 126, 251, 0.35)';
-            item.style.backgroundColor = 'rgba(44, 126, 251, 0.06)';
-
-            setTimeout(function () {
-                item.style.boxShadow = prevBoxShadow;
-                item.style.backgroundColor = prevBg;
-            }, 1600);
-        }
+        const openReplyPath = params.get('openReplyPath');
+        const focusCommentId = params.get('focusCommentId');
 
         if (openReplyPath) {
             let path = [];
@@ -1322,8 +1307,8 @@
 
             if (path.length) {
                 for (let i = 0; i < path.length; i++) {
-                    const pid = path[i];
-                    const ui = ensureRepliesUi(pid);
+                    const parentId = path[i];
+                    const ui = ensureRepliesUi(parentId);
                     if (!ui || !ui.childrenBox || !ui.toggleBtn) {
                         continue;
                     }
@@ -1332,43 +1317,29 @@
                     ui.toggleBtn.textContent = '답글 숨기기';
 
                     const nextId = (i + 1 < path.length) ? path[i + 1] : null;
-
                     if (nextId) {
-                        await loadChildrenUntilFoundById(pid, ui.depth, ui.childrenBox, nextId);
-                    } else if (focusCommentId) {
-                        await loadChildrenUntilFoundById(pid, ui.depth, ui.childrenBox, String(focusCommentId));
+                        await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, nextId);
                     } else {
-                        await loadChildrenIntoBox(pid, ui.depth, ui.childrenBox, 0);
+                        await loadChildrenIntoBox(parentId, ui.depth, ui.childrenBox, 0);
                     }
                 }
 
-                let targetId = null;
-
-                if (focusCommentId) {
-                    targetId = String(focusCommentId);
-                } else {
-                    targetId = String(path[path.length - 1]);
-                }
-
+                const targetId = focusCommentId ? String(focusCommentId) : String(path[path.length - 1]);
                 const targetNode = document.querySelector('.comment-node[data-comment-id="' + targetId + '"]');
                 if (targetNode && targetNode.scrollIntoView) {
                     targetNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     flashNode(targetNode);
                 }
-
-                cleanupQuery();
-                return;
-            }
-        }
-
-        if (focusCommentId) {
-            const targetNode = document.querySelector('.comment-node[data-comment-id="' + String(focusCommentId) + '"]');
-            if (targetNode && targetNode.scrollIntoView) {
-                targetNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                flashNode(targetNode);
             }
 
-            cleanupQuery();
+            params.delete('openReplyPath');
+            params.delete('focusCommentId');
+            const qs = params.toString();
+            const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, nextUrl);
+            }
+
             return;
         }
     }
