@@ -9,37 +9,146 @@
 
     <main class="admin-container">
 
-        <h2 th:text="'회원 게시글 목록 (ID: ' + ${memberId} + ')'">게시글</h2>
+        <h2>
+            <span th:text="${memberDisplayName}">닉네임</span>님의 게시글 목록
+        </h2>
 
-        <!-- Notice -->
-        <h3>공지사항</h3>
-        <ul>
-            <li th:each="n : ${notice}">
-                <a th:href="@{|/notice/detail/${n.id}|}"
-                   th:text="${n.title}"></a>
-                <span th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd')}"></span>
-            </li>
-        </ul>
+        <th:block th:if="${hasNotice}">
+            <h3>공지사항</h3>
+            <table class="board-table admin-table">
+                <thead>
+                <tr>
+                    <th>제목</th>
+                    <th style="width:140px;">작성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(notice)}">
+                    <td colspan="2">작성된 게시글이 없습니다.</td>
+                </tr>
+                <tr th:each="n : ${notice}">
+                    <td>
+                        <a th:href="@{|/post/${n.id}|}"
+                           class="admin-post-link"
+                           th:text="${#strings.length(n.title) > 15 ? (#strings.substring(n.title, 0, 15) + '...') : n.title}">제목</a>
+                    </td>
+                    <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
+                </tr>
+                </tbody>
+            </table>
 
-        <!-- News -->
+            <!-- 페이지네이션 (공지사항) -->
+            <nav class="pagination" th:if="${noticeTotalPages > 1}">
+                <span th:if="${noticeCurrent > 1}">
+                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=1&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">첫페이지</a>
+                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=${noticeCurrent-1}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">이전</a>
+                </span>
+
+                <span th:each="p : ${#numbers.sequence(noticeStartPage, noticeEndPage)}">
+                    <a th:if="${p != noticeCurrent}"
+                       th:href="@{|/admin/member/${memberId}/posts?noticePage=${p}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}"
+                       th:text="${p}"></a>
+
+                    <strong th:if="${p == noticeCurrent}"
+                            th:text="${p}"></strong>
+                </span>
+
+                <span th:if="${noticeCurrent < noticeTotalPages}">
+                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=${noticeCurrent+1}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">다음</a>
+                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=${noticeTotalPages}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">마지막페이지</a>
+                </span>
+            </nav>
+        </th:block>
+
         <h3>시사 뉴스</h3>
-        <ul>
-            <li th:each="n : ${news}">
-                <a th:href="@{|/news/detail/${n.id}|}"
-                   th:text="${n.title}"></a>
-                <span th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd')}"></span>
-            </li>
-        </ul>
+        <table class="board-table admin-table">
+            <thead>
+            <tr>
+                <th>제목</th>
+                <th style="width:140px;">작성일</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(news)}">
+                <td colspan="2">작성된 게시글이 없습니다.</td>
+            </tr>
+            <tr th:each="n : ${news}">
+                <td>
+                    <a th:href="@{|/post/${n.id}|}"
+                       class="admin-post-link"
+                       th:text="${#strings.length(n.title) > 15 ? (#strings.substring(n.title, 0, 15) + '...') : n.title}">제목</a>
+                </td>
+                <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
+            </tr>
+            </tbody>
+        </table>
 
-        <!-- Music -->
+        <!-- 페이지네이션 (시사 뉴스) -->
+        <nav class="pagination" th:if="${newsTotalPages > 1}">
+            <span th:if="${newsCurrent > 1}">
+                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=1&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">첫페이지</a>
+                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=${newsCurrent-1}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(newsStartPage, newsEndPage)}">
+                <a th:if="${p != newsCurrent}"
+                   th:href="@{|/admin/member/${memberId}/posts?newsPage=${p}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == newsCurrent}"
+                        th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${newsCurrent < newsTotalPages}">
+                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=${newsCurrent+1}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">다음</a>
+                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=${newsTotalPages}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">마지막페이지</a>
+            </span>
+        </nav>
+
         <h3>노래</h3>
-        <ul>
-            <li th:each="m : ${music}">
-                <a th:href="@{|/music/detail/${m.id}|}"
-                   th:text="${m.title}"></a>
-                <span th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd')}"></span>
-            </li>
-        </ul>
+        <table class="board-table admin-table">
+            <thead>
+            <tr>
+                <th>제목</th>
+                <th style="width:140px;">작성일</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(music)}">
+                <td colspan="2">작성된 게시글이 없습니다.</td>
+            </tr>
+            <tr th:each="m : ${music}">
+                <td>
+                    <a th:href="@{|/post/${m.id}|}"
+                       class="admin-post-link"
+                       th:text="${#strings.length(m.title) > 15 ? (#strings.substring(m.title, 0, 15) + '...') : m.title}">제목</a>
+                </td>
+                <td th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 페이지네이션 (노래) -->
+        <nav class="pagination" th:if="${musicTotalPages > 1}">
+            <span th:if="${musicCurrent > 1}">
+                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=1&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">첫페이지</a>
+                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=${musicCurrent-1}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(musicStartPage, musicEndPage)}">
+                <a th:if="${p != musicCurrent}"
+                   th:href="@{|/admin/member/${memberId}/posts?musicPage=${p}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == musicCurrent}"
+                        th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${musicCurrent < musicTotalPages}">
+                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=${musicCurrent+1}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">다음</a>
+                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=${musicTotalPages}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">마지막페이지</a>
+            </span>
+        </nav>
 
     </main>
 

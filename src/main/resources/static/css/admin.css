@@ -1,0 +1,116 @@
+/* admin.css */
+
+/* 페이지 전체 레이아웃 */
+.admin-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* 제목 스타일 */
+.admin-container h2 {
+  margin-bottom: 16px;
+}
+
+.admin-container h3 {
+  margin-top: 18px;
+  margin-bottom: 10px;
+}
+
+/* 테이블 여백 */
+.admin-container .admin-table {
+  margin-bottom: 16px;
+}
+
+/* 링크에ㅔ 버튼 느낌 보강 */
+.admin-container .admin-link-btn {
+  padding: 6px 10px;
+}
+
+/* 게시글/댓글 링크 가독성 */
+.admin-container .admin-post-link,
+.admin-container .admin-comment-link {
+  text-decoration: none;
+}
+
+.admin-container .admin-post-link:hover,
+.admin-container .admin-comment-link:hover {
+  text-decoration: underline;
+}
+
+/* 페이지네이션 영역 정돈 */
+.admin-container .pagination {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-container .pagination a,
+.admin-container .pagination strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+.admin-container .pagination a:hover {
+  background: #f5f6f7;
+}
+
+.admin-container .pagination strong {
+  background: #2c7efb;
+  border-color: #2c7efb;
+  color: #fff;
+}
+
+/* 관리자 페이지 헤더 */
+.admin-page-header {
+  padding: 14px 16px;
+  border: 1px solid #e3e5e8;
+  border-radius: 12px;
+  background: #ffffff;
+  margin-bottom: 16px;
+}
+
+.admin-page-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.admin-page-strong {
+  color: #2c7efb;
+}
+
+.admin-page-sub {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+/* 섹션 타이틀 */
+.admin-section-title {
+  font-weight: 700;
+  margin: 18px 0 10px 0;
+}
+
+/* 게시판 배지 */
+.admin-board-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #e3e5e8;
+  border-radius: 999px;
+  background: #f5f6f7;
+  font-size: 0.85rem;
+  color: #333;
+}

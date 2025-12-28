@@ -6,6 +6,7 @@ import com.hello.community.comment.Comment;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.Hibernate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,5 +63,14 @@ public abstract class BasePost {
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // 게시판 타입 문자열 제공
+    public String getBoardType() {
+        String simpleName = Hibernate.getClass(this).getSimpleName();
+        if ("Notice".equals(simpleName)) return "공지사항";
+        if ("News".equals(simpleName)) return "시사뉴스";
+        if ("Music".equals(simpleName)) return "노래";
+        return "게시판";
     }
 }

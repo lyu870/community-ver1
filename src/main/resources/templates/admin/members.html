@@ -33,11 +33,13 @@
                 <td th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'yyyy-MM-dd') : '-'}">2025-01-01</td>
 
                 <td>
-                    <a th:href="@{|/admin/member/${m.id}/posts|}">작성한 게시글</a>
+                    <a th:href="@{|/admin/member/${m.id}/posts|}"
+                       class="btn btn-ghost btn-sm admin-link-btn">작성한 게시글</a>
                 </td>
 
                 <td>
-                    <a th:href="@{|/admin/member/${m.id}/comments|}">작성한 댓글</a>
+                    <a th:href="@{|/admin/member/${m.id}/comments|}"
+                       class="btn btn-ghost btn-sm admin-link-btn">작성한 댓글</a>
                 </td>
             </tr>
             </tbody>

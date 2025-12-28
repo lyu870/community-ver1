@@ -9,15 +9,51 @@
 
     <main class="admin-container">
 
-        <h2 th:text="'회원 댓글 목록 (ID: ' + ${memberId} + ')'">댓글 목록</h2>
+        <div class="admin-page-header">
+            <div class="admin-page-title">
+                <span class="admin-page-strong" th:text="${memberDisplayName}">닉네임</span>님의 댓글 목록
+            </div>
+            <div class="admin-page-sub">
+                댓글을 클릭하면 해당 게시글로 이동합니다.
+            </div>
+        </div>
 
-        <ul>
-            <li th:each="c : ${comments}">
-                <a th:href="@{|/post/${c.post.id}|}"
-                   th:text="${c.content}">댓글 내용</a>
-                <span th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd')}"></span>
-            </li>
-        </ul>
+        <table class="board-table admin-table">
+            <thead>
+            <tr>
+                <th>댓글</th>
+                <th style="width:120px;">작성일</th>
+                <th style="width:120px;">게시판</th>
+                <th>게시글</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:if="${#lists.isEmpty(comments)}">
+                <td colspan="4">작성한 댓글이 없습니다.</td>
+            </tr>
+
+            <tr th:each="c : ${comments}">
+                <td>
+                    <a th:href="${c.postUrl}"
+                       th:text="${#strings.length(c.content) > 15 ? (#strings.substring(c.content, 0, 15) + '...') : c.content}"
+                       class="admin-comment-link">댓글 내용</a>
+                </td>
+
+                <td th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
+
+                <td>
+                    <span class="admin-board-badge" th:text="${c.boardName}">게시판</span>
+                </td>
+
+                <td>
+                    <a th:href="${c.postUrl}"
+                       th:text="${c.postTitle}"
+                       class="admin-post-link">게시글</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
 
         <!-- 페이지네이션 -->
         <nav class="pagination">
