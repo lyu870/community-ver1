@@ -1,0 +1,2 @@
+ALTER TABLE notification
+    MODIFY COLUMN event_id VARCHAR(200) NULL;
