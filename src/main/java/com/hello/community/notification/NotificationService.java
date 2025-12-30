@@ -3,6 +3,7 @@ package com.hello.community.notification;
 
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
+import com.hello.community.notification.NotificationRepository;
 import com.hello.community.notification.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +24,7 @@ public class NotificationService {
     private final NotificationSettingRepository notificationSettingRepository;
     private final BoardSubscriptionRepository boardSubscriptionRepository;
     private final MemberRepository memberRepository;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional(readOnly = true)
     public NotificationListResponseDto getRecentNotifications(Long memberId, int size) {
@@ -40,6 +42,7 @@ public class NotificationService {
                 .map(n -> new NotificationItemDto(
                         n.getId(),
                         n.getType().name(),
+                        n.getTitle(),
                         n.getMessage(),
                         n.getLinkUrl(),
                         n.getCreatedAt(),
@@ -164,8 +167,15 @@ public class NotificationService {
         Member member = memberRepository.findById(targetMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("member not found"));
 
-        Notification n = Notification.of(member, type, message, linkUrl, eventId);
-        return notificationRepository.save(n);
+        String title = buildTitle(type);
+
+        Notification n = Notification.of(member, type, title, message, linkUrl, eventId);
+
+        try {
+            return notificationCommandService.save(n);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public String buildPostDetailLink(BoardType boardType, Long postId) {
@@ -244,6 +254,26 @@ public class NotificationService {
 
         String linkUrl = buildPostDetailLinkWithOpenReply(boardType, postId, openReplyPath, focusCommentId);
         return createNotification(targetMemberId, NotificationType.COMMENT_REPLY, message, linkUrl, eventId);
+    }
+
+    private String buildTitle(NotificationType type) {
+        if (type == null) {
+            return "알림";
+        }
+
+        if (type == NotificationType.BOARD_POST) {
+            return "새 글 알림";
+        }
+
+        if (type == NotificationType.POST_COMMENT) {
+            return "댓글 알림";
+        }
+
+        if (type == NotificationType.COMMENT_REPLY) {
+            return "답글 알림";
+        }
+
+        return "알림";
     }
 
     private String encode(String raw) {

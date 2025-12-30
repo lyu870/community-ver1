@@ -5,7 +5,9 @@ import com.hello.community.board.common.BasePost;
 import com.hello.community.board.common.PostFinder;
 import com.hello.community.member.Member;
 import com.hello.community.notification.BoardType;
-import com.hello.community.notification.NotificationService;
+import com.hello.community.notification.NotificationEvent;
+import com.hello.community.notification.NotificationEventPublisher;
+import com.hello.community.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +25,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostFinder postFinder;
-    private final NotificationService notificationService;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     // 게시글 상세: 루트 댓글만 가져오고, replyCount(전체 답글 수)만 세팅
     public List<Comment> getComment(Long postId) {
@@ -265,15 +267,18 @@ public class CommentService {
                 String msg = buildPostCommentMessage(writer, saved.getContent());
                 String eventId = "post_comment:" + saved.getId();
 
-                notificationService.createPostCommentNotification(
+                NotificationEvent event = new NotificationEvent(
+                        NotificationType.POST_COMMENT,
                         postWriterId,
                         boardType,
                         post.getId(),
                         saved.getId(),
+                        null,
                         msg,
                         eventId
                 );
 
+                notificationEventPublisher.publish(event);
                 return;
             }
 
@@ -296,15 +301,18 @@ public class CommentService {
             String msg = buildCommentReplyMessage(writer, saved.getContent());
             String eventId = "comment_reply:" + saved.getId();
 
-            notificationService.createCommentReplyNotification(
+            NotificationEvent event = new NotificationEvent(
+                    NotificationType.COMMENT_REPLY,
                     parentWriterId,
                     boardType,
                     post.getId(),
-                    path,
                     saved.getId(),
+                    path,
                     msg,
                     eventId
             );
+
+            notificationEventPublisher.publish(event);
 
         } catch (Exception e) {
             return;

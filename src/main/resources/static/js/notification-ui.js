@@ -63,6 +63,40 @@
         });
     }
 
+    function buildTitleByType(type) {
+        const t = String(type || '').toUpperCase();
+
+        if (t === 'POST_COMMENT') {
+            return '댓글 알림';
+        }
+
+        if (t === 'COMMENT_REPLY') {
+            return '답글 알림';
+        }
+
+        if (t === 'BOARD_POST') {
+            return '새 글 알림';
+        }
+
+        if (t === 'POST_RECOMMEND') {
+            return '추천 알림';
+        }
+
+        return '알림';
+    }
+
+    function isReadItem(n) {
+        if (!n) {
+            return true;
+        }
+
+        if (typeof n.read === 'boolean') {
+            return n.read;
+        }
+
+        return (n.readAt !== null && n.readAt !== undefined && String(n.readAt) !== '');
+    }
+
     async function fetchUnreadCount() {
         try {
             const res = await fetch('/api/notifications/unread-count', {
@@ -139,11 +173,17 @@
 
         const html = items.map(function (n) {
             const id = n.id;
-            const title = escapeHtml(n.title || '');
+
+            const type = n.type || '';
+            const rawTitle = (n.title !== null && n.title !== undefined) ? String(n.title) : '';
+            const titleText = rawTitle.trim() ? rawTitle : buildTitleByType(type);
+
+            const title = escapeHtml(titleText);
             const message = escapeHtml(n.message || '').replaceAll('\n', '<br>');
             const linkUrl = escapeHtml(n.linkUrl || '');
             const createdAt = escapeHtml(n.createdAt || '');
-            const isRead = (n.readAt !== null && n.readAt !== undefined && String(n.readAt) !== '');
+
+            const isRead = isReadItem(n);
 
             return `
                 <div class="notify-item"
@@ -260,11 +300,15 @@
                 return;
             }
 
+            item.style.background = '';
+
             markRead(id).then(function () {
                 refreshBadge();
 
                 if (link) {
                     window.location.href = link;
+                } else {
+                    refreshList();
                 }
             });
         });
