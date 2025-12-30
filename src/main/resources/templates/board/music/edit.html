@@ -16,6 +16,7 @@
         <h2 class="board-title">노래 수정</h2>
 
         <form action="/music/edit" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <input type="hidden" name="id" th:value="${data.id}">
 
             <div style="margin-bottom: 12px;">

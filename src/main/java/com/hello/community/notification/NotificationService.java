@@ -10,6 +10,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -164,6 +166,92 @@ public class NotificationService {
 
         Notification n = Notification.of(member, type, message, linkUrl, eventId);
         return notificationRepository.save(n);
+    }
+
+    public String buildPostDetailLink(BoardType boardType, Long postId) {
+        if (boardType == null || postId == null) {
+            return "";
+        }
+
+        return "/" + boardType.toPath() + "/detail/" + postId;
+    }
+
+    public String buildPostDetailLinkWithFocus(BoardType boardType, Long postId, Long focusCommentId) {
+        String base = buildPostDetailLink(boardType, postId);
+        if (base.isEmpty()) {
+            return "";
+        }
+
+        if (focusCommentId == null) {
+            return base;
+        }
+
+        return base + "?focusCommentId=" + encode(String.valueOf(focusCommentId));
+    }
+
+    public String buildPostDetailLinkWithOpenReply(BoardType boardType, Long postId, List<Long> openReplyPath, Long focusCommentId) {
+        String base = buildPostDetailLink(boardType, postId);
+        if (base.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(base);
+
+        boolean first = true;
+
+        if (openReplyPath != null && !openReplyPath.isEmpty()) {
+            String joined = openReplyPath.stream()
+                    .filter(Objects::nonNull)
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+
+            if (!joined.isEmpty()) {
+                sb.append(first ? "?" : "&");
+                sb.append("openReplyPath=").append(encode(joined));
+                first = false;
+            }
+        }
+
+        if (focusCommentId != null) {
+            sb.append(first ? "?" : "&");
+            sb.append("focusCommentId=").append(encode(String.valueOf(focusCommentId)));
+        }
+
+        return sb.toString();
+    }
+
+    @Transactional
+    public Notification createPostCommentNotification(Long targetMemberId,
+                                                      BoardType boardType,
+                                                      Long postId,
+                                                      Long focusCommentId,
+                                                      String message,
+                                                      String eventId) {
+
+        String linkUrl = buildPostDetailLinkWithFocus(boardType, postId, focusCommentId);
+        return createNotification(targetMemberId, NotificationType.POST_COMMENT, message, linkUrl, eventId);
+    }
+
+    @Transactional
+    public Notification createCommentReplyNotification(Long targetMemberId,
+                                                       BoardType boardType,
+                                                       Long postId,
+                                                       List<Long> openReplyPath,
+                                                       Long focusCommentId,
+                                                       String message,
+                                                       String eventId) {
+
+        String linkUrl = buildPostDetailLinkWithOpenReply(boardType, postId, openReplyPath, focusCommentId);
+        return createNotification(targetMemberId, NotificationType.COMMENT_REPLY, message, linkUrl, eventId);
+    }
+
+    private String encode(String raw) {
+        try {
+            return URLEncoder.encode(String.valueOf(raw), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return String.valueOf(raw);
+        }
     }
 
     private boolean isAllowedBySetting(Long memberId, NotificationType type) {

@@ -31,6 +31,7 @@
                   method="post"
                   style="display:inline;"
                   class="post-delete-form">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <input type="hidden" name="_method" value="delete">
                 <button type="submit" class="btn-search board-action-btn"> 삭제 </button>
             </form>

@@ -1,4 +1,4 @@
-// /js/mypage.js
+// mypage.js
 (function () {
 
     const openProfileBtn = document.getElementById('openProfileBtn');
@@ -126,11 +126,17 @@
             const formData = new FormData(profileForm);
 
             try {
+                const headers = {
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+
+                if (window.CsrfUtil) {
+                    CsrfUtil.apply(headers);
+                }
+
                 const res = await fetch(profileForm.action, {
                     method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: headers,
                     body: new URLSearchParams(formData)
                 });
 
@@ -166,11 +172,17 @@
             const formData = new FormData(passwordForm);
 
             try {
+                const headers = {
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+
+                if (window.CsrfUtil) {
+                    CsrfUtil.apply(headers);
+                }
+
                 const res = await fetch(passwordForm.action, {
                     method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: headers,
                     body: new URLSearchParams(formData)
                 });
 

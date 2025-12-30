@@ -106,6 +106,7 @@ public class MusicController {
 
         model.addAttribute("data", music);
         model.addAttribute("comments", commentService.getComment(id));
+        model.addAttribute("enableBoardDetailJs", true);
 
         Long loginUserId = (user != null) ? user.getId() : null;
         model.addAttribute("loginUserId", loginUserId);
@@ -188,16 +189,19 @@ public class MusicController {
         return "redirect:/music/list/page/1";
     }
 
-    // 검색 기능
-    @PostMapping("/search")
-    public String postSearch(@RequestParam String searchText) {
+    // 검색 기능 (GET/POST 모두 허용: GET 기준으로 통일)
+    @RequestMapping(value = "/search", method = {RequestMethod.GET, RequestMethod.POST})
+    public String postSearch(@RequestParam(required = false) String searchText,
+                             @RequestParam(required = false, name = "q") String q) {
 
-        if (searchText == null || searchText.isBlank()) {
+        String keyword = (q != null) ? q : searchText;
+
+        if (keyword == null || keyword.isBlank()) {
             return "redirect:/music/list/page/1";
         }
 
-        String q = URLEncoder.encode(searchText.trim(), StandardCharsets.UTF_8);
-        return "redirect:/music/search/page/1?q=" + q;
+        String encoded = URLEncoder.encode(keyword.trim(), StandardCharsets.UTF_8);
+        return "redirect:/music/search/page/1?q=" + encoded;
     }
 
     // 검색 페이지네이션

@@ -1,4 +1,4 @@
-// /js/board-detail.js
+// board-detail.js
 (function () {
 // 스크랩이나 북마크기능 안넣을거면 나중에 아래 위치 메모해둔거 지우기.
     const rootMain = document.querySelector('main.board-container');
@@ -176,6 +176,11 @@
     }
 
     function applyCsrf(headers) {
+        if (window.CsrfUtil && typeof window.CsrfUtil.apply === 'function') {
+            CsrfUtil.apply(headers);
+            return;
+        }
+
         const token = getMetaCsrfToken();
         const headerName = getMetaCsrfHeader();
 
@@ -1333,6 +1338,24 @@
             }
 
             params.delete('openReplyPath');
+            params.delete('focusCommentId');
+            const qs = params.toString();
+            const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, nextUrl);
+            }
+
+            return;
+        }
+
+        if (focusCommentId) {
+            const targetId = String(focusCommentId);
+            const targetNode = document.querySelector('.comment-node[data-comment-id="' + targetId + '"]');
+            if (targetNode && targetNode.scrollIntoView) {
+                targetNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                flashNode(targetNode);
+            }
+
             params.delete('focusCommentId');
             const qs = params.toString();
             const nextUrl = window.location.pathname + (qs ? ('?' + qs) : '') + window.location.hash;

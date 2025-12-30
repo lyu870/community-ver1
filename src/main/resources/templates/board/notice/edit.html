@@ -19,6 +19,7 @@
 
         <form action="/notice/edit" method="post">
             <input type="hidden" name="id" th:value="${data.id}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
             <div style="margin-bottom:12px;">
                 <label for="title">제목</label>

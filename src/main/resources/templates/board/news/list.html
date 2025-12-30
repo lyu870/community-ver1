@@ -20,8 +20,8 @@
         <div class="board-list-top">
 
             <!-- 검색 폼 -->
-            <form action="/news/search" method="POST" class="board-search-form">
-                <input name="searchText"
+            <form action="/news/search/page/1" method="get" class="board-search-form">
+                <input name="q"
                        class="board-search-input"
                        th:value="${query}"
                        placeholder="검색어를 입력하세요">

@@ -4,11 +4,14 @@ package com.hello.community.comment;
 import com.hello.community.board.common.BasePost;
 import com.hello.community.board.common.PostFinder;
 import com.hello.community.member.Member;
+import com.hello.community.notification.BoardType;
+import com.hello.community.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ClassUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -20,6 +23,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostFinder postFinder;
+    private final NotificationService notificationService;
 
     // 게시글 상세: 루트 댓글만 가져오고, replyCount(전체 답글 수)만 세팅
     public List<Comment> getComment(Long postId) {
@@ -113,6 +117,8 @@ public class CommentService {
         Comment c = Comment.create(post, writer, content, parent);
         commentRepository.save(c);
 
+        createNotificationAfterSave(post, writer, c, parent);
+
         return c.getId();
     }
 
@@ -135,6 +141,8 @@ public class CommentService {
         commentRepository.save(c);
 
         c.setReplyCount(0L);
+
+        createNotificationAfterSave(post, writer, c, parent);
 
         return c;
     }
@@ -224,6 +232,147 @@ public class CommentService {
         comment.setUpdatedAt(LocalDateTime.now());
 
         return comment;
+    }
+
+    private void createNotificationAfterSave(BasePost post, Member writer, Comment saved, Comment parent) {
+        if (post == null || writer == null || saved == null) {
+            return;
+        }
+
+        BoardType boardType = resolveBoardType(post);
+        if (boardType == null) {
+            return;
+        }
+
+        Long postWriterId = null;
+        if (post.getWriter() != null) {
+            postWriterId = post.getWriter().getId();
+        }
+
+        Long writerId = writer.getId();
+
+        try {
+            // 루트 댓글: 내 게시글에 달린 댓글 알림
+            if (parent == null) {
+                if (postWriterId == null) {
+                    return;
+                }
+
+                if (writerId != null && String.valueOf(writerId).equals(String.valueOf(postWriterId))) {
+                    return;
+                }
+
+                String msg = buildPostCommentMessage(writer, saved.getContent());
+                String eventId = "post_comment:" + saved.getId();
+
+                notificationService.createPostCommentNotification(
+                        postWriterId,
+                        boardType,
+                        post.getId(),
+                        saved.getId(),
+                        msg,
+                        eventId
+                );
+
+                return;
+            }
+
+            // 답글: 내 댓글에 달린 답글 알림
+            Long parentWriterId = null;
+            if (parent.getWriter() != null) {
+                parentWriterId = parent.getWriter().getId();
+            }
+
+            if (parentWriterId == null) {
+                return;
+            }
+
+            if (writerId != null && String.valueOf(writerId).equals(String.valueOf(parentWriterId))) {
+                return;
+            }
+
+            List<Long> path = buildAncestorPathInclusive(parent.getId());
+
+            String msg = buildCommentReplyMessage(writer, saved.getContent());
+            String eventId = "comment_reply:" + saved.getId();
+
+            notificationService.createCommentReplyNotification(
+                    parentWriterId,
+                    boardType,
+                    post.getId(),
+                    path,
+                    saved.getId(),
+                    msg,
+                    eventId
+            );
+
+        } catch (Exception e) {
+            return;
+        }
+    }
+
+    private BoardType resolveBoardType(BasePost post) {
+        Class<?> cls = ClassUtils.getUserClass(post);
+        String name = (cls != null) ? cls.getSimpleName() : "";
+
+        if ("Music".equalsIgnoreCase(name)) {
+            return BoardType.MUSIC;
+        }
+
+        if ("News".equalsIgnoreCase(name)) {
+            return BoardType.NEWS;
+        }
+
+        if ("Notice".equalsIgnoreCase(name)) {
+            return BoardType.NOTICE;
+        }
+
+        return null;
+    }
+
+    private String buildPostCommentMessage(Member writer, String content) {
+        String who = (writer.getDisplayName() != null && !writer.getDisplayName().isBlank())
+                ? writer.getDisplayName()
+                : "누군가";
+
+        String preview = buildContentPreview(content);
+
+        if (preview.isEmpty()) {
+            return who + "님이 내 게시글에 댓글을 남겼습니다.";
+        }
+
+        return who + "님이 내 게시글에 댓글을 남겼습니다.\n" + preview;
+    }
+
+    private String buildCommentReplyMessage(Member writer, String content) {
+        String who = (writer.getDisplayName() != null && !writer.getDisplayName().isBlank())
+                ? writer.getDisplayName()
+                : "누군가";
+
+        String preview = buildContentPreview(content);
+
+        if (preview.isEmpty()) {
+            return who + "님이 내 댓글에 답글을 남겼습니다.";
+        }
+
+        return who + "님이 내 댓글에 답글을 남겼습니다.\n" + preview;
+    }
+
+    private String buildContentPreview(String content) {
+        if (content == null) {
+            return "";
+        }
+
+        String s = content.replace("\r", "").trim();
+        if (s.isEmpty()) {
+            return "";
+        }
+
+        if (s.length() <= 80) {
+            return s;
+        }
+
+        return s.substring(0, 80) + "...";
     }
 
     // 답글 "전체 개수" 계산 (해당 댓글의 모든 자손 개수)

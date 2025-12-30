@@ -28,6 +28,8 @@
             <div class="auth-card-body">
                 <form action="/login" method="POST">
 
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
                     <!-- 아이디 -->
                     <div style="margin-bottom:14px;">
                         <label class="auth-label">

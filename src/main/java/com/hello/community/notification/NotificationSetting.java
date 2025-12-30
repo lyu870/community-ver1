@@ -5,6 +5,7 @@ import com.hello.community.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "notification_setting")
 @Getter
 @NoArgsConstructor
-public class NotificationSetting {
+public class NotificationSetting implements Persistable<Long> {
 
     @Id
     @Column(name = "member_id")
@@ -35,9 +36,32 @@ public class NotificationSetting {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Transient
+    private boolean isNew = false;
+
+    @Override
+    public Long getId() {
+        return memberId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    private void markNotNew() {
+        this.isNew = false;
+    }
+
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+        this.isNew = true;
+
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
         this.updatedAt = this.createdAt;
     }
 
@@ -54,6 +78,7 @@ public class NotificationSetting {
         s.commentReplyEnabled = true;
         s.createdAt = LocalDateTime.now();
         s.updatedAt = s.createdAt;
+        s.isNew = true;
         return s;
     }
 

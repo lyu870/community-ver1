@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,6 +31,9 @@ public class SecurityConfig {
 
     private static final String LOGIN_REDIRECT_URL = "LOGIN_REDIRECT_URL";
 
+    @Value("${app.security.csrf.enabled:false}")
+    private boolean csrfEnabled;
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -47,8 +51,11 @@ public class SecurityConfig {
             SavedRequest savedRequest = requestCache.getRequest(request, response);
 
             if (savedRequest != null) {
-                response.sendRedirect(savedRequest.getRedirectUrl());
-                return;
+                String redirectUrl = savedRequest.getRedirectUrl();
+                if (isSafeRedirectUrl(request, redirectUrl)) {
+                    response.sendRedirect(redirectUrl);
+                    return;
+                }
             }
 
             HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -56,8 +63,11 @@ public class SecurityConfig {
                 Object target = httpRequest.getSession(false).getAttribute(LOGIN_REDIRECT_URL);
                 if (target instanceof String targetUrl && !targetUrl.isBlank()) {
                     httpRequest.getSession(false).removeAttribute(LOGIN_REDIRECT_URL);
-                    response.sendRedirect(targetUrl);
-                    return;
+
+                    if (isSafeRedirectPath(targetUrl)) {
+                        response.sendRedirect(targetUrl);
+                        return;
+                    }
                 }
             }
 
@@ -68,7 +78,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable());
+        if (!csrfEnabled) {
+            http.csrf(csrf -> csrf.disable());
+        }
 
         http.addFilterBefore(new OncePerRequestFilter() {
             @Override
@@ -132,6 +144,8 @@ public class SecurityConfig {
                         "/logout-success",
                         "/member/logout-success",
 
+                        "/.well-known/**",
+
                         "/main.css",
                         "/css/**",
                         "/js/**",
@@ -189,12 +203,16 @@ public class SecurityConfig {
                 return null;
             }
 
+            if (uri.getPort() != -1 && uri.getPort() != request.getServerPort()) {
+                return null;
+            }
+
             String path = uri.getRawPath();
             if (path == null || path.isBlank()) {
                 return null;
             }
 
-            if (path.startsWith("/login") || path.startsWith("/logout")) {
+            if (!isSafeRedirectPath(path)) {
                 return null;
             }
 
@@ -207,5 +225,77 @@ public class SecurityConfig {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private boolean isSafeRedirectUrl(HttpServletRequest request, String redirectUrl) {
+        if (redirectUrl == null || redirectUrl.isBlank()) {
+            return false;
+        }
+
+        try {
+            URI uri = URI.create(redirectUrl);
+
+            if (uri.getHost() == null) {
+                return isSafeRedirectPath(redirectUrl);
+            }
+
+            if (!request.getServerName().equalsIgnoreCase(uri.getHost())) {
+                return false;
+            }
+
+            if (uri.getPort() != -1 && uri.getPort() != request.getServerPort()) {
+                return false;
+            }
+
+            String path = uri.getRawPath();
+            if (path == null || path.isBlank()) {
+                return false;
+            }
+
+            return isSafeRedirectPath(path);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private boolean isSafeRedirectPath(String path) {
+        if (path == null || path.isBlank()) {
+            return false;
+        }
+
+        if (!path.startsWith("/")) {
+            return false;
+        }
+
+        if (path.startsWith("//")) {
+            return false;
+        }
+
+        if (path.startsWith("/login") || path.startsWith("/logout")) {
+            return false;
+        }
+
+        if (path.startsWith("/.well-known/")) {
+            return false;
+        }
+
+        if (path.startsWith("/api/")) {
+            return false;
+        }
+
+        if (path.startsWith("/css/") || path.startsWith("/js/") || path.startsWith("/images/") || path.startsWith("/webjars/")) {
+            return false;
+        }
+
+        if ("/favicon.ico".equals(path)) {
+            return false;
+        }
+
+        String lower = path.toLowerCase();
+        if (lower.endsWith(".json") || lower.endsWith(".map") || lower.endsWith(".xml") || lower.endsWith(".txt")) {
+            return false;
+        }
+
+        return true;
     }
 }

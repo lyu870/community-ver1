@@ -26,32 +26,62 @@
             </div>
 
             <!-- 회원 -->
-            <div class="dropdown" sec:authorize="isAuthenticated()">
-                <button class="dropdown-toggle" type="button">
-                    <span class="navbar-username">
-                        <span sec:authentication="principal.displayName"></span>
-                    </span>님 반갑습니다▼
-                </button>
-                <div class="dropdown-menu">
-                    <a href="/my-page"
-                       class="btn btn-ghost btn-full btn-sm dropdown-item">
-                        마이페이지
-                    </a>
+            <div sec:authorize="isAuthenticated()" style="display:flex; align-items:center; gap:10px;">
 
-                    <a href="/admin/members"
-                       class="btn btn-ghost btn-full btn-sm dropdown-item"
-                       sec:authorize="hasRole('ADMIN')">
-                        관리자페이지
-                    </a>
+                <div class="notify-wrap">
+                    <button type="button"
+                            class="btn btn-ghost btn-sm notify-toggle"
+                            aria-label="알림"
+                            style="position:relative;">
+                        🔔
+                        <span class="notify-badge"
+                              style="display:none; position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; line-height:18px; border-radius:9px; font-size:12px; text-align:center; background:#e74c3c; color:#fff; padding:0 5px;">
+                            0
+                        </span>
+                    </button>
 
-                    <!-- POST 방식 로그아웃 -->
-                    <form id="logoutForm" action="/logout" method="post" style="display:none;">
-                    </form>
-                    <a href="#"
-                       class="btn btn-ghost btn-full btn-sm dropdown-item dropdown-logout-link">
-                        로그아웃
-                    </a>
+                    <div class="notify-menu"
+                         style="display:none; position:absolute; right:0; margin-top:8px; width:320px; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08); padding:10px; z-index:999;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <strong>알림</strong>
+                            <button type="button" class="btn btn-ghost btn-sm notify-refresh">새로고침</button>
+                        </div>
+
+                        <div class="notify-list">
+                            <div style="color:#666; font-size:0.95rem;">알림을 불러오는 중...</div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="dropdown">
+                    <button class="dropdown-toggle" type="button">
+                        <span class="navbar-username">
+                            <span sec:authentication="principal.displayName"></span>
+                        </span>님 반갑습니다▼
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/my-page"
+                           class="btn btn-ghost btn-full btn-sm dropdown-item">
+                            마이페이지
+                        </a>
+
+                        <a href="/admin/members"
+                           class="btn btn-ghost btn-full btn-sm dropdown-item"
+                           sec:authorize="hasRole('ADMIN')">
+                            관리자페이지
+                        </a>
+
+                        <!-- POST 방식 로그아웃 -->
+                        <form id="logoutForm" action="/logout" method="post" style="display:none;">
+                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        </form>
+                        <a href="#"
+                           class="btn btn-ghost btn-full btn-sm dropdown-item dropdown-logout-link">
+                            로그아웃
+                        </a>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -96,11 +126,17 @@
                 }
 
                 if (window.fetch) {
+                    const headers = {
+                        "X-Requested-With": "XMLHttpRequest"
+                    };
+
+                    if (window.CsrfUtil) {
+                        CsrfUtil.apply(headers);
+                    }
+
                     fetch("/logout", {
                         method: "POST",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
+                        headers: headers
                     }).then(function () {
                     }).catch(function () {
                         if (logoutForm) {

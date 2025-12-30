@@ -28,6 +28,8 @@
             <div class="auth-card-body">
                 <form action="/member" method="POST" id="registerForm">
 
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
                     <!-- 닉네임 -->
                     <div style="margin-bottom:14px;">
                         <label class="auth-label">
@@ -144,9 +146,15 @@
             }
 
             async function ajaxPost(url, params) {
+                const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+
+                if (window.CsrfUtil) {
+                    CsrfUtil.apply(headers);
+                }
+
                 const res = await fetch(url, {
                     method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    headers: headers,
                     body: new URLSearchParams(params)
                 });
                 return (await res.text()).replace(/"/g, "").trim();
@@ -276,9 +284,15 @@
                     return showMsg("emailCodeMsg", "이메일을 다시 확인해주세요.", "err");
                 }
 
+                const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+
+                if (window.CsrfUtil) {
+                    CsrfUtil.apply(headers);
+                }
+
                 const res = await fetch('/api/member/email-code', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: headers,
                     body: new URLSearchParams({ email })
                 });
 
@@ -309,9 +323,15 @@
                 const code = emailCodeInput.value.trim();
 
                 try {
+                    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+
+                    if (window.CsrfUtil) {
+                        CsrfUtil.apply(headers);
+                    }
+
                     const res = await fetch('/api/member/email-verify', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        headers: headers,
                         body: new URLSearchParams({ email, code })
                     });
 

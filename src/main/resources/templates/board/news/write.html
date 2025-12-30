@@ -30,6 +30,8 @@
             </div>
 
             <button type="submit" class="btn-search board-action-btn">작성하기</button>
+
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         </form>
     </main>
 </div>

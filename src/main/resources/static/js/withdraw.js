@@ -1,4 +1,4 @@
-// /js/withdraw.js
+// withdraw.js
 (function () {
 
     const withdrawCodeInput = document.getElementById('withdrawCodeInput');
@@ -48,11 +48,17 @@
         }
 
         try {
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+
+            if (window.CsrfUtil) {
+                CsrfUtil.apply(headers);
+            }
+
             const res = await fetch('/api/member/withdraw/email-code', {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                headers: headers
             });
 
             const body = await res.json();
@@ -98,12 +104,18 @@
     // 실제 탈퇴 요청 AJAX
     async function doWithdrawRequest(code) {
         try {
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            };
+
+            if (window.CsrfUtil) {
+                CsrfUtil.apply(headers);
+            }
+
             const res = await fetch('/api/member/withdraw', {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
+                headers: headers,
                 body: new URLSearchParams({ code: code })
             });
 

@@ -20,8 +20,8 @@
         <div class="board-list-top">
 
             <!-- 검색 폼 -->
-            <form action="/music/search" method="POST" class="board-search-form">
-                <input name="searchText"
+            <form action="/music/search/page/1" method="GET" class="board-search-form">
+                <input name="q"
                        class="board-search-input"
                        th:value="${query}"
                        placeholder="검색어를 입력하세요">
@@ -115,7 +115,8 @@
         </section>
 
         <!-- 페이지네이션 -->
-        <nav class="pagination">
+        <nav class="pagination"
+             th:if="${!#bools.isTrue(searchMode)}">
 
             <span th:if="${current > 1}">
                 <!-- myMode 에 따라 URL 분기 -->
@@ -135,6 +136,31 @@
             <span th:if="${current < totalPages}">
                 <a th:href="${#bools.isTrue(myMode)} ? @{|/music/my/page/${current+1}|} : @{|/music/list/page/${current+1}|}">다음</a>
                 <a th:href="${#bools.isTrue(myMode)} ? @{|/music/my/page/${totalPages}|} : @{|/music/list/page/${totalPages}|}">마지막페이지</a>
+            </span>
+
+        </nav>
+
+        <!-- 검색 모드 페이지네이션 -->
+        <nav class="pagination"
+             th:if="${#bools.isTrue(searchMode)}">
+
+            <span th:if="${current > 1}">
+                <a th:href="@{|/music/search/page/1?q=${query}|}">첫페이지</a>
+                <a th:href="@{|/music/search/page/${current-1}?q=${query}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(startPage, endPage)}">
+                <a th:if="${p != current}"
+                   th:href="@{|/music/search/page/${p}?q=${query}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == current}"
+                        th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${current < totalPages}">
+                <a th:href="@{|/music/search/page/${current+1}?q=${query}|}">다음</a>
+                <a th:href="@{|/music/search/page/${totalPages}?q=${query}|}">마지막페이지</a>
             </span>
 
         </nav>

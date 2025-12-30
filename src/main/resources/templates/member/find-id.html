@@ -179,12 +179,18 @@
                         }
 
                         try {
+                            const headers = {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            };
+
+                            if (window.CsrfUtil) {
+                                CsrfUtil.apply(headers);
+                            }
+
                             const res = await fetch('/api/member/find-id/email-code', {
                                 method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
+                                headers: headers,
                                 body: new URLSearchParams({
                                     email: email
                                 }).toString()
@@ -216,12 +222,18 @@
                         const code = formData.get('code');
 
                         try {
+                            const headers = {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            };
+
+                            if (window.CsrfUtil) {
+                                CsrfUtil.apply(headers);
+                            }
+
                             const res = await fetch('/api/member/find-id/confirm', {
                                 method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
+                                headers: headers,
                                 body: new URLSearchParams({
                                     email: email,
                                     code: code

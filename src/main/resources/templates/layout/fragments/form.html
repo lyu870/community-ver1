@@ -30,6 +30,8 @@
         <div style="margin-top:8px;">
             <button type="submit" th:text="${buttonLabel}">저장</button>
         </div>
+
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
     </form>
 </th:block>
 
