@@ -1,6 +1,5 @@
 // NotificationEventPublisher.java
-package com.hello.community.notification;
-import com.hello.community.notification.NotificationEvent;//
+package com.hello.community.notification.event;
 
 public interface NotificationEventPublisher {
     void publish(NotificationEvent event);

@@ -3,16 +3,19 @@ package com.hello.community.comment;
 
 import com.hello.community.board.common.BasePost;
 import com.hello.community.board.common.PostFinder;
+import com.hello.community.comment.CommentRepository;
 import com.hello.community.member.Member;
 import com.hello.community.notification.BoardType;
-import com.hello.community.notification.NotificationEvent;
-import com.hello.community.notification.NotificationEventPublisher;
 import com.hello.community.notification.NotificationType;
+import com.hello.community.notification.event.NotificationEvent;
+import com.hello.community.notification.event.NotificationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
 import java.time.LocalDateTime;
@@ -236,6 +239,32 @@ public class CommentService {
         return comment;
     }
 
+    private void publishAfterCommit(NotificationEvent event) {
+        if (event == null) {
+            return;
+        }
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        notificationEventPublisher.publish(event);
+                    } catch (Exception e) {
+                        return;
+                    }
+                }
+            });
+            return;
+        }
+
+        try {
+            notificationEventPublisher.publish(event);
+        } catch (Exception e) {
+            return;
+        }
+    }
+
     private void createNotificationAfterSave(BasePost post, Member writer, Comment saved, Comment parent) {
         if (post == null || writer == null || saved == null) {
             return;
@@ -268,8 +297,8 @@ public class CommentService {
                 String eventId = "post_comment:" + saved.getId();
 
                 NotificationEvent event = new NotificationEvent(
-                        NotificationType.POST_COMMENT,
                         postWriterId,
+                        NotificationType.POST_COMMENT,
                         boardType,
                         post.getId(),
                         saved.getId(),
@@ -278,7 +307,7 @@ public class CommentService {
                         eventId
                 );
 
-                notificationEventPublisher.publish(event);
+                publishAfterCommit(event);
                 return;
             }
 
@@ -302,8 +331,8 @@ public class CommentService {
             String eventId = "comment_reply:" + saved.getId();
 
             NotificationEvent event = new NotificationEvent(
-                    NotificationType.COMMENT_REPLY,
                     parentWriterId,
+                    NotificationType.COMMENT_REPLY,
                     boardType,
                     post.getId(),
                     saved.getId(),
@@ -312,7 +341,7 @@ public class CommentService {
                     eventId
             );
 
-            notificationEventPublisher.publish(event);
+            publishAfterCommit(event);
 
         } catch (Exception e) {
             return;
