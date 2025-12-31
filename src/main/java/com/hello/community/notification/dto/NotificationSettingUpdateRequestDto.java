@@ -5,6 +5,7 @@ public class NotificationSettingUpdateRequestDto {
 
     private Boolean postCommentEnabled;
     private Boolean commentReplyEnabled;
+    private Boolean postRecommendEnabled;
 
     public Boolean getPostCommentEnabled() {
         return postCommentEnabled;
@@ -20,5 +21,13 @@ public class NotificationSettingUpdateRequestDto {
 
     public void setCommentReplyEnabled(Boolean commentReplyEnabled) {
         this.commentReplyEnabled = commentReplyEnabled;
+    }
+
+    public Boolean getPostRecommendEnabled() {
+        return postRecommendEnabled;
+    }
+
+    public void setPostRecommendEnabled(Boolean postRecommendEnabled) {
+        this.postRecommendEnabled = postRecommendEnabled;
     }
 }

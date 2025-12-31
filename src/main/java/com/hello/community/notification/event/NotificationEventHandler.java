@@ -65,5 +65,21 @@ public class NotificationEventHandler {
 
             return;
         }
+
+        if (event.getType() == NotificationType.POST_RECOMMEND) {
+            if (event.getBoardType() == null || event.getPostId() == null) {
+                return;
+            }
+
+            notificationService.createPostRecommendNotification(
+                    event.getTargetMemberId(),
+                    event.getBoardType(),
+                    event.getPostId(),
+                    event.getMessage(),
+                    event.getEventId()
+            );
+
+            return;
+        }
     }
 }

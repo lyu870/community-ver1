@@ -4,5 +4,6 @@ package com.hello.community.notification;
 public enum NotificationType {
     BOARD_POST,
     POST_COMMENT,
+    POST_RECOMMEND,
     COMMENT_REPLY
 }

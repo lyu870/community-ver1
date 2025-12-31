@@ -5,10 +5,12 @@ public class NotificationSettingResponseDto {
 
     private boolean postCommentEnabled;
     private boolean commentReplyEnabled;
+    private boolean postRecommendEnabled;
 
-    public NotificationSettingResponseDto(boolean postCommentEnabled, boolean commentReplyEnabled) {
+    public NotificationSettingResponseDto(boolean postCommentEnabled, boolean commentReplyEnabled, boolean postRecommendEnabled) {
         this.postCommentEnabled = postCommentEnabled;
         this.commentReplyEnabled = commentReplyEnabled;
+        this.postRecommendEnabled = postRecommendEnabled;
     }
 
     public boolean isPostCommentEnabled() {
@@ -17,5 +19,9 @@ public class NotificationSettingResponseDto {
 
     public boolean isCommentReplyEnabled() {
         return commentReplyEnabled;
+    }
+
+    public boolean isPostRecommendEnabled() {
+        return postRecommendEnabled;
     }
 }

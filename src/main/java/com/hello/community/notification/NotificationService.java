@@ -4,6 +4,7 @@ package com.hello.community.notification;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
 import com.hello.community.notification.NotificationRepository;
+import com.hello.community.notification.NotificationSettingRepository;
 import com.hello.community.notification.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -99,7 +100,11 @@ public class NotificationService {
     @Transactional
     public NotificationSettingResponseDto getSettings(Long memberId) {
         NotificationSetting s = getOrCreateSetting(memberId);
-        return new NotificationSettingResponseDto(s.isPostCommentEnabled(), s.isCommentReplyEnabled());
+        return new NotificationSettingResponseDto(
+                s.isPostCommentEnabled(),
+                s.isCommentReplyEnabled(),
+                s.isPostRecommendEnabled()
+        );
     }
 
     @Transactional
@@ -108,10 +113,15 @@ public class NotificationService {
 
         Boolean postCommentEnabled = (req != null) ? req.getPostCommentEnabled() : null;
         Boolean commentReplyEnabled = (req != null) ? req.getCommentReplyEnabled() : null;
+        Boolean postRecommendEnabled = (req != null) ? req.getPostRecommendEnabled() : null;
 
-        s.update(postCommentEnabled, commentReplyEnabled);
+        s.update(postCommentEnabled, commentReplyEnabled, postRecommendEnabled);
 
-        return new NotificationSettingResponseDto(s.isPostCommentEnabled(), s.isCommentReplyEnabled());
+        return new NotificationSettingResponseDto(
+                s.isPostCommentEnabled(),
+                s.isCommentReplyEnabled(),
+                s.isPostRecommendEnabled()
+        );
     }
 
     @Transactional
@@ -256,6 +266,17 @@ public class NotificationService {
         return createNotification(targetMemberId, NotificationType.COMMENT_REPLY, message, linkUrl, eventId);
     }
 
+    @Transactional
+    public Notification createPostRecommendNotification(Long targetMemberId,
+                                                        BoardType boardType,
+                                                        Long postId,
+                                                        String message,
+                                                        String eventId) {
+
+        String linkUrl = buildPostDetailLink(boardType, postId);
+        return createNotification(targetMemberId, NotificationType.POST_RECOMMEND, message, linkUrl, eventId);
+    }
+
     private String buildTitle(NotificationType type) {
         if (type == null) {
             return "알림";
@@ -271,6 +292,10 @@ public class NotificationService {
 
         if (type == NotificationType.COMMENT_REPLY) {
             return "답글 알림";
+        }
+
+        if (type == NotificationType.POST_RECOMMEND) {
+            return "추천 알림";
         }
 
         return "알림";
@@ -297,6 +322,10 @@ public class NotificationService {
 
         if (type == NotificationType.COMMENT_REPLY) {
             return s.isCommentReplyEnabled();
+        }
+
+        if (type == NotificationType.POST_RECOMMEND) {
+            return s.isPostRecommendEnabled();
         }
 
         return true;
