@@ -190,11 +190,9 @@
         listEl.innerHTML = '<div style="color:#666; font-size:0.95rem;">알림을 불러오지 못했습니다.</div>';
     }
 
-    function renderList(listEl, items, append) {
+    function renderList(listEl, items) {
         if (!Array.isArray(items) || !items.length) {
-            if (!append) {
-                renderEmpty(listEl);
-            }
+            renderEmpty(listEl);
             return;
         }
 
@@ -233,11 +231,7 @@
 `;
         }).join('');
 
-        if (!append) {
-            listEl.innerHTML = '<div style="border-bottom:1px solid #eee;"></div>' + html;
-        } else {
-            listEl.insertAdjacentHTML('beforeend', html);
-        }
+        listEl.innerHTML = '<div style="border-bottom:1px solid #eee;"></div>' + html;
     }
 
     function setBadge(badgeEl, count) {
@@ -262,7 +256,10 @@
         const listEl = wrap.querySelector('.notify-list');
         const badgeEl = wrap.querySelector('.notify-badge');
         const refreshBtn = wrap.querySelector('.notify-refresh');
-        const moreBtn = wrap.querySelector('.notify-more');
+
+        const prevBtn = wrap.querySelector('.notify-prev');
+        const nextBtn = wrap.querySelector('.notify-next');
+        const pageEl = wrap.querySelector('.notify-page');
 
         if (!toggle || !menu || !listEl || !badgeEl) {
             return;
@@ -270,8 +267,8 @@
 
         const pageSize = 5;
 
+        let currentPage = 0;
         let hasNext = false;
-        let nextPage = null;
 
         function closeMenu() {
             menu.style.display = 'none';
@@ -285,11 +282,18 @@
             return menu.style.display === 'block';
         }
 
-        function setMoreVisible(show) {
-            if (!moreBtn) {
-                return;
+        function setPager() {
+            if (pageEl) {
+                pageEl.textContent = String(currentPage + 1);
             }
-            moreBtn.style.display = show ? 'inline-block' : 'none';
+
+            if (prevBtn) {
+                prevBtn.disabled = (currentPage <= 0);
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = (hasNext !== true);
+            }
         }
 
         async function refreshBadge() {
@@ -300,44 +304,42 @@
             setBadge(badgeEl, data.unreadCount);
         }
 
-        async function refreshFirstPage() {
+        async function loadPage(page) {
+            const p = Math.max(0, page);
+
             listEl.innerHTML = '<div style="color:#666; font-size:0.95rem;">알림을 불러오는 중...</div>';
 
-            hasNext = false;
-            nextPage = null;
-            setMoreVisible(false);
-
-            const data = await fetchPage(0, pageSize);
+            const data = await fetchPage(p, pageSize);
             if (!data || !Array.isArray(data.items)) {
                 renderError(listEl);
+                hasNext = false;
+                setPager();
                 return;
             }
 
-            renderList(listEl, data.items, false);
+            if (p > 0 && (!data.items || !data.items.length)) {
+                const prev = p - 1;
+                const prevData = await fetchPage(prev, pageSize);
+                if (prevData && Array.isArray(prevData.items)) {
+                    currentPage = prev;
+                    hasNext = (prevData.hasNext === true);
+                    renderList(listEl, prevData.items);
+                    setPager();
+                    updateTimeAgoAll();
+                } else {
+                    renderEmpty(listEl);
+                    currentPage = 0;
+                    hasNext = false;
+                    setPager();
+                }
+                return;
+            }
 
+            currentPage = p;
             hasNext = (data.hasNext === true);
-            nextPage = (data.nextPage !== null && data.nextPage !== undefined) ? data.nextPage : null;
-            setMoreVisible(hasNext);
 
-            updateTimeAgoAll();
-        }
-
-        async function loadMore() {
-            if (!hasNext || nextPage === null || nextPage === undefined) {
-                return;
-            }
-
-            const data = await fetchPage(nextPage, pageSize);
-            if (!data || !Array.isArray(data.items)) {
-                return;
-            }
-
-            renderList(listEl, data.items, true);
-
-            hasNext = (data.hasNext === true);
-            nextPage = (data.nextPage !== null && data.nextPage !== undefined) ? data.nextPage : null;
-            setMoreVisible(hasNext);
-
+            renderList(listEl, data.items);
+            setPager();
             updateTimeAgoAll();
         }
 
@@ -349,7 +351,7 @@
                 closeMenu();
             } else {
                 openMenu();
-                refreshFirstPage();
+                loadPage(0);
             }
         });
 
@@ -362,14 +364,27 @@
         if (refreshBtn) {
             refreshBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                refreshFirstPage();
+                loadPage(currentPage);
             });
         }
 
-        if (moreBtn) {
-            moreBtn.addEventListener('click', function (e) {
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                loadMore();
+                if (currentPage <= 0) {
+                    return;
+                }
+                loadPage(currentPage - 1);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (hasNext !== true) {
+                    return;
+                }
+                loadPage(currentPage + 1);
             });
         }
 
@@ -389,18 +404,8 @@
                         return;
                     }
 
-                    const item = listEl.querySelector('.notify-item[data-id="' + CSS.escape(String(id)) + '"]');
-                    if (item) {
-                        item.remove();
-                    }
-
                     refreshBadge();
-
-                    const remain = listEl.querySelectorAll('.notify-item');
-                    if (!remain.length) {
-                        renderEmpty(listEl);
-                        setMoreVisible(false);
-                    }
+                    loadPage(currentPage);
                 });
 
                 return;
