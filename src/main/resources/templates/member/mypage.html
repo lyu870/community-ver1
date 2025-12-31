@@ -145,6 +145,36 @@
                     </form>
                 </section>
 
+                <!-- 알림 설정 영역 -->
+                <section id="notificationSettingSection" style="margin-top:24px;">
+                    <h3 style="font-size:1rem; margin-bottom:8px;">알림 설정</h3>
+
+                    <p style="font-size:0.9rem; color:#555; line-height:1.5; margin-bottom:10px;">
+                        원하는 알림만 켜고 끌 수 있습니다.
+                    </p>
+
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <label style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                            <span style="font-size:0.95rem;">내 게시글에 댓글 알림</span>
+                            <input type="checkbox" id="notifyPostCommentEnabled">
+                        </label>
+
+                        <label style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                            <span style="font-size:0.95rem;">내 댓글에 답글 알림</span>
+                            <input type="checkbox" id="notifyCommentReplyEnabled">
+                        </label>
+
+                        <label style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                            <span style="font-size:0.95rem;">내 게시글 추천 알림</span>
+                            <input type="checkbox" id="notifyPostRecommendEnabled">
+                        </label>
+                    </div>
+
+                    <div id="notificationSettingMsg"
+                         style="margin-top:10px; font-size:0.9rem; color:#555; display:none;">
+                    </div>
+                </section>
+
                 <!-- 회원 탈퇴 영역 -->
                 <section id="withdrawSection" style="margin-top:24px;">
                     <h3 style="font-size:1rem; margin-bottom:8px;">회원 탈퇴</h3>

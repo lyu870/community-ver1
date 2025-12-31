@@ -25,6 +25,11 @@
     const newPasswordConfirmInput = document.querySelector('input[name="newPasswordConfirm"]');
     const passwordMatchMsg = document.getElementById('passwordMatchMsg');
 
+    const notifyPostCommentEnabled = document.getElementById('notifyPostCommentEnabled');
+    const notifyCommentReplyEnabled = document.getElementById('notifyCommentReplyEnabled');
+    const notifyPostRecommendEnabled = document.getElementById('notifyPostRecommendEnabled');
+    const notificationSettingMsg = document.getElementById('notificationSettingMsg');
+
     function hideProfileMessages() {
         profileMessage.style.display = 'none';
         profileError.style.display = 'none';
@@ -57,6 +62,142 @@
         passwordForm.reset();
         passwordSection.style.display = 'none';
         resetPasswordMatchMsg();
+    }
+
+    function setNotificationMsg(text) {
+        if (!notificationSettingMsg) {
+            return;
+        }
+
+        if (!text) {
+            notificationSettingMsg.style.display = 'none';
+            notificationSettingMsg.textContent = '';
+            return;
+        }
+
+        notificationSettingMsg.style.display = 'block';
+        notificationSettingMsg.textContent = String(text);
+    }
+
+    function setNotificationInputsDisabled(disabled) {
+        if (notifyPostCommentEnabled) notifyPostCommentEnabled.disabled = disabled;
+        if (notifyCommentReplyEnabled) notifyCommentReplyEnabled.disabled = disabled;
+        if (notifyPostRecommendEnabled) notifyPostRecommendEnabled.disabled = disabled;
+    }
+
+    async function fetchNotificationSettings() {
+        try {
+            const res = await fetch('/api/notification-settings', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!res.ok) {
+                return null;
+            }
+
+            const body = await res.json();
+            if (!body || body.success !== true || !body.data) {
+                return null;
+            }
+
+            return body.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function updateNotificationSettings(payload) {
+        try {
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            };
+
+            if (window.CsrfUtil) {
+                CsrfUtil.apply(headers);
+            }
+
+            const res = await fetch('/api/notification-settings', {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(payload || {})
+            });
+
+            if (!res.ok) {
+                return null;
+            }
+
+            const body = await res.json();
+            if (!body || body.success !== true || !body.data) {
+                return null;
+            }
+
+            return body.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function initNotificationSettings() {
+        if (!notifyPostCommentEnabled || !notifyCommentReplyEnabled || !notifyPostRecommendEnabled) {
+            return;
+        }
+
+        setNotificationMsg('');
+        setNotificationInputsDisabled(true);
+
+        const data = await fetchNotificationSettings();
+        if (!data) {
+            setNotificationMsg('알림 설정을 불러오지 못했습니다.');
+            setNotificationInputsDisabled(false);
+            return;
+        }
+
+        notifyPostCommentEnabled.checked = (data.postCommentEnabled === true);
+        notifyCommentReplyEnabled.checked = (data.commentReplyEnabled === true);
+        notifyPostRecommendEnabled.checked = (data.postRecommendEnabled === true);
+
+        setNotificationInputsDisabled(false);
+    }
+
+    async function submitNotificationSettings() {
+        if (!notifyPostCommentEnabled || !notifyCommentReplyEnabled || !notifyPostRecommendEnabled) {
+            return;
+        }
+
+        const payload = {
+            postCommentEnabled: notifyPostCommentEnabled.checked,
+            commentReplyEnabled: notifyCommentReplyEnabled.checked,
+            postRecommendEnabled: notifyPostRecommendEnabled.checked
+        };
+
+        setNotificationMsg('');
+        setNotificationInputsDisabled(true);
+
+        const data = await updateNotificationSettings(payload);
+        if (!data) {
+            setNotificationMsg('알림 설정 저장에 실패했습니다.');
+            setNotificationInputsDisabled(false);
+            return;
+        }
+
+        notifyPostCommentEnabled.checked = (data.postCommentEnabled === true);
+        notifyCommentReplyEnabled.checked = (data.commentReplyEnabled === true);
+        notifyPostRecommendEnabled.checked = (data.postRecommendEnabled === true);
+
+        setNotificationInputsDisabled(false);
+
+        if (window.showAppToast) {
+            showAppToast('알림 설정이 저장되었습니다.', { variant: 'info', duration: 1500 });
+        } else {
+            setNotificationMsg('알림 설정이 저장되었습니다.');
+            setTimeout(function () {
+                setNotificationMsg('');
+            }, 1500);
+        }
     }
 
     // 닉네임 변경 버튼 클릭
@@ -201,6 +342,13 @@
                 passwordError.style.display = 'block';
             }
         });
+    }
+
+    if (notifyPostCommentEnabled && notifyCommentReplyEnabled && notifyPostRecommendEnabled) {
+        notifyPostCommentEnabled.addEventListener('change', submitNotificationSettings);
+        notifyCommentReplyEnabled.addEventListener('change', submitNotificationSettings);
+        notifyPostRecommendEnabled.addEventListener('change', submitNotificationSettings);
+        initNotificationSettings();
     }
 
 })();
