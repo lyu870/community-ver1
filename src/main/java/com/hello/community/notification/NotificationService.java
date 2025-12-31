@@ -3,10 +3,9 @@ package com.hello.community.notification;
 
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
-import com.hello.community.notification.NotificationRepository;
-import com.hello.community.notification.NotificationSettingRepository;
 import com.hello.community.notification.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -28,17 +27,19 @@ public class NotificationService {
     private final NotificationCommandService notificationCommandService;
 
     @Transactional(readOnly = true)
-    public NotificationListResponseDto getRecentNotifications(Long memberId, int size) {
+    public NotificationListResponseDto getNotifications(Long memberId, int page, int size) {
+        int pageNumber = Math.max(0, page);
         int pageSize = Math.max(1, Math.min(size, 50));
 
-        PageRequest page = PageRequest.of(
-                0,
+        PageRequest pageable = PageRequest.of(
+                pageNumber,
                 pageSize,
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
 
-        List<NotificationItemDto> items = notificationRepository.findByMemberId(memberId, page)
-                .getContent()
+        Page<Notification> result = notificationRepository.findByMemberId(memberId, pageable);
+
+        List<NotificationItemDto> items = result.getContent()
                 .stream()
                 .map(n -> new NotificationItemDto(
                         n.getId(),
@@ -52,7 +53,10 @@ public class NotificationService {
                 ))
                 .collect(Collectors.toList());
 
-        return new NotificationListResponseDto(items);
+        boolean hasNext = result.hasNext();
+        Integer nextPage = hasNext ? (pageNumber + 1) : null;
+
+        return new NotificationListResponseDto(items, hasNext, nextPage);
     }
 
     @Transactional(readOnly = true)
@@ -95,6 +99,14 @@ public class NotificationService {
         }
 
         return updated;
+    }
+
+    @Transactional
+    public void deleteOne(Long memberId, Long notificationId) {
+        Notification n = notificationRepository.findByIdAndMemberId(notificationId, memberId)
+                .orElseThrow(() -> new IllegalArgumentException("notification not found"));
+
+        notificationRepository.delete(n);
     }
 
     @Transactional

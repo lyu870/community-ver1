@@ -3,7 +3,6 @@ package com.hello.community.notification.event;
 
 import com.hello.community.notification.NotificationService;
 import com.hello.community.notification.NotificationType;
-import com.hello.community.notification.event.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

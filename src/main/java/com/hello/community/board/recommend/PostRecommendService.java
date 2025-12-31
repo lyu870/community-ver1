@@ -1,16 +1,19 @@
 // PostRecommendService.java
 package com.hello.community.board.recommend;
 
-import com.hello.community.board.common.BasePost;
+import com.hello.community.board.music.Music;
 import com.hello.community.board.music.MusicRepository;
+import com.hello.community.board.news.News;
 import com.hello.community.board.news.NewsRepository;
+import com.hello.community.board.notice.Notice;
 import com.hello.community.board.notice.NoticeRepository;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
-import com.hello.community.notification.NotificationService;
+import com.hello.community.notification.BoardType;
 import com.hello.community.notification.NotificationType;
+import com.hello.community.notification.event.NotificationEvent;
+import com.hello.community.notification.event.NotificationEventPublisher;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -25,11 +28,13 @@ import java.util.Objects;
 public class PostRecommendService {
 
     private final PostRecommendRepository postRecommendRepository;
+
     private final MusicRepository musicRepository;
     private final NewsRepository newsRepository;
     private final NoticeRepository noticeRepository;
+
     private final MemberRepository memberRepository;
-    private final NotificationService notificationService;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     public boolean isRecommended(Long postId, Long memberId) {
         return postRecommendRepository.existsByPostIdAndMemberId(postId, memberId);
@@ -76,45 +81,26 @@ public class PostRecommendService {
         }
 
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            createPostRecommendNotificationSafely(postId, memberId, recommendId);
+            publishPostRecommendEventSafely(postId, memberId, recommendId);
             return;
         }
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                createPostRecommendNotificationSafely(postId, memberId, recommendId);
+                publishPostRecommendEventSafely(postId, memberId, recommendId);
             }
         });
     }
 
-    private BasePost findPostById(Long postId) {
-        if (postId == null) {
-            return null;
-        }
-
-        BasePost post = musicRepository.findById(postId).orElse(null);
-        if (post != null) {
-            return post;
-        }
-
-        post = newsRepository.findById(postId).orElse(null);
-        if (post != null) {
-            return post;
-        }
-
-        return noticeRepository.findById(postId).orElse(null);
-    }
-
-    private void createPostRecommendNotificationSafely(Long postId, Long memberId, Long recommendId) {
+    private void publishPostRecommendEventSafely(Long postId, Long memberId, Long recommendId) {
         try {
-            BasePost post = findPostById(postId);
-            if (post == null || post.getWriter() == null || post.getWriter().getId() == null) {
+            PostAndBoard found = findPostAndBoardType(postId);
+            if (found == null || found.targetMemberId == null || found.boardType == null) {
                 return;
             }
 
-            Long targetMemberId = post.getWriter().getId();
-            if (Objects.equals(targetMemberId, memberId)) {
+            if (Objects.equals(found.targetMemberId, memberId)) {
                 return;
             }
 
@@ -123,37 +109,55 @@ public class PostRecommendService {
                     ? actor.getDisplayName()
                     : "누군가";
 
-            String boardPath = "";
-            try {
-                String simple = Hibernate.getClass(post).getSimpleName();
-                if (simple != null) {
-                    boardPath = simple.toLowerCase();
-                }
-            } catch (Exception e) {
-                boardPath = "";
-            }
-
-            if (boardPath.trim().isEmpty()) {
-                return;
-            }
-
-            String linkUrl = "/" + boardPath + "/detail/" + postId;
-
             String eventId = (recommendId != null)
                     ? "POST_RECOMMEND:" + recommendId
                     : "POST_RECOMMEND:" + postId + ":" + memberId;
 
             String message = actorName + "님이 내 게시글을 추천했습니다.";
 
-            notificationService.createNotification(
-                    targetMemberId,
+            NotificationEvent event = new NotificationEvent(
+                    found.targetMemberId,
                     NotificationType.POST_RECOMMEND,
+                    found.boardType,
+                    postId,
+                    null,
+                    null,
                     message,
-                    linkUrl,
                     eventId
             );
+
+            notificationEventPublisher.publish(event);
         } catch (Exception e) {
             return;
+        }
+    }
+
+    private PostAndBoard findPostAndBoardType(Long postId) {
+        Music m = musicRepository.findById(postId).orElse(null);
+        if (m != null && m.getWriter() != null && m.getWriter().getId() != null) {
+            return new PostAndBoard(m.getWriter().getId(), BoardType.MUSIC);
+        }
+
+        News n = newsRepository.findById(postId).orElse(null);
+        if (n != null && n.getWriter() != null && n.getWriter().getId() != null) {
+            return new PostAndBoard(n.getWriter().getId(), BoardType.NEWS);
+        }
+
+        Notice no = noticeRepository.findById(postId).orElse(null);
+        if (no != null && no.getWriter() != null && no.getWriter().getId() != null) {
+            return new PostAndBoard(no.getWriter().getId(), BoardType.NOTICE);
+        }
+
+        return null;
+    }
+
+    private static class PostAndBoard {
+        private Long targetMemberId;
+        private BoardType boardType;
+
+        private PostAndBoard(Long targetMemberId, BoardType boardType) {
+            this.targetMemberId = targetMemberId;
+            this.boardType = boardType;
         }
     }
 }

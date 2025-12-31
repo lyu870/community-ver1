@@ -116,9 +116,12 @@
         }
     }
 
-    async function fetchRecentList() {
+    async function fetchPage(page, size) {
         try {
-            const res = await fetch('/api/notifications?size=10', {
+            const p = Number.isFinite(page) ? page : 0;
+            const s = Number.isFinite(size) ? size : 5;
+
+            const res = await fetch('/api/notifications?page=' + encodeURIComponent(p) + '&size=' + encodeURIComponent(s), {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
@@ -157,6 +160,28 @@
         }
     }
 
+    async function deleteOne(id) {
+        try {
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            applyCsrf(headers);
+
+            const res = await fetch('/api/notifications/' + encodeURIComponent(id), {
+                method: 'DELETE',
+                headers: headers
+            });
+            if (!res.ok) {
+                return false;
+            }
+            const body = await res.json();
+            if (!body || body.success !== true) {
+                return false;
+            }
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function renderEmpty(listEl) {
         listEl.innerHTML = '<div style="color:#666; font-size:0.95rem;">최근 알림이 없습니다.</div>';
     }
@@ -165,9 +190,11 @@
         listEl.innerHTML = '<div style="color:#666; font-size:0.95rem;">알림을 불러오지 못했습니다.</div>';
     }
 
-    function renderList(listEl, items) {
+    function renderList(listEl, items, append) {
         if (!Array.isArray(items) || !items.length) {
-            renderEmpty(listEl);
+            if (!append) {
+                renderEmpty(listEl);
+            }
             return;
         }
 
@@ -192,14 +219,25 @@
                      style="padding:8px; border-top:1px solid #eee; ${isRead ? '' : 'background:rgba(52,152,219,0.06);'} cursor:pointer;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
                         <strong style="font-size:0.95rem;">${title}</strong>
-                        <span class="js-timeago" data-time="${createdAt}" style="font-size:0.85rem; color:#777;">방금 전</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="js-timeago" data-time="${createdAt}" style="font-size:0.85rem; color:#777;">방금 전</span>
+                            <button type="button"
+                                    class="btn btn-ghost btn-sm notify-delete"
+                                    data-id="${id}">
+                                삭제
+                            </button>
+                        </div>
                     </div>
                     <div style="margin-top:4px; color:#333; font-size:0.92rem; line-height:1.35;">${message}</div>
                 </div>
 `;
         }).join('');
 
-        listEl.innerHTML = '<div style="border-bottom:1px solid #eee;"></div>' + html;
+        if (!append) {
+            listEl.innerHTML = '<div style="border-bottom:1px solid #eee;"></div>' + html;
+        } else {
+            listEl.insertAdjacentHTML('beforeend', html);
+        }
     }
 
     function setBadge(badgeEl, count) {
@@ -224,10 +262,16 @@
         const listEl = wrap.querySelector('.notify-list');
         const badgeEl = wrap.querySelector('.notify-badge');
         const refreshBtn = wrap.querySelector('.notify-refresh');
+        const moreBtn = wrap.querySelector('.notify-more');
 
         if (!toggle || !menu || !listEl || !badgeEl) {
             return;
         }
+
+        const pageSize = 5;
+
+        let hasNext = false;
+        let nextPage = null;
 
         function closeMenu() {
             menu.style.display = 'none';
@@ -241,6 +285,13 @@
             return menu.style.display === 'block';
         }
 
+        function setMoreVisible(show) {
+            if (!moreBtn) {
+                return;
+            }
+            moreBtn.style.display = show ? 'inline-block' : 'none';
+        }
+
         async function refreshBadge() {
             const data = await fetchUnreadCount();
             if (!data) {
@@ -249,16 +300,44 @@
             setBadge(badgeEl, data.unreadCount);
         }
 
-        async function refreshList() {
+        async function refreshFirstPage() {
             listEl.innerHTML = '<div style="color:#666; font-size:0.95rem;">알림을 불러오는 중...</div>';
 
-            const data = await fetchRecentList();
+            hasNext = false;
+            nextPage = null;
+            setMoreVisible(false);
+
+            const data = await fetchPage(0, pageSize);
             if (!data || !Array.isArray(data.items)) {
                 renderError(listEl);
                 return;
             }
 
-            renderList(listEl, data.items);
+            renderList(listEl, data.items, false);
+
+            hasNext = (data.hasNext === true);
+            nextPage = (data.nextPage !== null && data.nextPage !== undefined) ? data.nextPage : null;
+            setMoreVisible(hasNext);
+
+            updateTimeAgoAll();
+        }
+
+        async function loadMore() {
+            if (!hasNext || nextPage === null || nextPage === undefined) {
+                return;
+            }
+
+            const data = await fetchPage(nextPage, pageSize);
+            if (!data || !Array.isArray(data.items)) {
+                return;
+            }
+
+            renderList(listEl, data.items, true);
+
+            hasNext = (data.hasNext === true);
+            nextPage = (data.nextPage !== null && data.nextPage !== undefined) ? data.nextPage : null;
+            setMoreVisible(hasNext);
+
             updateTimeAgoAll();
         }
 
@@ -270,7 +349,7 @@
                 closeMenu();
             } else {
                 openMenu();
-                refreshList();
+                refreshFirstPage();
             }
         });
 
@@ -283,11 +362,50 @@
         if (refreshBtn) {
             refreshBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                refreshList();
+                refreshFirstPage();
+            });
+        }
+
+        if (moreBtn) {
+            moreBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                loadMore();
             });
         }
 
         listEl.addEventListener('click', function (e) {
+            const delBtn = e.target.closest('.notify-delete');
+            if (delBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const id = delBtn.getAttribute('data-id');
+                if (!id) {
+                    return;
+                }
+
+                deleteOne(id).then(function (ok) {
+                    if (!ok) {
+                        return;
+                    }
+
+                    const item = listEl.querySelector('.notify-item[data-id="' + CSS.escape(String(id)) + '"]');
+                    if (item) {
+                        item.remove();
+                    }
+
+                    refreshBadge();
+
+                    const remain = listEl.querySelectorAll('.notify-item');
+                    if (!remain.length) {
+                        renderEmpty(listEl);
+                        setMoreVisible(false);
+                    }
+                });
+
+                return;
+            }
+
             const item = e.target.closest('.notify-item');
             if (!item) {
                 return;
@@ -307,8 +425,6 @@
 
                 if (link) {
                     window.location.href = link;
-                } else {
-                    refreshList();
                 }
             });
         });

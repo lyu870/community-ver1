@@ -3,7 +3,6 @@ package com.hello.community.notification;
 
 import com.hello.community.board.common.ApiResponseDto;
 import com.hello.community.member.CustomUser;
-import com.hello.community.notification.NotificationService;
 import com.hello.community.notification.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,14 +17,15 @@ public class NotificationApiController {
 
     private final NotificationService notificationService;
 
-    // 알림 목록 (최근 N개)
+    // 알림 목록 (page 기반)
     @GetMapping("/notifications")
     public ApiResponseDto<NotificationListResponseDto> list(
             @AuthenticationPrincipal CustomUser user,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Long memberId = user.getId();
-        return ApiResponseDto.ok(notificationService.getRecentNotifications(memberId, size));
+        return ApiResponseDto.ok(notificationService.getNotifications(memberId, page, size));
     }
 
     // 미읽음 카운트
@@ -57,6 +57,17 @@ public class NotificationApiController {
         Long memberId = user.getId();
         List<Long> ids = (req != null) ? req.getIds() : null;
         notificationService.markReadBulk(memberId, ids);
+        return ApiResponseDto.ok();
+    }
+
+    // 삭제 (단건)
+    @DeleteMapping("/notifications/{id}")
+    public ApiResponseDto<Void> deleteOne(
+            @AuthenticationPrincipal CustomUser user,
+            @PathVariable Long id
+    ) {
+        Long memberId = user.getId();
+        notificationService.deleteOne(memberId, id);
         return ApiResponseDto.ok();
     }
 
