@@ -1,0 +1,116 @@
+<!-- templates/admin/notification-dlt-detail.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+
+<body>
+<div layout:fragment="content">
+
+    <main class="admin-container">
+
+        <div class="admin-page-header">
+            <div class="admin-page-title">
+                DLT 상세페이지
+            </div>
+            <div class="admin-page-sub">
+                실패 원인/페이로드를 확인합니다.
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+            <div style="color:#666;">
+                ID: <span th:text="${item.id}">1</span>
+            </div>
+            <a href="/admin/notification-dlt" class="btn btn-ghost btn-sm admin-link-btn">목록으로</a>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-bottom:10px;">
+            <form method="post" th:action="@{|/admin/notification-dlt/${item.id}/ack/detail|}" style="display:inline;">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit"
+                        class="btn btn-ghost btn-sm admin-link-btn"
+                        th:disabled="${item.status != null && (item.status.name() == 'ACKED' || item.status.name() == 'RESOLVED')}">확인</button>
+            </form>
+
+            <form method="post" th:action="@{|/admin/notification-dlt/${item.id}/resolve/detail|}" style="display:inline;">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit"
+                        class="btn btn-ghost btn-sm admin-link-btn"
+                        th:disabled="${item.status != null && item.status.name() == 'RESOLVED'}">해결</button>
+            </form>
+        </div>
+
+        <table class="board-table admin-table">
+            <tbody>
+            <tr>
+                <th style="width:180px;">적재시각</th>
+                <td th:text="${item.createdAt != null ? #temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>상태</th>
+                <td th:text="${item.status != null ? (item.status.name() == 'PENDING' ? '미확인' : (item.status.name() == 'ACKED' ? '확인' : '해결')) : '미확인'}">미확인</td>
+            </tr>
+            <tr>
+                <th>처리시각</th>
+                <td th:text="${item.handledAt != null ? #temporals.format(item.handledAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>DLT topic/partition/offset</th>
+                <td>
+                    <span th:text="${item.dltTopic}">topic</span>
+                    /
+                    <span th:text="${item.dltPartition}">0</span>
+                    /
+                    <span th:text="${item.dltOffset}">0</span>
+                </td>
+            </tr>
+            <tr>
+                <th>원본 topic/partition/offset</th>
+                <td>
+                    <span th:text="${item.originalTopic != null ? item.originalTopic : '-'}">-</span>
+                    /
+                    <span th:text="${item.originalPartition != null ? item.originalPartition : '-'}">-</span>
+                    /
+                    <span th:text="${item.originalOffset != null ? item.originalOffset : '-'}">-</span>
+                </td>
+            </tr>
+            <tr>
+                <th>type</th>
+                <td th:text="${item.type != null ? item.type : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>eventId</th>
+                <td th:text="${item.eventId != null ? item.eventId : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>targetMemberId</th>
+                <td th:text="${item.targetMemberId != null ? item.targetMemberId : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>exception</th>
+                <td>
+                    <div th:text="${item.exceptionFqcn != null ? item.exceptionFqcn : '-'}">-</div>
+                    <div th:text="${item.exceptionMessage != null ? item.exceptionMessage : '-'}">-</div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:14px;">
+            <div style="font-weight:700; margin-bottom:6px;">payload</div>
+            <pre th:text="${item.payloadJson != null ? item.payloadJson : ''}"
+                 style="background:#fafafa; border:1px solid #eee; border-radius:8px; padding:10px; overflow:auto; white-space:pre-wrap;"></pre>
+        </div>
+
+        <div style="margin-top:14px;">
+            <div style="font-weight:700; margin-bottom:6px;">stacktrace</div>
+            <pre th:text="${item.exceptionStacktrace != null ? item.exceptionStacktrace : ''}"
+                 style="background:#fafafa; border:1px solid #eee; border-radius:8px; padding:10px; overflow:auto; white-space:pre-wrap;"></pre>
+        </div>
+
+    </main>
+
+</div>
+</body>
+</html>

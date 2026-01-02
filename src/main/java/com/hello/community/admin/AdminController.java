@@ -13,6 +13,8 @@ import com.hello.community.comment.CommentRepository;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
 import com.hello.community.board.common.PageUtil;
+import com.hello.community.notification.dlt.NotificationDltMessage;
+import com.hello.community.notification.dlt.NotificationDltRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,6 +43,7 @@ public class AdminController {
     private final MusicRepository musicRepository;
     private final NoticeRepository noticeRepository;
     private final CommentRepository commentRepository;
+    private final NotificationDltRepository notificationDltRepository;
 
     // 1. 관리자 - 회원 목록 페이지
     @GetMapping("/members")
@@ -149,6 +153,85 @@ public class AdminController {
         model.addAttribute("memberDisplayName", member.getDisplayName());
 
         return "admin/member-comments";
+    }
+
+    @GetMapping("/notification-dlt")
+    public String notificationDlt(@RequestParam(defaultValue = "1") int page,
+                                  Model model) {
+
+        int pageSize = 10;
+
+        Page<NotificationDltMessage> dltPage =
+                notificationDltRepository.findAll(
+                        PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
+                );
+
+        model.addAttribute("items", dltPage.getContent());
+        model.addAllAttributes(PageUtil.buildPageModel(dltPage, 5));
+
+        return "admin/notification-dlt";
+    }
+
+    @PostMapping("/notification-dlt/{id}/ack")
+    @Transactional
+    public String notificationDltAck(@PathVariable Long id,
+                                     @RequestParam(defaultValue = "1") int page) {
+
+        NotificationDltMessage item = notificationDltRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("DLT not found id=" + id));
+
+        item.markAcked();
+
+        return "redirect:/admin/notification-dlt?page=" + page;
+    }
+
+    @PostMapping("/notification-dlt/{id}/resolve")
+    @Transactional
+    public String notificationDltResolve(@PathVariable Long id,
+                                         @RequestParam(defaultValue = "1") int page) {
+
+        NotificationDltMessage item = notificationDltRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("DLT not found id=" + id));
+
+        item.markResolved();
+
+        return "redirect:/admin/notification-dlt?page=" + page;
+    }
+
+    @GetMapping("/notification-dlt/{id}")
+    public String notificationDltDetail(@PathVariable Long id,
+                                        Model model) {
+
+        NotificationDltMessage item = notificationDltRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("DLT not found id=" + id));
+
+        model.addAttribute("item", item);
+
+        return "admin/notification-dlt-detail";
+    }
+
+    @PostMapping("/notification-dlt/{id}/ack/detail")
+    @Transactional
+    public String notificationDltAckDetail(@PathVariable Long id) {
+
+        NotificationDltMessage item = notificationDltRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("DLT not found id=" + id));
+
+        item.markAcked();
+
+        return "redirect:/admin/notification-dlt/" + id;
+    }
+
+    @PostMapping("/notification-dlt/{id}/resolve/detail")
+    @Transactional
+    public String notificationDltResolveDetail(@PathVariable Long id) {
+
+        NotificationDltMessage item = notificationDltRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("DLT not found id=" + id));
+
+        item.markResolved();
+
+        return "redirect:/admin/notification-dlt/" + id;
     }
 
     private String resolvePostUrl(BasePost post, Comment comment) {

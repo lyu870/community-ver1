@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// DB저장에서 실패하면 kafka재시도하고 DLT로 이동.
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -193,11 +194,7 @@ public class NotificationService {
 
         Notification n = Notification.of(member, type, title, message, linkUrl, eventId);
 
-        try {
-            return notificationCommandService.save(n);
-        } catch (Exception e) {
-            return null;
-        }
+        return notificationCommandService.save(n);
     }
 
     public String buildPostDetailLink(BoardType boardType, Long postId) {

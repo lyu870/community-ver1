@@ -1,0 +1,106 @@
+<!-- templates/admin/notification-dlt.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/fragments/base}">
+
+<body>
+<div layout:fragment="content">
+
+    <main class="admin-container">
+
+        <div class="admin-page-header">
+            <div class="admin-page-title">
+                적재된 DLT 목록
+            </div>
+            <div class="admin-page-sub">
+                알림 처리 실패로 DLT로 이동한 메시지를 DB에 저장한것을 보여주는 페이지입니다.
+            </div>
+        </div>
+
+        <table class="board-table admin-table">
+            <thead>
+            <tr>
+                <th style="width:90px;">ID</th>
+                <th style="width:150px;">적재시각</th>
+                <th style="width:120px;">상태</th>
+                <th style="width:120px;">타입</th>
+                <th style="width:140px;">eventId</th>
+                <th style="width:110px;">대상회원</th>
+                <th>에러</th>
+                <th style="width:160px;">처리</th>
+                <th style="width:90px;">상세</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:if="${#lists.isEmpty(items)}">
+                <td colspan="9">DLT 적재 데이터가 없습니다.</td>
+            </tr>
+
+            <tr th:each="n : ${items}">
+                <td th:text="${n.id}">1</td>
+
+                <td th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-01-01 12:00</td>
+
+                <td th:text="${n.status != null ? (n.status.name() == 'PENDING' ? '미확인' : (n.status.name() == 'ACKED' ? '확인' : '해결')) : '미확인'}">미확인</td>
+
+                <td th:text="${n.type != null ? n.type : '-'}">POST_COMMENT</td>
+
+                <td th:text="${n.eventId != null ? n.eventId : '-'}">POST_COMMENT:123</td>
+
+                <td th:text="${n.targetMemberId != null ? n.targetMemberId : '-'}">10</td>
+
+                <td th:text="${n.exceptionMessage != null && #strings.length(n.exceptionMessage) > 60 ? (#strings.substring(n.exceptionMessage, 0, 60) + '...') : (n.exceptionMessage != null ? n.exceptionMessage : '-')}">error</td>
+
+                <td>
+                    <form method="post" th:action="@{|/admin/notification-dlt/${n.id}/ack|}" style="display:inline;">
+                        <input type="hidden" name="page" th:value="${current}">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit"
+                                class="btn btn-ghost btn-sm admin-link-btn"
+                                th:disabled="${n.status != null && (n.status.name() == 'ACKED' || n.status.name() == 'RESOLVED')}">확인</button>
+                    </form>
+
+                    <form method="post" th:action="@{|/admin/notification-dlt/${n.id}/resolve|}" style="display:inline;">
+                        <input type="hidden" name="page" th:value="${current}">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit"
+                                class="btn btn-ghost btn-sm admin-link-btn"
+                                th:disabled="${n.status != null && n.status.name() == 'RESOLVED'}">해결</button>
+                    </form>
+                </td>
+
+                <td>
+                    <a th:href="@{|/admin/notification-dlt/${n.id}|}"
+                       class="btn btn-ghost btn-sm admin-link-btn">보기</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 페이지네이션 -->
+        <nav class="pagination">
+            <span th:if="${current > 1}">
+                <a th:href="@{|/admin/notification-dlt?page=1|}">첫페이지</a>
+                <a th:href="@{|/admin/notification-dlt?page=${current-1}|}">이전</a>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(startPage, endPage)}">
+                <a th:if="${p != current}" th:href="@{|/admin/notification-dlt?page=${p}|}"
+                   th:text="${p}"></a>
+
+                <strong th:if="${p == current}" th:text="${p}"></strong>
+            </span>
+
+            <span th:if="${current < totalPages}">
+                <a th:href="@{|/admin/notification-dlt?page=${current+1}|}">다음</a>
+                <a th:href="@{|/admin/notification-dlt?page=${totalPages}|}">마지막페이지</a>
+            </span>
+        </nav>
+
+    </main>
+
+</div>
+</body>
+</html>
