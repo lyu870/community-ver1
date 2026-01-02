@@ -9,9 +9,14 @@
 
     <main class="admin-container">
 
-        <h2>
-            <span th:text="${memberDisplayName}">닉네임</span>님의 게시글 목록
-        </h2>
+        <div class="admin-page-header">
+            <div class="admin-page-title">
+                <span class="admin-page-strong" th:text="${memberDisplayName}">닉네임</span>님의 게시글 목록
+            </div>
+            <div class="admin-page-sub">
+                게시글을 클릭하면 해당 게시글로 이동합니다.
+            </div>
+        </div>
 
         <th:block th:if="${hasNotice}">
             <h3>공지사항</h3>
@@ -38,26 +43,18 @@
             </table>
 
             <!-- 페이지네이션 (공지사항) -->
-            <nav class="pagination" th:if="${noticeTotalPages > 1}">
-                <span th:if="${noticeCurrent > 1}">
-                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=1&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">첫페이지</a>
-                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=${noticeCurrent-1}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">이전</a>
-                </span>
-
-                <span th:each="p : ${#numbers.sequence(noticeStartPage, noticeEndPage)}">
-                    <a th:if="${p != noticeCurrent}"
-                       th:href="@{|/admin/member/${memberId}/posts?noticePage=${p}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}"
-                       th:text="${p}"></a>
-
-                    <strong th:if="${p == noticeCurrent}"
-                            th:text="${p}"></strong>
-                </span>
-
-                <span th:if="${noticeCurrent < noticeTotalPages}">
-                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=${noticeCurrent+1}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">다음</a>
-                    <a th:href="@{|/admin/member/${memberId}/posts?noticePage=${noticeTotalPages}&newsPage=${newsCurrent}&musicPage=${musicCurrent}|}">마지막페이지</a>
-                </span>
-            </nav>
+            <th:block th:if="${noticeTotalPages > 0}">
+                <th:block th:with="pagePrefix=${'/admin/member/' + memberId + '/posts?noticePage='},
+                                   pageSuffix=${'&newsPage=' + newsCurrent + '&musicPage=' + musicCurrent}"
+                          th:replace="~{layout/fragments/pagination :: pagination(
+                            ${pagePrefix},
+                            ${pageSuffix},
+                            ${noticeCurrent},
+                            ${noticeTotalPages},
+                            ${noticeStartPage},
+                            ${noticeEndPage}
+                          )}"></th:block>
+            </th:block>
         </th:block>
 
         <h3>시사 뉴스</h3>
@@ -84,26 +81,18 @@
         </table>
 
         <!-- 페이지네이션 (시사 뉴스) -->
-        <nav class="pagination" th:if="${newsTotalPages > 1}">
-            <span th:if="${newsCurrent > 1}">
-                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=1&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">첫페이지</a>
-                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=${newsCurrent-1}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">이전</a>
-            </span>
-
-            <span th:each="p : ${#numbers.sequence(newsStartPage, newsEndPage)}">
-                <a th:if="${p != newsCurrent}"
-                   th:href="@{|/admin/member/${memberId}/posts?newsPage=${p}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}"
-                   th:text="${p}"></a>
-
-                <strong th:if="${p == newsCurrent}"
-                        th:text="${p}"></strong>
-            </span>
-
-            <span th:if="${newsCurrent < newsTotalPages}">
-                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=${newsCurrent+1}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">다음</a>
-                <a th:href="@{|/admin/member/${memberId}/posts?newsPage=${newsTotalPages}&musicPage=${musicCurrent}&noticePage=${noticeCurrent}|}">마지막페이지</a>
-            </span>
-        </nav>
+        <th:block th:if="${newsTotalPages > 0}">
+            <th:block th:with="pagePrefix=${'/admin/member/' + memberId + '/posts?newsPage='},
+                               pageSuffix=${'&musicPage=' + musicCurrent + '&noticePage=' + noticeCurrent}"
+                      th:replace="~{layout/fragments/pagination :: pagination(
+                        ${pagePrefix},
+                        ${pageSuffix},
+                        ${newsCurrent},
+                        ${newsTotalPages},
+                        ${newsStartPage},
+                        ${newsEndPage}
+                      )}"></th:block>
+        </th:block>
 
         <h3>노래</h3>
         <table class="board-table admin-table">
@@ -129,26 +118,18 @@
         </table>
 
         <!-- 페이지네이션 (노래) -->
-        <nav class="pagination" th:if="${musicTotalPages > 1}">
-            <span th:if="${musicCurrent > 1}">
-                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=1&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">첫페이지</a>
-                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=${musicCurrent-1}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">이전</a>
-            </span>
-
-            <span th:each="p : ${#numbers.sequence(musicStartPage, musicEndPage)}">
-                <a th:if="${p != musicCurrent}"
-                   th:href="@{|/admin/member/${memberId}/posts?musicPage=${p}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}"
-                   th:text="${p}"></a>
-
-                <strong th:if="${p == musicCurrent}"
-                        th:text="${p}"></strong>
-            </span>
-
-            <span th:if="${musicCurrent < musicTotalPages}">
-                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=${musicCurrent+1}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">다음</a>
-                <a th:href="@{|/admin/member/${memberId}/posts?musicPage=${musicTotalPages}&newsPage=${newsCurrent}&noticePage=${noticeCurrent}|}">마지막페이지</a>
-            </span>
-        </nav>
+        <th:block th:if="${musicTotalPages > 0}">
+            <th:block th:with="pagePrefix=${'/admin/member/' + memberId + '/posts?musicPage='},
+                               pageSuffix=${'&newsPage=' + newsCurrent + '&noticePage=' + noticeCurrent}"
+                      th:replace="~{layout/fragments/pagination :: pagination(
+                        ${pagePrefix},
+                        ${pageSuffix},
+                        ${musicCurrent},
+                        ${musicTotalPages},
+                        ${musicStartPage},
+                        ${musicEndPage}
+                      )}"></th:block>
+        </th:block>
 
     </main>
 

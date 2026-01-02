@@ -57,3 +57,12 @@
     font-weight: 700;
     color: #7c3aed;
 }
+
+/* 알림 드롭다운 페이지네이션 */
+.notify-wrap .notify-pager button {
+    cursor: pointer;
+}
+
+.notify-wrap .notify-pager button:disabled {
+    cursor: default;
+}

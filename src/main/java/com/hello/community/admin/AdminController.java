@@ -45,12 +45,63 @@ public class AdminController {
     private final CommentRepository commentRepository;
     private final NotificationDltRepository notificationDltRepository;
 
+    // 0. 관리자 - 레거시 페이지네이션 경로 호환
+    @GetMapping("/members/page/{page}")
+    public String membersLegacy(@PathVariable int page) {
+        return "redirect:/admin/members?page=" + page;
+    }
+
+    @GetMapping("/members/{page:\\d+}")
+    public String membersLegacy2(@PathVariable int page) {
+        return "redirect:/admin/members?page=" + page;
+    }
+
+    @GetMapping("/member/{id}/{page:\\d+}")
+    public String memberCommentsLegacy(@PathVariable Long id,
+                                       @PathVariable int page) {
+        return "redirect:/admin/member/" + id + "/comments?page=" + page;
+    }
+
+    @GetMapping("/member/{id}/comments/page/{page}")
+    public String memberCommentsLegacy2(@PathVariable Long id,
+                                        @PathVariable int page) {
+        return "redirect:/admin/member/" + id + "/comments?page=" + page;
+    }
+
+    @GetMapping("/member/{id}/posts/news/page/{page}")
+    public String memberPostsNewsLegacy(@PathVariable Long id,
+                                        @PathVariable int page) {
+        return "redirect:/admin/member/" + id + "/posts?newsPage=" + page + "&musicPage=1&noticePage=1";
+    }
+
+    @GetMapping("/member/{id}/posts/music/page/{page}")
+    public String memberPostsMusicLegacy(@PathVariable Long id,
+                                         @PathVariable int page) {
+        return "redirect:/admin/member/" + id + "/posts?newsPage=1&musicPage=" + page + "&noticePage=1";
+    }
+
+    @GetMapping("/member/{id}/posts/notice/page/{page}")
+    public String memberPostsNoticeLegacy(@PathVariable Long id,
+                                          @PathVariable int page) {
+        return "redirect:/admin/member/" + id + "/posts?newsPage=1&musicPage=1&noticePage=" + page;
+    }
+
+    @GetMapping("/notification-dlt/page/{page}")
+    public String notificationDltLegacy(@PathVariable int page) {
+        return "redirect:/admin/notification-dlt?page=" + page;
+    }
+
     // 1. 관리자 - 회원 목록 페이지
     @GetMapping("/members")
     public String members(@RequestParam(defaultValue = "1") int page,
                           Model model) {
 
-        int pageSize = 10;
+        int pageSize = 5;
+
+        if (page < 1) {
+            page = 1;
+        }
+
         Page<Member> memberPage =
                 memberRepository.findAll(
                         PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
@@ -75,7 +126,7 @@ public class AdminController {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다. id=" + id));
 
-        int pageSize = 10;
+        int pageSize = 5;
 
         if (newsPage < 1) newsPage = 1;
         if (musicPage < 1) musicPage = 1;
@@ -122,7 +173,11 @@ public class AdminController {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다. id=" + id));
 
-        int pageSize = 10;
+        int pageSize = 5;
+
+        if (page < 1) {
+            page = 1;
+        }
 
         Page<Comment> commentPage =
                 commentRepository.findByWriterId(
@@ -159,7 +214,11 @@ public class AdminController {
     public String notificationDlt(@RequestParam(defaultValue = "1") int page,
                                   Model model) {
 
-        int pageSize = 10;
+        int pageSize = 5;
+
+        if (page < 1) {
+            page = 1;
+        }
 
         Page<NotificationDltMessage> dltPage =
                 notificationDltRepository.findAll(

@@ -56,25 +56,15 @@
         </table>
 
         <!-- 페이지네이션 -->
-        <nav class="pagination">
-            <span th:if="${current > 1}">
-                <a th:href="@{|/admin/member/${memberId}/comments?page=1|}">첫페이지</a>
-                <a th:href="@{|/admin/member/${memberId}/comments?page=${current-1}|}">이전</a>
-            </span>
-
-            <span th:each="p : ${#numbers.sequence(startPage, endPage)}">
-                <a th:if="${p != current}"
-                   th:href="@{|/admin/member/${memberId}/comments?page=${p}|}"
-                   th:text="${p}"></a>
-
-                <strong th:if="${p == current}" th:text="${p}"></strong>
-            </span>
-
-            <span th:if="${current < totalPages}">
-                <a th:href="@{|/admin/member/${memberId}/comments?page=${current+1}|}">다음</a>
-                <a th:href="@{|/admin/member/${memberId}/comments?page=${totalPages}|}">마지막페이지</a>
-            </span>
-        </nav>
+        <th:block th:with="pagePrefix=${'/admin/member/' + memberId + '/comments?page='}"
+                  th:replace="~{layout/fragments/pagination :: pagination(
+                    ${pagePrefix},
+                    '',
+                    ${current},
+                    ${totalPages},
+                    ${startPage},
+                    ${endPage}
+                  )}"></th:block>
 
     </main>
 

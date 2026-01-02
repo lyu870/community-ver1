@@ -166,19 +166,6 @@ body.board-music  .board-title { color: #1db954; }
 body.board-news   .board-title { color: #c62828; }
 body.board-notice .board-title { color: #1565c0; }
 
-/* 공통 페이지네이션 */
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 16px;
-}
-
-.pagination a,
-.pagination strong {
-  padding: 3px 7px;
-}
-
 /* 공통 입력 요소 (리스트에서도 검색창 등에 사용) */
 input[type="text"],
 textarea {

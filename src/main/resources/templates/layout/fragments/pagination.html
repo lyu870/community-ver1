@@ -1,0 +1,63 @@
+<!-- templates/layout/fragments/pagination.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<th:block th:fragment="pagination(prefix, suffix, current, totalPages, startPage, endPage)">
+
+    <th:block th:with="
+            prefixSafe=${prefix != null ? prefix : ''},
+            suffixSafe=${suffix != null ? suffix : ''},
+            totalPagesSafe=${totalPages != null ? totalPages : 1},
+            currentSafe=${current != null ? current : 1},
+            startPageSafe=${startPage != null ? startPage : 1},
+            endPageSafe=${endPage != null ? endPage : 1}
+        ">
+
+        <nav class="pagination" th:if="${totalPagesSafe > 0}">
+            <span>
+                <a th:if="${currentSafe > 1}"
+                   th:href="${prefixSafe + 1 + suffixSafe}"
+                   class="page-btn">⏮</a>
+                <span th:unless="${currentSafe > 1}"
+                      class="page-btn page-disabled">⏮</span>
+
+                <a th:if="${currentSafe > 1}"
+                   th:href="${prefixSafe + (currentSafe - 1) + suffixSafe}"
+                   class="page-btn">◀</a>
+                <span th:unless="${currentSafe > 1}"
+                      class="page-btn page-disabled">◀</span>
+            </span>
+
+            <span th:each="p : ${#numbers.sequence(startPageSafe, endPageSafe)}">
+                <a th:if="${p != currentSafe}"
+                   th:href="${prefixSafe + p + suffixSafe}"
+                   th:text="${p}"
+                   class="page-btn"></a>
+
+                <strong th:if="${p == currentSafe}"
+                        th:text="${p}"></strong>
+            </span>
+
+            <span>
+                <a th:if="${currentSafe < totalPagesSafe}"
+                   th:href="${prefixSafe + (currentSafe + 1) + suffixSafe}"
+                   class="page-btn">▶</a>
+                <span th:unless="${currentSafe < totalPagesSafe}"
+                      class="page-btn page-disabled">▶</span>
+
+                <a th:if="${currentSafe < totalPagesSafe}"
+                   th:href="${prefixSafe + totalPagesSafe + suffixSafe}"
+                   class="page-btn">⏭</a>
+                <span th:unless="${currentSafe < totalPagesSafe}"
+                      class="page-btn page-disabled">⏭</span>
+            </span>
+        </nav>
+
+    </th:block>
+
+</th:block>
+
+</body>
+</html>

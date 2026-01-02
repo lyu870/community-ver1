@@ -35,7 +35,7 @@
 
             <tbody>
             <tr th:if="${#lists.isEmpty(items)}">
-                <td colspan="9">DLT 적재 데이터가 없습니다.</td>
+                <td colspan="9">DLT 데이터가 없습니다.</td>
             </tr>
 
             <tr th:each="n : ${items}">
@@ -80,24 +80,14 @@
         </table>
 
         <!-- 페이지네이션 -->
-        <nav class="pagination">
-            <span th:if="${current > 1}">
-                <a th:href="@{|/admin/notification-dlt?page=1|}">첫페이지</a>
-                <a th:href="@{|/admin/notification-dlt?page=${current-1}|}">이전</a>
-            </span>
-
-            <span th:each="p : ${#numbers.sequence(startPage, endPage)}">
-                <a th:if="${p != current}" th:href="@{|/admin/notification-dlt?page=${p}|}"
-                   th:text="${p}"></a>
-
-                <strong th:if="${p == current}" th:text="${p}"></strong>
-            </span>
-
-            <span th:if="${current < totalPages}">
-                <a th:href="@{|/admin/notification-dlt?page=${current+1}|}">다음</a>
-                <a th:href="@{|/admin/notification-dlt?page=${totalPages}|}">마지막페이지</a>
-            </span>
-        </nav>
+        <th:block th:replace="~{layout/fragments/pagination :: pagination(
+            '/admin/notification-dlt?page=',
+            '',
+            ${current},
+            ${totalPages},
+            ${startPage},
+            ${endPage}
+        )}"></th:block>
 
     </main>
 

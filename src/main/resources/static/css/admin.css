@@ -38,39 +38,6 @@
   text-decoration: underline;
 }
 
-/* 페이지네이션 영역 정돈 */
-.admin-container .pagination {
-  margin-top: 18px;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.admin-container .pagination a,
-.admin-container .pagination strong {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid #e3e5e8;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 0.9rem;
-}
-
-.admin-container .pagination a:hover {
-  background: #f5f6f7;
-}
-
-.admin-container .pagination strong {
-  background: #2c7efb;
-  border-color: #2c7efb;
-  color: #fff;
-}
-
 /* 관리자 페이지 헤더 */
 .admin-page-header {
   padding: 14px 16px;
