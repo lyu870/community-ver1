@@ -153,6 +153,13 @@ public class SecurityConfig {
                         "/webjars/**"
                 ).permitAll()
 
+                .requestMatchers(HttpMethod.GET,
+                        "/actuator/health",
+                        "/actuator/health/**"
+                ).permitAll()
+
+                .requestMatchers("/actuator/**").denyAll()
+
                 // 답글 조회 비로그인도 가능
                 .requestMatchers(HttpMethod.GET,
                         "/comment/children-fragment",
@@ -280,6 +287,10 @@ public class SecurityConfig {
         }
 
         if (path.startsWith("/api/")) {
+            return false;
+        }
+
+        if (path.startsWith("/actuator/")) {
             return false;
         }
 

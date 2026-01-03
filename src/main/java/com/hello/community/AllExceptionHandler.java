@@ -1,3 +1,4 @@
+// AllExceptionHandler.java
 package com.hello.community;
 
 import org.springframework.http.ResponseEntity;
