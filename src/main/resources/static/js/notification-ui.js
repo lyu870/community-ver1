@@ -270,6 +270,10 @@
         let currentPage = 0;
         let hasNext = false;
 
+        let badgePollTimer = null;
+        let unreadSse = null;
+        let unreadSseTried = false;
+
         function closeMenu() {
             menu.style.display = 'none';
         }
@@ -293,6 +297,65 @@
 
             if (nextBtn) {
                 nextBtn.disabled = (hasNext !== true);
+            }
+        }
+
+        function startBadgePolling() {
+            if (badgePollTimer) {
+                return;
+            }
+            badgePollTimer = setInterval(refreshBadge, 30000);
+        }
+
+        function stopBadgePolling() {
+            if (!badgePollTimer) {
+                return;
+            }
+            clearInterval(badgePollTimer);
+            badgePollTimer = null;
+        }
+
+        function startUnreadSse() {
+            if (unreadSseTried) {
+                return;
+            }
+            unreadSseTried = true;
+
+            if (!window.EventSource) {
+                startBadgePolling();
+                return;
+            }
+
+            try {
+                unreadSse = new EventSource('/api/notifications/unread-count/stream');
+
+                unreadSse.addEventListener('unread-count', function (e) {
+                    if (!e || !e.data) {
+                        return;
+                    }
+
+                    try {
+                        const data = JSON.parse(e.data);
+                        if (!data) {
+                            return;
+                        }
+
+                        if (data.unreadCount !== null && data.unreadCount !== undefined) {
+                            setBadge(badgeEl, data.unreadCount);
+                        }
+                    } catch (err) {
+                    }
+                });
+
+                unreadSse.addEventListener('open', function () {
+                    stopBadgePolling();
+                });
+
+                unreadSse.addEventListener('error', function () {
+                    startBadgePolling();
+                });
+            } catch (e) {
+                startBadgePolling();
             }
         }
 
@@ -435,7 +498,8 @@
         });
 
         refreshBadge();
-        setInterval(refreshBadge, 30000);
+        startUnreadSse();
+        startBadgePolling();
         setInterval(updateTimeAgoAll, 60000);
     }
 

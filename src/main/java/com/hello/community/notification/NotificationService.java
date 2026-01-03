@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +28,7 @@ public class NotificationService {
     private final BoardSubscriptionRepository boardSubscriptionRepository;
     private final MemberRepository memberRepository;
     private final NotificationCommandService notificationCommandService;
+    private final NotificationUnreadSseHub unreadSseHub;
 
     @Transactional(readOnly = true)
     public NotificationListResponseDto getNotifications(Long memberId, int page, int size) {
@@ -72,6 +75,8 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("notification not found"));
 
         n.markRead();
+
+        publishUnreadCountAfterCommit(memberId);
     }
 
     @Transactional
@@ -99,6 +104,10 @@ public class NotificationService {
             }
         }
 
+        if (updated > 0) {
+            publishUnreadCountAfterCommit(memberId);
+        }
+
         return updated;
     }
 
@@ -108,6 +117,8 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("notification not found"));
 
         notificationRepository.delete(n);
+
+        publishUnreadCountAfterCommit(memberId);
     }
 
     @Transactional
@@ -194,7 +205,11 @@ public class NotificationService {
 
         Notification n = Notification.of(member, type, title, message, linkUrl, eventId);
 
-        return notificationCommandService.save(n);
+        Notification saved = notificationCommandService.save(n);
+
+        publishUnreadCountAfterCommit(targetMemberId);
+
+        return saved;
     }
 
     public String buildPostDetailLink(BoardType boardType, Long postId) {
@@ -363,6 +378,28 @@ public class NotificationService {
                 BoardSubscription created = BoardSubscription.of(member, t, false);
                 boardSubscriptionRepository.save(created);
             }
+        }
+    }
+
+    private void publishUnreadCountAfterCommit(Long memberId) {
+        if (memberId == null) {
+            return;
+        }
+
+        Runnable action = () -> {
+            long count = notificationRepository.countByMemberIdAndReadAtIsNull(memberId);
+            unreadSseHub.sendUnreadCount(memberId, count);
+        };
+
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    action.run();
+                }
+            });
+        } else {
+            action.run();
         }
     }
 }
