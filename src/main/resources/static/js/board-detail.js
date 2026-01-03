@@ -452,6 +452,8 @@
 
         childrenBox.dataset.loaded = '';
         childrenBox.dataset.pageMax = '';
+        childrenBox.dataset.totalPages = '';
+        childrenBox.dataset.hasNext = '';
         childrenBox.innerHTML = '';
     }
 
@@ -505,6 +507,9 @@
                 childrenBox.dataset.loaded = 'true';
                 childrenBox.dataset.pageMax = String(targetPage);
             }
+
+            childrenBox.dataset.totalPages = String(Number(body.data.totalPages || 0));
+            childrenBox.dataset.hasNext = (body.data.hasNext ? 'true' : 'false');
 
             if (body.data.hasNext) {
                 renderMoreButton(parentId, targetPage + 1, depth, childrenBox);
@@ -766,8 +771,9 @@
     async function loadChildrenUntilFoundById(parentId, depth, childrenBox, targetId) {
         let page = 0;
         let guard = 0;
+        let totalPages = 0;
 
-        while (guard < 10) {
+        while (guard < 200) {
             const ok = await loadChildrenIntoBox(parentId, depth, childrenBox, page);
             if (!ok) {
                 return null;
@@ -778,8 +784,12 @@
                 return found;
             }
 
-            const moreBtn = childrenBox.querySelector('.comment-children-more');
-            if (!moreBtn) {
+            totalPages = Number(childrenBox.dataset.totalPages || '0');
+            if (!isFinite(totalPages) || totalPages < 1) {
+                break;
+            }
+
+            if (page >= totalPages - 1) {
                 break;
             }
 
@@ -1322,10 +1332,15 @@
                     ui.toggleBtn.textContent = '답글 숨기기';
 
                     const nextId = (i + 1 < path.length) ? path[i + 1] : null;
+
                     if (nextId) {
                         await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, nextId);
                     } else {
-                        await loadChildrenIntoBox(parentId, ui.depth, ui.childrenBox, 0);
+                        if (focusCommentId) {
+                            await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, String(focusCommentId));
+                        } else {
+                            await loadChildrenIntoBox(parentId, ui.depth, ui.childrenBox, 0);
+                        }
                     }
                 }
 
