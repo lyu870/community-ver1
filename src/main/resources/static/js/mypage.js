@@ -30,6 +30,9 @@
     const notifyPostRecommendEnabled = document.getElementById('notifyPostRecommendEnabled');
     const notificationSettingMsg = document.getElementById('notificationSettingMsg');
 
+    let lastNotificationSettings = null;
+    let isUpdatingNotificationSettings = false;
+
     function hideProfileMessages() {
         profileMessage.style.display = 'none';
         profileError.style.display = 'none';
@@ -152,7 +155,7 @@
         const data = await fetchNotificationSettings();
         if (!data) {
             setNotificationMsg('알림 설정을 불러오지 못했습니다.');
-            setNotificationInputsDisabled(false);
+            setNotificationInputsDisabled(true);
             return;
         }
 
@@ -160,7 +163,67 @@
         notifyCommentReplyEnabled.checked = (data.commentReplyEnabled === true);
         notifyPostRecommendEnabled.checked = (data.postRecommendEnabled === true);
 
+        lastNotificationSettings = {
+            postCommentEnabled: (data.postCommentEnabled === true),
+            commentReplyEnabled: (data.commentReplyEnabled === true),
+            postRecommendEnabled: (data.postRecommendEnabled === true)
+        };
+
         setNotificationInputsDisabled(false);
+    }
+
+    function buildNotificationSettingsDiffPayload() {
+        if (!notifyPostCommentEnabled || !notifyCommentReplyEnabled || !notifyPostRecommendEnabled) {
+            return null;
+        }
+
+        if (!lastNotificationSettings) {
+            return null;
+        }
+
+        const next = {
+            postCommentEnabled: (notifyPostCommentEnabled.checked === true),
+            commentReplyEnabled: (notifyCommentReplyEnabled.checked === true),
+            postRecommendEnabled: (notifyPostRecommendEnabled.checked === true)
+        };
+
+        const payload = {};
+
+        if (next.postCommentEnabled !== lastNotificationSettings.postCommentEnabled) {
+            payload.postCommentEnabled = next.postCommentEnabled;
+        }
+
+        if (next.commentReplyEnabled !== lastNotificationSettings.commentReplyEnabled) {
+            payload.commentReplyEnabled = next.commentReplyEnabled;
+        }
+
+        if (next.postRecommendEnabled !== lastNotificationSettings.postRecommendEnabled) {
+            payload.postRecommendEnabled = next.postRecommendEnabled;
+        }
+
+        if (Object.keys(payload).length === 0) {
+            return {};
+        }
+
+        return payload;
+    }
+
+    function rollbackNotificationSettingsUI() {
+        if (!lastNotificationSettings) {
+            return;
+        }
+
+        if (notifyPostCommentEnabled) {
+            notifyPostCommentEnabled.checked = (lastNotificationSettings.postCommentEnabled === true);
+        }
+
+        if (notifyCommentReplyEnabled) {
+            notifyCommentReplyEnabled.checked = (lastNotificationSettings.commentReplyEnabled === true);
+        }
+
+        if (notifyPostRecommendEnabled) {
+            notifyPostRecommendEnabled.checked = (lastNotificationSettings.postRecommendEnabled === true);
+        }
     }
 
     async function submitNotificationSettings() {
@@ -168,11 +231,22 @@
             return;
         }
 
-        const payload = {
-            postCommentEnabled: notifyPostCommentEnabled.checked,
-            commentReplyEnabled: notifyCommentReplyEnabled.checked,
-            postRecommendEnabled: notifyPostRecommendEnabled.checked
-        };
+        if (isUpdatingNotificationSettings) {
+            return;
+        }
+
+        const payload = buildNotificationSettingsDiffPayload();
+        if (!payload) {
+            setNotificationMsg('알림 설정을 불러온 뒤 다시 시도해주세요.');
+            rollbackNotificationSettingsUI();
+            return;
+        }
+
+        if (Object.keys(payload).length === 0) {
+            return;
+        }
+
+        isUpdatingNotificationSettings = true;
 
         setNotificationMsg('');
         setNotificationInputsDisabled(true);
@@ -180,7 +254,9 @@
         const data = await updateNotificationSettings(payload);
         if (!data) {
             setNotificationMsg('알림 설정 저장에 실패했습니다.');
+            rollbackNotificationSettingsUI();
             setNotificationInputsDisabled(false);
+            isUpdatingNotificationSettings = false;
             return;
         }
 
@@ -188,7 +264,14 @@
         notifyCommentReplyEnabled.checked = (data.commentReplyEnabled === true);
         notifyPostRecommendEnabled.checked = (data.postRecommendEnabled === true);
 
+        lastNotificationSettings = {
+            postCommentEnabled: (data.postCommentEnabled === true),
+            commentReplyEnabled: (data.commentReplyEnabled === true),
+            postRecommendEnabled: (data.postRecommendEnabled === true)
+        };
+
         setNotificationInputsDisabled(false);
+        isUpdatingNotificationSettings = false;
 
         if (window.showAppToast) {
             showAppToast('알림 설정이 저장되었습니다.', { variant: 'info', duration: 1500 });
