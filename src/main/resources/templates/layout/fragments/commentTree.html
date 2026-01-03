@@ -22,7 +22,7 @@
     <!-- 들여쓰기용 wrapper -->
     <div class="comment-node"
          th:style="'margin-left:' + (${depth} * 20) + 'px'"
-         th:attr="data-comment-id=${comment.id}">
+         th:attr="data-comment-id=${comment.id}, data-writer-id=${comment.writer.id}, data-writer-name=${comment.writer.displayName}, data-created-at=${#temporals.format(comment.createdAt, 'yyyy-MM-dd''T''HH:mm:ss')}">
 
         <div class="comment-item">
 
@@ -117,7 +117,11 @@
                         <input type="hidden" name="postId" th:value="${postId}">
                         <input type="hidden" name="parentId" th:value="${comment.id}">
                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
+
+                        <div class="comment-mention-wrap">
+                            <span class="comment-mention-pill" hidden>@멘션</span>
+                            <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
+                        </div>
 
                         <!-- 답글 등록/취소 버튼 영역 -->
                         <div class="comment-reply-actions">

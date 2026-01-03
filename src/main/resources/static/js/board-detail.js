@@ -303,6 +303,22 @@
         return true;
     }
 
+    function formatCommentContentHtml(contentRaw) {
+        const raw = String(contentRaw || '');
+        const m = raw.match(/^(@[^\s]+)(\s+|$)/);
+        if (!m) {
+            return escapeHtml(raw).replaceAll('\n', '<br>');
+        }
+
+        const head = m[1];
+        const rest = raw.substring(head.length);
+
+        const headHtml = '<span class="comment-mention-text">' + escapeHtml(head) + '</span>';
+        const restHtml = escapeHtml(rest).replaceAll('\n', '<br>');
+
+        return headHtml + restHtml;
+    }
+
     function renderCommentNode(child, depth) {
         const ctx = getCommentContext();
         if (!ctx) {
@@ -313,7 +329,7 @@
         const writerId = child.writerId;
         const writerName = escapeHtml(child.writerDisplayName || '');
         const contentRaw = (child.content || '');
-        const content = escapeHtml(contentRaw).replaceAll('\n', '<br>');
+        const content = formatCommentContentHtml(contentRaw);
 
         const createdAt = child.createdAt;
         const updatedAt = child.updatedAt;
@@ -323,7 +339,7 @@
 
         if (contentRaw === '삭제된 댓글입니다.') {
             return `
-    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}" data-writer-id="${writerId}" data-created-at="${escapeHtml(createdAt || '')}">
+    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}" data-writer-id="${writerId}" data-writer-name="${writerName}" data-created-at="${escapeHtml(createdAt || '')}">
         <div class="comment-item">
             <div class="comment-body">
                 <div class="comment-deleted">삭제된 댓글입니다.</div>
@@ -370,7 +386,7 @@
             : '';
 
         return `
-    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}" data-writer-id="${writerId}" data-created-at="${escapeHtml(createdAt || '')}">
+    <div class="comment-node" style="margin-left:${depth * 20}px" data-comment-id="${id}" data-writer-id="${writerId}" data-writer-name="${writerName}" data-created-at="${escapeHtml(createdAt || '')}">
         <div class="comment-item">
             <div class="comment-body">
 
@@ -452,8 +468,6 @@
 
         childrenBox.dataset.loaded = '';
         childrenBox.dataset.pageMax = '';
-        childrenBox.dataset.totalPages = '';
-        childrenBox.dataset.hasNext = '';
         childrenBox.innerHTML = '';
     }
 
@@ -508,15 +522,13 @@
                 childrenBox.dataset.pageMax = String(targetPage);
             }
 
-            childrenBox.dataset.totalPages = String(Number(body.data.totalPages || 0));
-            childrenBox.dataset.hasNext = (body.data.hasNext ? 'true' : 'false');
-
             if (body.data.hasNext) {
                 renderMoreButton(parentId, targetPage + 1, depth, childrenBox);
             }
 
             // 새로 붙은 답글들 timeago 즉시 반영
             updateTimeAgoAll();
+            updateMentionTextAll(childrenBox);
 
             return true;
 
@@ -710,6 +722,141 @@
         return Math.round(px / 20);
     }
 
+    function getWriterNameFromNode(node) {
+        if (!node) {
+            return '';
+        }
+
+        const raw = node.dataset.writerName || '';
+        const name = normalizeText(raw);
+        if (name) {
+            return name;
+        }
+
+        const strong = node.querySelector('.comment-writer strong');
+        if (!strong) {
+            return '';
+        }
+
+        return normalizeText(strong.textContent || '');
+    }
+
+    function ensureMentionUi(replyForm) {
+        if (!replyForm) {
+            return null;
+        }
+
+        let wrap = replyForm.querySelector('.comment-mention-wrap');
+        let pill = replyForm.querySelector('.comment-mention-pill');
+
+        if (!wrap || !pill) {
+            wrap = document.createElement('div');
+            wrap.className = 'comment-mention-wrap';
+            wrap.style.display = 'none';
+
+            pill = document.createElement('span');
+            pill.className = 'comment-mention-pill';
+
+            wrap.appendChild(pill);
+
+            const textarea = replyForm.querySelector('textarea[name="content"]');
+            if (textarea && textarea.parentNode) {
+                textarea.parentNode.insertBefore(wrap, textarea);
+            } else {
+                replyForm.insertBefore(wrap, replyForm.firstChild);
+            }
+        }
+
+        return { wrap: wrap, pill: pill };
+    }
+
+    function clearMention(replyForm) {
+        if (!replyForm) {
+            return;
+        }
+
+        const textarea = replyForm.querySelector('textarea[name="content"]');
+        const ui = ensureMentionUi(replyForm);
+
+        if (replyForm.dataset.mentionName) {
+            delete replyForm.dataset.mentionName;
+        }
+
+        replyForm.classList.remove('mention-active');
+
+        if (ui && ui.wrap) {
+            ui.wrap.style.display = 'none';
+        }
+        if (ui && ui.pill) {
+            ui.pill.textContent = '';
+        }
+
+        if (textarea) {
+            textarea.style.paddingLeft = '';
+        }
+    }
+
+    function applyMentionToReplyForm(replyForm, writerName) {
+        if (!replyForm || !writerName) {
+            return;
+        }
+
+        const textarea = replyForm.querySelector('textarea[name="content"]');
+        if (!textarea) {
+            return;
+        }
+
+        const cur = String(textarea.value || '');
+        if (normalizeText(cur) !== '') {
+            return;
+        }
+
+        const ui = ensureMentionUi(replyForm);
+        if (!ui) {
+            return;
+        }
+
+        replyForm.dataset.mentionName = writerName;
+        replyForm.classList.add('mention-active');
+
+        ui.pill.textContent = '@' + writerName;
+        ui.wrap.style.display = 'flex';
+
+        textarea.focus();
+
+        requestAnimationFrame(function () {
+            const w = ui.pill.offsetWidth || 0;
+            textarea.style.paddingLeft = String(12 + w + 12) + 'px';
+            try {
+                textarea.setSelectionRange(0, 0);
+            } catch (e) {
+            }
+        });
+    }
+
+    function updateMentionTextAll(root) {
+        const scope = root || document;
+        const els = scope.querySelectorAll('.comment-content[data-comment-id]');
+        if (!els.length) {
+            return;
+        }
+
+        els.forEach(function (el) {
+            if (el.dataset.mentionStyled === 'true') {
+                return;
+            }
+
+            const raw = String(el.textContent || '');
+            if (!raw || raw.charAt(0) !== '@') {
+                el.dataset.mentionStyled = 'true';
+                return;
+            }
+
+            el.innerHTML = formatCommentContentHtml(raw);
+            el.dataset.mentionStyled = 'true';
+        });
+    }
+
     function ensureRepliesUi(parentId) {
         const parentNode = document.querySelector('.comment-node[data-comment-id="' + parentId + '"]');
         if (!parentNode) {
@@ -771,9 +918,8 @@
     async function loadChildrenUntilFoundById(parentId, depth, childrenBox, targetId) {
         let page = 0;
         let guard = 0;
-        let totalPages = 0;
 
-        while (guard < 200) {
+        while (guard < 10) {
             const ok = await loadChildrenIntoBox(parentId, depth, childrenBox, page);
             if (!ok) {
                 return null;
@@ -784,12 +930,8 @@
                 return found;
             }
 
-            totalPages = Number(childrenBox.dataset.totalPages || '0');
-            if (!isFinite(totalPages) || totalPages < 1) {
-                break;
-            }
-
-            if (page >= totalPages - 1) {
+            const moreBtn = childrenBox.querySelector('.comment-children-more');
+            if (!moreBtn) {
                 break;
             }
 
@@ -809,13 +951,18 @@
         const textarea = replyForm.querySelector('textarea[name="content"]');
         const content = textarea ? textarea.value : '';
 
+        const mentionName = String(replyForm.dataset.mentionName || '');
+        const sendContent = mentionName
+            ? ('@' + mentionName + ' ' + String(content || '').replace(/^\s+/, ''))
+            : content;
+
         const submitBtn = replyForm.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = true;
         }
 
         try {
-            const saved = await createCommentApi(ctx.postId, content, parentId);
+            const saved = await createCommentApi(ctx.postId, sendContent, parentId);
             if (!saved || !saved.id) {
                 showReplySubmitFail();
                 return;
@@ -855,6 +1002,7 @@
             if (textarea) {
                 textarea.value = '';
             }
+            clearMention(replyForm);
             replyForm.style.display = 'none';
 
         } catch (e) {
@@ -897,6 +1045,7 @@
             tree.insertAdjacentHTML('beforeend', html);
 
             updateTimeAgoAll();
+            updateMentionTextAll(tree);
 
             const node = document.querySelector('.comment-node[data-comment-id="' + saved.id + '"]');
             if (node && node.scrollIntoView) {
@@ -943,8 +1092,9 @@
 
             const contentEl = node.querySelector('.comment-content[data-comment-id="' + commentId + '"]');
             if (contentEl) {
-                contentEl.innerHTML = escapeHtml(updated.content || '').replaceAll('\n', '<br>');
+                contentEl.innerHTML = formatCommentContentHtml(updated.content || '');
                 contentEl.style.display = '';
+                contentEl.dataset.mentionStyled = 'true';
             }
 
             editForm.style.display = 'none';
@@ -1074,6 +1224,16 @@
             const replyForm = document.querySelector('.comment-reply-form[data-parent-id="' + id + '"]');
             if (replyForm) {
                 replyForm.style.display = 'block';
+
+                const node = e.target.closest('.comment-node');
+                const depth = getCommentNodeDepth(node);
+
+                clearMention(replyForm);
+
+                if (depth > 0) {
+                    const writerName = getWriterNameFromNode(node);
+                    applyMentionToReplyForm(replyForm, writerName);
+                }
             }
             return;
         }
@@ -1082,6 +1242,7 @@
         if (e.target.classList.contains('comment-reply-cancel')) {
             const replyForm = e.target.closest('.comment-reply-form');
             if (replyForm) {
+                clearMention(replyForm);
                 replyForm.style.display = 'none';
             }
             return;
@@ -1149,6 +1310,48 @@
             return;
         }
 
+        const mentionPill = e.target.closest('.comment-mention-pill');
+        if (mentionPill) {
+            const replyForm = mentionPill.closest('.comment-reply-form');
+            if (replyForm) {
+                clearMention(replyForm);
+                const textarea = replyForm.querySelector('textarea[name="content"]');
+                if (textarea) {
+                    textarea.focus();
+                }
+            }
+            return;
+        }
+
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Backspace') {
+            return;
+        }
+
+        const textarea = e.target.closest('.comment-reply-form textarea[name="content"]');
+        if (!textarea) {
+            return;
+        }
+
+        const replyForm = textarea.closest('.comment-reply-form');
+        if (!replyForm) {
+            return;
+        }
+
+        const mentionName = String(replyForm.dataset.mentionName || '');
+        if (!mentionName) {
+            return;
+        }
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+
+        if (start === 0 && end === 0) {
+            e.preventDefault();
+            clearMention(replyForm);
+        }
     });
 
     // 댓글/답글: 비로그인 시 공통 로그인 안내
@@ -1332,15 +1535,10 @@
                     ui.toggleBtn.textContent = '답글 숨기기';
 
                     const nextId = (i + 1 < path.length) ? path[i + 1] : null;
-
                     if (nextId) {
                         await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, nextId);
                     } else {
-                        if (focusCommentId) {
-                            await loadChildrenUntilFoundById(parentId, ui.depth, ui.childrenBox, String(focusCommentId));
-                        } else {
-                            await loadChildrenIntoBox(parentId, ui.depth, ui.childrenBox, 0);
-                        }
+                        await loadChildrenIntoBox(parentId, ui.depth, ui.childrenBox, 0);
                     }
                 }
 
@@ -1384,6 +1582,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         updateTimeAgoAll();
+        updateMentionTextAll();
         setInterval(updateTimeAgoAll, 60000);
 
         // 답글 작성 후 펼치기

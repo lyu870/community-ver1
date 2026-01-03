@@ -43,6 +43,11 @@
   word-break: break-word;
 }
 
+.comment-mention-text {
+  color: #065fd4;
+  font-weight: 600;
+}
+
 .comment-actions {
   display: flex;
   align-items: center;
@@ -80,6 +85,34 @@
   line-height: 1.4;
   resize: vertical;
   box-sizing: border-box;
+}
+
+/* 답글 멘션 블록 */
+.comment-reply-form {
+  position: relative;
+}
+
+.comment-mention-wrap {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.comment-mention-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #e8f0fe;
+  color: #065fd4;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  user-select: none;
 }
 
 /* 댓글 작성 폼 */
