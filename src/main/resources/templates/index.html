@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
@@ -10,7 +11,70 @@
 <body>
 <div layout:fragment="content">
     <main class="board-container">
-        <h4>메인 페이지에요</h4>
+        <section style="margin-top:18px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <h3 style="margin:0; font-size:1.05rem;">공지사항</h3>
+                <a href="/notice/list/page/1" style="font-size:0.9rem; color:#065fd4;">더보기</a>
+            </div>
+
+            <div style="border:1px solid #eee; border-radius:12px; padding:12px;">
+                <div th:if="${recentNotices == null or #lists.isEmpty(recentNotices)}" style="color:#777;">
+                    아직 공지사항이 없습니다.
+                </div>
+
+                <ul th:if="${recentNotices != null and !#lists.isEmpty(recentNotices)}"
+                    style="margin:0; padding-left:18px;">
+                    <li th:each="n : ${recentNotices}" style="margin:6px 0;">
+                        <a th:href="@{'/post/' + ${n.id}}"
+                           th:text="${n.title}"
+                           style="color:#222; text-decoration:none;"></a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;">
+            <div style="border:1px solid #eee; border-radius:12px; padding:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <h3 style="margin:0; font-size:1.05rem;">시사뉴스 최신글</h3>
+                    <a href="/news/list/page/1" style="font-size:0.9rem; color:#065fd4;">더보기</a>
+                </div>
+
+                <div th:if="${recentNews == null or #lists.isEmpty(recentNews)}" style="color:#777;">
+                    아직 게시글이 없습니다.
+                </div>
+
+                <ul th:if="${recentNews != null and !#lists.isEmpty(recentNews)}"
+                    style="margin:0; padding-left:18px;">
+                    <li th:each="p : ${recentNews}" style="margin:6px 0;">
+                        <a th:href="@{'/post/' + ${p.id}}"
+                           th:text="${p.title}"
+                           style="color:#222; text-decoration:none;"></a>
+                    </li>
+                </ul>
+            </div>
+
+            <div style="border:1px solid #eee; border-radius:12px; padding:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <h3 style="margin:0; font-size:1.05rem;">노래 최신글</h3>
+                    <a href="/music/list/page/1" style="font-size:0.9rem; color:#065fd4;">더보기</a>
+                </div>
+
+                <div th:if="${recentMusic == null or #lists.isEmpty(recentMusic)}" style="color:#777;">
+                    아직 게시글이 없습니다.
+                </div>
+
+                <ul th:if="${recentMusic != null and !#lists.isEmpty(recentMusic)}"
+                    style="margin:0; padding-left:18px;">
+                    <li th:each="p : ${recentMusic}" style="margin:6px 0;">
+                        <a th:href="@{'/post/' + ${p.id}}"
+                           th:text="${p.title}"
+                           style="color:#222; text-decoration:none;"></a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
     </main>
 </div>
 </body>
