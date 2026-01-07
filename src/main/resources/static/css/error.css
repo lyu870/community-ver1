@@ -1,0 +1,125 @@
+/* error.css */
+
+/* 에러 페이지 레이아웃 */
+.error-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 22px 0;
+}
+
+.error-card {
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 18px 16px;
+  background: #fff;
+}
+
+/* 상단 타이틀 영역 */
+.error-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-badge {
+  min-width: 44px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid #e3e5e8;
+  background: #f8fbff;
+  color: #1d4ed8;
+}
+
+.error-badge.error-400 {
+  background: #f8fbff;
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+}
+
+.error-badge.error-403 {
+  background: #fff7ed;
+  border-color: rgba(234, 88, 12, 0.35);
+  color: #c2410c;
+}
+
+.error-badge.error-404 {
+  background: #f0fdf4;
+  border-color: rgba(22, 163, 74, 0.35);
+  color: #166534;
+}
+
+.error-badge.error-500 {
+  background: #fef2f2;
+  border-color: rgba(220, 38, 38, 0.35);
+  color: #b91c1c;
+}
+
+.error-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+/* 설명 문구 */
+.error-desc {
+  margin: 10px 0 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* 메타 정보 */
+.error-meta {
+  margin-top: 14px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.error-meta-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.error-meta-row:first-child {
+  margin-top: 0;
+}
+
+.error-meta-key {
+  min-width: 80px;
+  color: #999;
+}
+
+/* 버튼 영역 */
+.error-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* 작은 보조 텍스트 */
+.error-help {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* 모바일 */
+@media (max-width: 560px) {
+  .error-actions {
+    justify-content: stretch;
+  }
+
+  .error-actions .btn {
+    width: 100%;
+  }
+}

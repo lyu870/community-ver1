@@ -1,6 +1,7 @@
 // SecurityConfig.java
 package com.hello.community.security;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -76,6 +78,80 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+
+        http.securityMatcher("/api/**");
+
+        if (!csrfEnabled) {
+            http.csrf(csrf -> csrf.disable());
+        }
+
+        // API 요청은 인증 실패/권한 없음 시 로그인 redirect 대신 JSON 응답
+        http.exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setCharacterEncoding("UTF-8");
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":null,\"errorCode\":null,\"error\":\"로그인이 필요합니다.\",\"data\":null}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setCharacterEncoding("UTF-8");
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":null,\"errorCode\":null,\"error\":\"접근 권한이 없습니다.\",\"data\":null}");
+                })
+        );
+
+        http.authorizeHttpRequests(auth -> auth
+
+                .requestMatchers(
+                        "/api/member/check-username",
+                        "/api/member/check-displayName",
+                        "/api/member/check-email",
+                        "/api/member/email-code",
+                        "/api/member/email-verify",
+                        "/api/member/find-id",
+                        "/api/member/find-id/email-code",
+                        "/api/member/find-id/confirm",
+                        "/api/member/password-reset/email-code",
+                        "/api/member/password-reset/verify",
+                        "/api/member/password-reset/confirm"
+                ).permitAll()
+
+                // 답글 조회 비로그인도 가능
+                .requestMatchers(HttpMethod.GET,
+                        "/api/comment/children"
+                ).permitAll()
+
+                // 알림/설정 API는 로그인 필요
+                .requestMatchers("/api/notifications/**").authenticated()
+                .requestMatchers("/api/notification-settings/**").authenticated()
+                .requestMatchers("/api/board-subscriptions/**").authenticated()
+
+                // 댓글 API 중 쓰기/수정/삭제는 로그인 필요
+                .requestMatchers(HttpMethod.POST, "/api/comment", "/api/comment/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/comment/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/comment/**").authenticated()
+
+                // 추천 API는 로그인 필요
+                .requestMatchers("/api/recommend/**", "/api/post-recommend/**").authenticated()
+
+                // 그 외 /api/member/** (위에서 permitAll로 열어둔 항목 제외) 는 로그인 필요
+                .requestMatchers("/api/member/**").authenticated()
+
+                // 없는 API 경로도 DispatcherServlet까지 가서 404(JSON) 떨어지게 허용
+                .anyRequest().permitAll()
+        );
+
+        http.formLogin(form -> form.disable());
+        http.logout(logout -> logout.disable());
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         if (!csrfEnabled) {
@@ -100,6 +176,42 @@ public class SecurityConfig {
         }, UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests(auth -> auth
+
+                // 에러/포워드 디스패치가 인증에 막히지 않도록 허용
+                .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
+                .requestMatchers("/error", "/error/**").permitAll()
+
+                // 관리자 페이지는 관리자만
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                // notice게시판의 나머지 URL은 관리자만 사용 가능
+                .requestMatchers("/notice/**").hasRole("ADMIN")
+
+                // 댓글 작성은 로그인 필요
+                .requestMatchers("/comment", "/comment/**").authenticated()
+
+                // 게시판 글쓰기/수정/삭제는 로그인 필요
+                .requestMatchers(
+                        "/music/write",
+                        "/music/add",
+                        "/music/edit/**",
+                        "/music/update/**",
+                        "/music/delete/**",
+                        "/news/write",
+                        "/news/add",
+                        "/news/edit/**",
+                        "/news/update/**",
+                        "/news/delete/**"
+                ).authenticated()
+
+                // 마이페이지/주문 등은 로그인 필요 (프로젝트에 해당 경로가 없다면 영향 없음)
+                .requestMatchers(
+                        "/mypage",
+                        "/withdraw",
+                        "/order",
+                        "/order/**"
+                ).authenticated()
+
                 .requestMatchers(
                         "/",
                         "/post/**",
@@ -109,18 +221,6 @@ public class SecurityConfig {
 
                         "/find-id",
                         "/find-password",
-
-                        "/api/member/check-username",
-                        "/api/member/check-displayName",
-                        "/api/member/check-email",
-                        "/api/member/email-code",
-                        "/api/member/email-verify",
-                        "/api/member/find-id",
-                        "/api/member/find-id/email-code",
-                        "/api/member/find-id/confirm",
-                        "/api/member/password-reset/email-code",
-                        "/api/member/password-reset/verify",
-                        "/api/member/password-reset/confirm",
 
                         // 게시판: 목록/검색/상세페이지 공개
                         "/notice/list",
@@ -162,15 +262,11 @@ public class SecurityConfig {
 
                 // 답글 조회 비로그인도 가능
                 .requestMatchers(HttpMethod.GET,
-                        "/comment/children-fragment",
-                        "/api/comment/children"
+                        "/comment/children-fragment"
                 ).permitAll()
 
-                // notice게시판의 나머지 URL은 관리자만 사용 가능
-                .requestMatchers("/notice/**").hasRole("ADMIN")
-
-                // 댓글 작성은 로그인 필요
-                .requestMatchers("/comment", "/comment/**").authenticated()
+                // 비로그인으로 없는경로 진입 시 로그인으로 튀지 않고 404로 처리되게 GET은 기본 허용
+                .requestMatchers(HttpMethod.GET, "/**").permitAll()
 
                 .anyRequest().authenticated()
         );

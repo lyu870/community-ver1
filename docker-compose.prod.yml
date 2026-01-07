@@ -13,6 +13,7 @@
       environment:
         TZ: Asia/Seoul
         JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Seoul
+        SPRING_PROFILES_ACTIVE: prod
 
     nginx:
       image: nginx:1.27-alpine
