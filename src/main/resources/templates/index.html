@@ -12,12 +12,12 @@
 <div layout:fragment="content">
     <main class="board-container">
         <section style="margin-top:18px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                <h3 style="margin:0; font-size:1.05rem;">공지사항</h3>
-                <a href="/notice/list/page/1" style="font-size:0.9rem; color:#065fd4;">더보기</a>
-            </div>
-
             <div style="border:1px solid #eee; border-radius:12px; padding:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <h3 style="margin:0; font-size:1.05rem;">공지사항</h3>
+                    <a href="/notice/list/page/1" style="font-size:0.9rem; color:#065fd4;">더보기</a>
+                </div>
+
                 <div th:if="${recentNotices == null or #lists.isEmpty(recentNotices)}" style="color:#777;">
                     아직 공지사항이 없습니다.
                 </div>
