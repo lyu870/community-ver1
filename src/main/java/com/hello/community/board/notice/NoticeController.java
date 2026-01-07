@@ -2,6 +2,7 @@
 package com.hello.community.board.notice;
 
 import com.hello.community.board.common.PageUtil;
+import com.hello.community.board.common.YouTubeEmbedUtil;
 import com.hello.community.member.CustomUser;
 import com.hello.community.member.Member;
 import com.hello.community.member.MemberRepository;
@@ -85,6 +86,8 @@ public class NoticeController {
         Notice notice = noticeService.increaseViewCount(id);
 
         model.addAttribute("data", notice);
+        model.addAttribute("youtubeEmbedUrl", YouTubeEmbedUtil.extractEmbedUrl(notice.getContent()));
+        model.addAttribute("contentHtml", YouTubeEmbedUtil.renderContentHtml(notice.getContent()));
         model.addAttribute("enableBoardDetailJs", true);
 
         Long loginUserId = (user != null) ? user.getId() : null;

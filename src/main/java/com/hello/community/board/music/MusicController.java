@@ -2,6 +2,7 @@
 package com.hello.community.board.music;
 
 import com.hello.community.board.common.PageUtil;
+import com.hello.community.board.common.YouTubeEmbedUtil;
 import com.hello.community.board.recommend.PostRecommendService;
 import com.hello.community.comment.CommentRepository;
 import com.hello.community.comment.CommentService;
@@ -105,6 +106,8 @@ public class MusicController {
         Music music = musicService.increaseViewCount(id);
 
         model.addAttribute("data", music);
+        model.addAttribute("youtubeEmbedUrl", YouTubeEmbedUtil.extractEmbedUrl(music.getContent()));
+        model.addAttribute("contentHtml", YouTubeEmbedUtil.renderContentHtml(music.getContent()));
         model.addAttribute("comments", commentService.getComment(id));
         model.addAttribute("enableBoardDetailJs", true);
 

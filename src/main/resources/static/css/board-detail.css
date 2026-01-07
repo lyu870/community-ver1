@@ -69,6 +69,36 @@
   font-family: 'Montserrat', 'Segoe UI', sans-serif;
 }
 
+/* 본문 링크 */
+.post-body .post-content a {
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+/* 유튜브 임베드 영역 */
+.post-video {
+  margin: 0 0 14px;
+}
+
+.youtube-embed {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid #e3e5e8;
+}
+
+.youtube-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 /* 추천 박스 공통 */
 .post-recommend-section {
   display: flex;

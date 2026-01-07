@@ -9,7 +9,6 @@
 <head>
     <title>뉴스 상세</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/board.css}">
     <link rel="stylesheet" th:href="@{/css/comment.css}">
 </head>
 
@@ -42,7 +41,20 @@
 
         <!-- 본문 -->
         <section class="post-body">
-            <div class="post-content" th:text="${data.content}">본문</div>
+            <!-- 유튜브 영상 영역 -->
+            <div class="post-video" th:if="${youtubeEmbedUrl != null}">
+                <div class="youtube-embed">
+                    <iframe th:src="${youtubeEmbedUrl}"
+                            title="YouTube video player"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="post-content"
+                 th:if="${contentHtml != null and !#strings.isEmpty(contentHtml)}"
+                 th:utext="${contentHtml}">본문</div>
         </section>
 
         <!-- 추천 박스 -->

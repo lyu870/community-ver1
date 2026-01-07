@@ -7,9 +7,8 @@
       layout:decorate="~{layout/fragments/base}">
 
 <head>
-    <title>음악 상세</title>
+    <title>노래 상세</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/board.css}">
     <link rel="stylesheet" th:href="@{/css/comment.css}">
 </head>
 
@@ -31,8 +30,8 @@
                   method="post"
                   style="display:inline;"
                   class="post-delete-form">
-                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <input type="hidden" name="_method" value="delete">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button type="submit" class="btn-search board-action-btn"> 삭제 </button>
             </form>
         </div>
@@ -42,16 +41,29 @@
 
         <!-- 본문 -->
         <section class="post-body">
-            <div class="post-content" th:text="${data.content}">본문</div>
+            <!-- 유튜브 영상 영역 -->
+            <div class="post-video" th:if="${youtubeEmbedUrl != null}">
+                <div class="youtube-embed">
+                    <iframe th:src="${youtubeEmbedUrl}"
+                            title="YouTube video player"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="post-content"
+                 th:if="${contentHtml != null and !#strings.isEmpty(contentHtml)}"
+                 th:utext="${contentHtml}">본문</div>
         </section>
 
         <!-- 추천 박스 -->
         <section th:replace="~{layout/fragments/postRecommendBox :: recommendBox('music', ${data}, ${recommended})}"></section>
 
-        <!-- 댓글 작성폼 (공통) -->
+        <!-- 댓글 작성 폼 -->
         <div th:replace="~{layout/fragments/commentForm :: form(${data.id}, ${loginUserId})}"></div>
 
-        <!-- 댓글 트리 (공통) -->
+        <!-- 댓글 리스트 (관리자 포함) -->
         <div th:replace="~{layout/fragments/commentTree :: list(${comments}, ${loginUserId}, ${data.id}, ${isAdmin})}"></div>
 
     </main>

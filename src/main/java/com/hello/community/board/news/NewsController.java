@@ -2,6 +2,7 @@
 package com.hello.community.board.news;
 
 import com.hello.community.board.common.PageUtil;
+import com.hello.community.board.common.YouTubeEmbedUtil;
 import com.hello.community.board.recommend.PostRecommendService;
 import com.hello.community.comment.CommentRepository;
 import com.hello.community.comment.CommentService;
@@ -106,6 +107,8 @@ public class NewsController {
         News news = newsService.increaseViewCount(id);
 
         model.addAttribute("data", news);
+        model.addAttribute("youtubeEmbedUrl", YouTubeEmbedUtil.extractEmbedUrl(news.getContent()));
+        model.addAttribute("contentHtml", YouTubeEmbedUtil.renderContentHtml(news.getContent()));
         model.addAttribute("comments", commentService.getComment(id));
         model.addAttribute("enableBoardDetailJs", true);
 

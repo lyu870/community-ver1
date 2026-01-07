@@ -8,7 +8,6 @@
 <head>
     <title>뉴스 작성</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/board.css}">
 </head>
 
 <body>
@@ -29,10 +28,26 @@
                           style="width: 100%;" required></textarea>
             </div>
 
+            <!-- 유튜브 미리보기 영역 -->
+            <div id="youtubePreviewWrap" class="post-video" style="display:none;">
+                <div class="youtube-embed">
+                    <iframe id="youtubePreviewFrame"
+                            title="YouTube preview"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                </div>
+            </div>
+
+
             <button type="submit" class="btn-search board-action-btn">작성하기</button>
 
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         </form>
+
+        <!-- 유튜브 링크 미리보기 스크립트 -->
+        <script th:src="@{/js/youtube-preview.js}"></script>
+
     </main>
 </div>
 </body>
