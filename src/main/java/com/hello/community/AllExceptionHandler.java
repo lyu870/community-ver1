@@ -4,6 +4,8 @@ package com.hello.community;
 import com.hello.community.board.common.ApiResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -18,11 +20,15 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 public class AllExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(AllExceptionHandler.class);
+
     @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
     public Object handleNotFound(Exception e,
                                  HttpServletRequest request,
                                  HttpServletResponse response,
                                  Model model) {
+
+        log.warn("NOT_FOUND {} {}", request.getMethod(), request.getRequestURI(), e);
 
         if (isApiRequest(request)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -45,6 +51,8 @@ public class AllExceptionHandler {
                                      HttpServletResponse response,
                                      Model model) {
 
+        log.warn("BAD_REQUEST(TypeMismatch) {} {}", request.getMethod(), request.getRequestURI(), e);
+
         if (isApiRequest(request)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponseDto.fail("잘못된 요청입니다."));
@@ -66,6 +74,8 @@ public class AllExceptionHandler {
                                         HttpServletResponse response,
                                         Model model) {
 
+        log.warn("BAD_REQUEST(IllegalArgument) {} {}", request.getMethod(), request.getRequestURI(), e);
+
         if (isApiRequest(request)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponseDto.fail(e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다."));
@@ -86,6 +96,8 @@ public class AllExceptionHandler {
                                   HttpServletRequest request,
                                   HttpServletResponse response,
                                   Model model) {
+
+        log.error("INTERNAL_SERVER_ERROR {} {}", request.getMethod(), request.getRequestURI(), e);
 
         if (isApiRequest(request)) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

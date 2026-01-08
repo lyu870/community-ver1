@@ -184,8 +184,16 @@ public class SecurityConfig {
                 // 관리자 페이지는 관리자만
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                // notice게시판의 나머지 URL은 관리자만 사용 가능
-                .requestMatchers("/notice/**").hasRole("ADMIN")
+                // 공지사항: 작성/수정/삭제만 관리자
+                .requestMatchers(
+                        "/notice/write",
+                        "/notice/add",
+                        "/notice/edit",
+                        "/notice/edit/**",
+                        "/notice/update/**",
+                        "/notice/delete",
+                        "/notice/delete/**"
+                ).hasRole("ADMIN")
 
                 // 댓글 작성은 로그인 필요
                 .requestMatchers("/comment", "/comment/**").authenticated()

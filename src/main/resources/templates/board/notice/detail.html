@@ -15,7 +15,8 @@
 <div layout:fragment="content">
 
     <main class="board-container board board-notice"
-          th:data-login="${loginUserId != null}">
+          th:data-login="${loginUserId != null}"
+          th:with="supportsComments=false, supportsRecommend=false">
 
         <!-- 수정/삭제 버튼 -->
         <div style="margin-bottom:10px;"
@@ -34,7 +35,7 @@
         </div>
 
         <!-- 제목/메타 공통 헤더 -->
-        <section th:replace="~{layout/fragments/postDetailHeader :: boardHeader(${data}, ${null}, ${data.recommendCount})}"></section>
+        <section th:replace="~{layout/fragments/postDetailHeader :: noticeHeader(${data})}"></section>
 
         <!-- 본문 -->
         <section class="post-body">
@@ -53,9 +54,6 @@
                  th:if="${contentHtml != null and !#strings.isEmpty(contentHtml)}"
                  th:utext="${contentHtml}">본문</div>
         </section>
-
-        <!-- 추천 박스 -->
-        <section th:replace="~{layout/fragments/postRecommendBox :: recommendBox('notice', ${data}, ${recommended})}"></section>
 
     </main>
 </div>

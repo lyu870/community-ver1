@@ -5,21 +5,23 @@
 
 <div th:fragment="recommendBox(boardType, post, isRecommended)">
 
-    <section class="post-recommend-section">
-        <button type="button"
-                class="recommend-box js-post-action"
-                data-action="recommend"
-                th:data-board-type="${boardType}"
-                th:data-post-id="${post.id}"
-                th:classappend="${isRecommended} ? ' recommend-box-active' : ''">
+    <th:block th:if="${supportsRecommend == null or supportsRecommend}">
+        <section class="post-recommend-section">
+            <button type="button"
+                    class="recommend-box js-post-action"
+                    data-action="recommend"
+                    th:data-board-type="${boardType}"
+                    th:data-post-id="${post != null ? post.id : 0}"
+                    th:classappend="${isRecommended != null and isRecommended} ? ' recommend-box-active' : ''">
 
-            <span class="recommend-icon">👍</span>
+                <span class="recommend-icon">👍</span>
 
-            <span class="recommend-count js-recommend-count"
-                  th:attr="data-post-id=${post.id}"
-                  th:text="${post.recommendCount}">0</span>
-        </button>
-    </section>
+                <span class="recommend-count js-recommend-count"
+                      th:attr="data-post-id=${post != null ? post.id : 0}"
+                      th:text="${post != null ? post.recommendCount : 0}">0</span>
+            </button>
+        </section>
+    </th:block>
 
 </div>
 

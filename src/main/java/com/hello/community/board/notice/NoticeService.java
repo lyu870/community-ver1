@@ -22,11 +22,23 @@ public class NoticeService {
 
     @Transactional
     public Notice increaseViewCount(Long id) {
-        return noticePostService.increaseViewCount(id);
+
+        Notice notice = noticeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+
+        notice.setViewCount(notice.getViewCount() + 1);
+
+        initializeWriter(notice);
+        return notice;
     }
 
     public Notice findById(Long id) {
-        return noticePostService.findById(id);
+
+        Notice notice = noticeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+
+        initializeWriter(notice);
+        return notice;
     }
 
     @Transactional
@@ -97,5 +109,15 @@ public class NoticeService {
                         Sort.by(Sort.Direction.DESC, "createdAt")
                 )
         );
+    }
+
+    private void initializeWriter(Notice notice) {
+
+        if (notice == null || notice.getWriter() == null) {
+            return;
+        }
+
+        notice.getWriter().getId();
+        notice.getWriter().getDisplayName();
     }
 }

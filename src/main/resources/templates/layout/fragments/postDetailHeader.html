@@ -8,35 +8,42 @@
     <section class="post-header">
         <!-- 1번째 칸 : 제목 -->
         <div class="post-title-row">
-            <div class="post-title" th:text="${data.title}">제목</div>
+            <div class="post-title" th:text="${data != null and data.title != null ? data.title : ''}">제목</div>
         </div>
 
         <!-- 2번째 칸 : 작성자 닉네임 + 추천/댓글/조회/작성일 -->
         <div class="post-meta-row">
             <div class="post-meta-left">
-                <span class="post-writer" th:text="${data.writer.displayName}">작성자</span>
+                <span class="post-writer" th:text="${data != null and data.writer != null ? data.writer.displayName : '알수없음'}">작성자</span>
             </div>
             <div class="post-meta-right">
-                <span class="post-meta-item">
-                    추천
-                    <strong class="js-recommend-count"
-                            th:data-post-id="${data.id}"
-                            th:text="${recommendCount}">0</strong>
-                </span>
-                <span class="post-meta-sep">|</span>
-                <span class="post-meta-item">
-                    댓글
-                    <strong th:text="${#lists.size(comments)}">0</strong>
-                </span>
-                <span class="post-meta-sep">|</span>
+
+                <th:block th:if="${supportsRecommend == null or supportsRecommend}">
+                    <span class="post-meta-item">
+                        추천
+                        <strong class="js-recommend-count"
+                                th:data-post-id="${data != null ? data.id : 0}"
+                                th:text="${recommendCount == null ? 0 : recommendCount}">0</strong>
+                    </span>
+                    <span class="post-meta-sep">|</span>
+                </th:block>
+
+                <th:block th:if="${supportsComments == null or supportsComments}">
+                    <span class="post-meta-item">
+                        댓글
+                        <strong th:text="${comments == null ? 0 : #lists.size(comments)}">0</strong>
+                    </span>
+                    <span class="post-meta-sep">|</span>
+                </th:block>
+
                 <span class="post-meta-item">
                     조회수
-                    <strong th:text="${data.viewCount}">0</strong>
+                    <strong th:text="${data != null ? data.viewCount : 0}">0</strong>
                 </span>
                 <span class="post-meta-sep">|</span>
                 <span class="post-meta-item">
                     작성일
-                    <strong th:text="${#temporals.format(data.createdAt, 'yyyy-MM-dd HH:mm')}"></strong>
+                    <strong th:text="${data != null and data.createdAt != null ? #temporals.format(data.createdAt, 'yyyy-MM-dd HH:mm') : ''}"></strong>
                 </span>
             </div>
         </div>
@@ -44,28 +51,29 @@
 
 </div>
 
+<!-- 1번째 칸 : 제목 (notice게시판) -->
 <div th:fragment="noticeHeader(data)">
 
     <section class="post-header">
         <!-- 1번째 칸 : 제목 -->
         <div class="post-title-row">
-            <div class="post-title" th:text="${data.title}">제목</div>
+            <div class="post-title" th:text="${data != null and data.title != null ? data.title : ''}">제목</div>
         </div>
 
         <!-- 2번째 칸 : 작성자 + 조회/작성일 (흰색 배경) -->
         <div class="post-meta-row">
             <div class="post-meta-left">
-                <span class="post-writer" th:text="${data.writer.displayName}">작성자</span>
+                <span class="post-writer" th:text="${data != null and data.writer != null ? data.writer.displayName : '알수없음'}">작성자</span>
             </div>
             <div class="post-meta-right">
                 <span class="post-meta-item">
                     조회수
-                    <strong th:text="${data.viewCount}">0</strong>
+                    <strong th:text="${data != null ? data.viewCount : 0}">0</strong>
                 </span>
                 <span class="post-meta-sep">|</span>
                 <span class="post-meta-item">
                     작성일
-                    <strong th:text="${#temporals.format(data.createdAt,'yyyy-MM-dd HH:mm')}"></strong>
+                    <strong th:text="${data != null and data.createdAt != null ? #temporals.format(data.createdAt,'yyyy-MM-dd HH:mm') : ''}"></strong>
                 </span>
             </div>
         </div>
