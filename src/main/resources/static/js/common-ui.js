@@ -175,6 +175,41 @@
         }, duration);
     }
 
+    // 저장된 토스트 표시 (페이지 이동 후에도 보이게)
+    function showStoredToastOnLoad() {
+        try {
+            var raw = sessionStorage.getItem("APP_TOAST");
+            if (!raw) {
+                return;
+            }
+
+            sessionStorage.removeItem("APP_TOAST");
+
+            var payload = null;
+            try {
+                payload = JSON.parse(raw);
+            } catch (e) {
+                payload = { message: raw };
+            }
+
+            if (!payload || !payload.message) {
+                return;
+            }
+
+            var opts = payload.options || {
+                variant: payload.variant,
+                duration: payload.duration
+            };
+
+            showAppToast(payload.message, opts);
+        } catch (e) {
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        showStoredToastOnLoad();
+    });
+
     // 전역으로 노출
     window.showAppAlert = showAppAlert;
     window.showAppConfirm = showAppConfirm;

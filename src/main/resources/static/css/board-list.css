@@ -176,10 +176,64 @@ textarea {
   box-sizing: border-box;
 }
 
+/* 반응형 (상단 영역 정리) */
+@media (max-width: 768px) {
+
+  .board-container {
+    padding: 12px;
+  }
+
+  .board-list-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .board-search-form {
+    width: 100%;
+  }
+
+  .board-search-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .board-search-form .btn-search {
+    width: 44px;
+    padding: 0;
+    font-size: 0;
+    position: relative;
+  }
+
+  .board-search-form .btn-search::before {
+    content: "🔍";
+    font-size: 16px;
+  }
+
+  .board-reset-link {
+    margin-left: 0;
+    white-space: nowrap;
+  }
+
+  .board-list-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .board-list-actions .board-action-btn {
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+}
+
 /* 반응형 (모바일 전용)    */
 @media (max-width: 600px) {
 
-  /* 리스트 테이블을 카드형으로 */
+  /* 리스트 테이블을 카드형으로ㅗ */
   .board-table thead {
     display: none;
   }

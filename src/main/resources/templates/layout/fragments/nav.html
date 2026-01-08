@@ -20,91 +20,135 @@
         <!-- 우측 : 로그인 or 드롭다운 -->
         <div class="navbar-right">
 
-            <!-- 비회원 -->
-            <div sec:authorize="isAnonymous()">
-                <a href="/login" class="login-button">로그인</a>
-            </div>
+            <div class="navbar-right-inner">
 
-            <!-- 회원 -->
-            <div sec:authorize="isAuthenticated()" style="display:flex; align-items:center; gap:10px;">
+                <!-- 비회원 -->
+                <div sec:authorize="isAnonymous()" class="navbar-auth">
+                    <a href="/login" class="login-button">로그인</a>
+                </div>
 
-                <div class="notify-wrap" style="position:relative;">
-                    <button type="button"
-                            class="btn btn-ghost btn-sm notify-toggle"
-                            aria-label="알림"
-                            style="position:relative;">
-                        🔔
-                        <span class="notify-badge"
-                              style="display:none; position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; line-height:18px; border-radius:9px; font-size:12px; text-align:center; background:#e74c3c; color:#fff; padding:0 5px;">
-                            0
-                        </span>
-                    </button>
+                <!-- 회원 -->
+                <div sec:authorize="isAuthenticated()" class="navbar-auth">
 
-                    <div class="notify-menu"
-                         style="display:none; position:absolute; right:0; margin-top:8px; width:320px; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08); padding:10px; z-index:999;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <strong>알림</strong>
-                            <button type="button" class="btn btn-ghost btn-sm notify-refresh">새로고침</button>
-                        </div>
-
-                        <div class="notify-list">
-                            <div style="color:#666; font-size:0.95rem;">알림을 불러오는 중...</div>
-                        </div>
-
-                        <div class="notify-pager"
-                             style="margin-top:8px; padding-top:8px; border-top:1px solid #eee; display:flex; align-items:center; justify-content:center; gap:12px;">
-                            <button type="button"
-                                    class="btn btn-ghost btn-sm notify-prev"
-                                    aria-label="이전 페이지"
-                                    disabled>
-                                ◀
-                            </button>
-
-                            <span class="notify-page"
-                                  style="font-size:0.9rem; color:#666;">
-                                1
+                    <div class="notify-wrap">
+                        <button type="button"
+                                class="btn btn-ghost btn-sm notify-toggle"
+                                aria-label="알림">
+                            🔔
+                            <span class="notify-badge">
+                                0
                             </span>
+                        </button>
 
-                            <button type="button"
-                                    class="btn btn-ghost btn-sm notify-next"
-                                    aria-label="다음 페이지"
-                                    disabled>
-                                ▶
-                            </button>
+                        <div class="notify-menu">
+                            <div class="notify-menu-header">
+                                <strong>알림</strong>
+                                <button type="button" class="btn btn-ghost btn-sm notify-refresh">새로고침</button>
+                            </div>
+
+                            <div class="notify-list">
+                                <div class="notify-loading-text">알림을 불러오는 중...</div>
+                            </div>
+
+                            <div class="notify-pager">
+                                <button type="button"
+                                        class="btn btn-ghost btn-sm notify-prev"
+                                        aria-label="이전 페이지"
+                                        disabled>
+                                    ◀
+                                </button>
+
+                                <span class="notify-page">
+                                    1
+                                </span>
+
+                                <button type="button"
+                                        class="btn btn-ghost btn-sm notify-next"
+                                        aria-label="다음 페이지"
+                                        disabled>
+                                    ▶
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="dropdown">
-                    <button class="dropdown-toggle" type="button">
-                        <span class="navbar-username">
-                            <span sec:authentication="principal.displayName"></span>
-                        </span>님 반갑습니다▼
-                    </button>
-                    <div class="dropdown-menu">
-                        <a href="/my-page"
-                           class="btn btn-ghost btn-full btn-sm dropdown-item">
-                            마이페이지
-                        </a>
+                    <div class="dropdown">
+                        <button class="dropdown-toggle" type="button">
+                            <span class="navbar-username">
+                                <span sec:authentication="principal.displayName"></span>
+                            </span>
+                            <span class="navbar-greeting">님 반갑습니다</span>
+                            <span class="navbar-caret">▼</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="/my-page"
+                               class="btn btn-ghost btn-full btn-sm dropdown-item">
+                                마이페이지
+                            </a>
 
-                        <a href="/admin/members"
-                           class="btn btn-ghost btn-full btn-sm dropdown-item"
-                           sec:authorize="hasRole('ADMIN')">
-                            관리자페이지
-                        </a>
+                            <a href="/admin/members"
+                               class="btn btn-ghost btn-full btn-sm dropdown-item"
+                               sec:authorize="hasRole('ADMIN')">
+                                관리자페이지
+                            </a>
 
-                        <!-- POST 방식 로그아웃 -->
-                        <form id="logoutForm" action="/logout" method="post" style="display:none;">
-                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        </form>
-                        <a href="#"
-                           class="btn btn-ghost btn-full btn-sm dropdown-item dropdown-logout-link">
-                            로그아웃
-                        </a>
+                            <!-- POST 방식 로그아웃 -->
+                            <form id="logoutForm" action="/logout" method="post" style="display:none;">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            </form>
+                            <a href="#"
+                               class="btn btn-ghost btn-full btn-sm dropdown-item dropdown-logout-link">
+                                로그아웃
+                            </a>
+                        </div>
                     </div>
+
                 </div>
+
+                <!-- 모바일 햄버거 버튼 -->
+                <button type="button"
+                        class="navbar-hamburger"
+                        aria-label="메뉴"
+                        aria-expanded="false">
+                    ☰
+                </button>
 
             </div>
+
+            <!-- 모바일 메뉴 오버레이/패널 -->
+            <div class="navbar-mobile-overlay" style="display:none;"></div>
+
+            <nav class="navbar-mobile-menu" style="display:none;" aria-label="모바일 메뉴">
+                <div class="navbar-mobile-header">
+                    <strong>메뉴</strong>
+                    <button type="button" class="navbar-mobile-close" aria-label="닫기">✕</button>
+                </div>
+
+                <a href="/notice/list" class="navbar-mobile-link">공지사항</a>
+                <a href="/music/list" class="navbar-mobile-link">노래</a>
+                <a href="/news/list" class="navbar-mobile-link">시사뉴스</a>
+
+                <div class="navbar-mobile-sep"></div>
+
+                <div sec:authorize="isAnonymous()">
+                    <a href="/login" class="navbar-mobile-link">로그인</a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()">
+                    <a href="/my-page" class="navbar-mobile-link">마이페이지</a>
+
+                    <a href="/admin/members"
+                       class="navbar-mobile-link"
+                       sec:authorize="hasRole('ADMIN')">
+                        관리자페이지
+                    </a>
+
+                    <a href="#"
+                       class="navbar-mobile-link mobile-logout-link">
+                        로그아웃
+                    </a>
+                </div>
+            </nav>
 
         </div>
     </div>
@@ -130,6 +174,20 @@
                         dropdown.classList.remove("open");
                     }
                 });
+            }
+
+            // 로그아웃 토스트 저장
+            function storeLogoutToast() {
+                try {
+                    sessionStorage.setItem("APP_TOAST", JSON.stringify({
+                        message: "로그아웃 되었습니다.",
+                        options: {
+                            variant: "info",
+                            duration: 2000
+                        }
+                    }));
+                } catch (e) {
+                }
             }
 
             // 로그아웃 처리 공통 함수
@@ -160,50 +218,107 @@
                         method: "POST",
                         headers: headers
                     }).then(function () {
+                        storeLogoutToast();
+                        goNext();
                     }).catch(function () {
+                        storeLogoutToast();
                         if (logoutForm) {
                             logoutForm.submit();
-                        }
-                    }).finally(function () {
-                        if (window.showAppToast) {
-                            showAppToast("로그아웃 되었습니다.", {
-                                variant: "info",
-                                duration: 2000
-                            });
-                            setTimeout(goNext, 2000);
                         } else {
                             goNext();
                         }
                     });
                 } else if (logoutForm) {
+                    storeLogoutToast();
                     logoutForm.submit();
                 }
             }
 
             // 로그아웃 확인
-            const logoutLink = document.querySelector(".dropdown-logout-link");
             const logoutForm = document.getElementById("logoutForm");
+            const logoutLinks = document.querySelectorAll(".dropdown-logout-link, .mobile-logout-link");
 
-            if (logoutLink && logoutForm) {
-                logoutLink.addEventListener("click", function (e) {
-                    e.preventDefault();
+            if (logoutLinks.length > 0 && logoutForm) {
+                logoutLinks.forEach(function (logoutLink) {
+                    logoutLink.addEventListener("click", function (e) {
+                        e.preventDefault();
 
-                    if (window.AppModal && AppModal.confirm) {
-                        AppModal.confirm(
-                            "로그아웃 하시겠습니까?",
-                            function () {
+                        if (window.AppModal && AppModal.confirm) {
+                            AppModal.confirm(
+                                "로그아웃 하시겠습니까?",
+                                function () {
+                                    handleLogout();
+                                },
+                                null,
+                                { variant: "warning" }
+                            );
+                        } else {
+                            if (confirm("로그아웃 하시겠습니까?")) {
                                 handleLogout();
-                            },
-                            null,
-                            { variant: "warning" }
-                        );
-                    } else {
-                        if (confirm("로그아웃 하시겠습니까?")) {
-                            handleLogout();
+                            }
                         }
+                    });
+                });
+            }
+
+            // 모바일 햄버거 메뉴
+            const burger = document.querySelector(".navbar-hamburger");
+            const overlay = document.querySelector(".navbar-mobile-overlay");
+            const menu = document.querySelector(".navbar-mobile-menu");
+            const closeBtn = document.querySelector(".navbar-mobile-close");
+
+            function openMobileMenu() {
+                if (!burger || !overlay || !menu) return;
+
+                overlay.style.display = "block";
+                menu.style.display = "block";
+                burger.setAttribute("aria-expanded", "true");
+                document.body.classList.add("nav-mobile-open");
+            }
+
+            function closeMobileMenu() {
+                if (!burger || !overlay || !menu) return;
+
+                overlay.style.display = "none";
+                menu.style.display = "none";
+                burger.setAttribute("aria-expanded", "false");
+                document.body.classList.remove("nav-mobile-open");
+            }
+
+            if (burger && overlay && menu) {
+                burger.addEventListener("click", function () {
+                    const isOpen = burger.getAttribute("aria-expanded") === "true";
+                    if (isOpen) {
+                        closeMobileMenu();
+                    } else {
+                        openMobileMenu();
+                    }
+                });
+
+                overlay.addEventListener("click", function () {
+                    closeMobileMenu();
+                });
+
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", function () {
+                        closeMobileMenu();
+                    });
+                }
+
+                menu.addEventListener("click", function (e) {
+                    const target = e.target;
+                    if (target && target.tagName === "A") {
+                        closeMobileMenu();
+                    }
+                });
+
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") {
+                        closeMobileMenu();
                     }
                 });
             }
+
         });
     </script>
 </th:block>
