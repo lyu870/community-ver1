@@ -18,5 +18,5 @@ public interface PostRecommendRepository extends JpaRepository<PostRecommend, Lo
     List<PostRecommend> findAllByMemberId(Long memberId);
 
     // 회원탈퇴용: 특정 회원이 남긴 추천 기록 전체 삭제
-    long deleteByMemberId(Long memberId);
+    void deleteByMemberId(Long memberId);
 }
