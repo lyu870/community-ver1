@@ -191,6 +191,33 @@
   text-decoration: underline;
 }
 
+/* 답글 더보기 버튼 (JS로 생성되는 버튼) */
+.comment-children-more {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #065fd4;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.comment-children-more:hover {
+  text-decoration: underline;
+}
+
+.comment-children-more:disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.comment-children-more:focus-visible {
+  outline: 2px solid rgba(6, 95, 212, 0.35);
+  outline-offset: 2px;
+}
+
 .comment-children {
   display: none;
   margin-top: 8px;
