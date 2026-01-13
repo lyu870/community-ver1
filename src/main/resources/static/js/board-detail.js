@@ -407,8 +407,11 @@
                     <input type="hidden" name="id" value="${id}">
                     <input type="hidden" name="postId" value="${ctx.postId}">
                     <textarea name="content" rows="2">${escapeHtml(contentRaw)}</textarea>
-                    <button type="submit">저장</button>
-                    <button type="button" class="comment-edit-cancel">취소</button>
+
+                    <div class="comment-reply-actions">
+                        <button type="button" class="btn btn-ghost btn-sm comment-edit-cancel">취소</button>
+                        <button type="submit" class="btn btn-primary btn-sm">저장</button>
+                    </div>
                 </form>
                 ` : ''}
 
@@ -426,11 +429,15 @@
                       data-require-login="comment">
                     <input type="hidden" name="postId" value="${ctx.postId}">
                     <input type="hidden" name="parentId" value="${id}">
-                    <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
+
+                    <div class="comment-mention-wrap">
+                        <span class="comment-mention-pill" hidden>@멘션</span>
+                        <textarea name="content" rows="2" placeholder="답글을 입력하세요" required></textarea>
+                    </div>
 
                     <div class="comment-reply-actions">
-                        <button type="button" class="comment-reply-cancel">취소</button>
-                        <button type="submit">등록</button>
+                        <button type="button" class="btn btn-ghost btn-sm comment-reply-cancel">취소</button>
+                        <button type="submit" class="btn btn-primary btn-sm">등록</button>
                     </div>
                 </form>
 
@@ -772,7 +779,7 @@
             pill = document.createElement('span');
             pill.className = 'comment-mention-pill';
             pill.setAttribute('hidden', '');
-            pill.textContent = '';
+            pill.textContent = '@멘션';
             wrap.insertBefore(pill, wrap.firstChild);
         }
 
@@ -801,7 +808,7 @@
         replyForm.classList.remove('mention-active');
 
         if (ui && ui.pill) {
-            ui.pill.textContent = '';
+            ui.pill.textContent = '@멘션';
             ui.pill.setAttribute('hidden', '');
         }
 
@@ -809,7 +816,6 @@
             ui.textarea.style.paddingLeft = '';
         }
     }
-
 
     function applyMentionToReplyForm(replyForm, writerName) {
         if (!replyForm || !writerName) {
