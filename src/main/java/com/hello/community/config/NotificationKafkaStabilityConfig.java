@@ -1,4 +1,3 @@
-// NotificationKafkaStabilityConfig.java
 package com.hello.community.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
@@ -39,6 +38,8 @@ public class NotificationKafkaStabilityConfig {
 
         DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, backOff);
 
+        handler.setCommitRecovered(true);
+
         handler.setRetryListeners((record, ex, deliveryAttempt) -> {
             try {
                 log.warn("Notification consumer retry attempt={} topic={} partition={} offset={} error={}",
@@ -50,8 +51,6 @@ public class NotificationKafkaStabilityConfig {
             } catch (Exception ignore) {
             }
         });
-
-        handler.addNotRetryableExceptions(IllegalArgumentException.class);
 
         return handler;
     }

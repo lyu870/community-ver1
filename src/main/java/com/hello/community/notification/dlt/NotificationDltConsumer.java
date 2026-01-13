@@ -1,7 +1,5 @@
-// NotificationDltConsumer.java
 package com.hello.community.notification.dlt;
 
-import com.hello.community.notification.event.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -23,9 +21,10 @@ public class NotificationDltConsumer {
 
     @KafkaListener(
             topics = "${app.notification.kafka.topic:community.notification}.DLT",
-            groupId = "${app.notification.kafka.group-id:community-notification}-dlt"
+            groupId = "${app.notification.kafka.group-id:community-notification}-dlt",
+            containerFactory = "kafkaListenerContainerFactory"
     )
-    public void onDltMessage(ConsumerRecord<Object, NotificationEvent> record) {
+    public void onDltMessage(ConsumerRecord<Object, Object> record) {
         try {
             notificationDltService.saveFromRecord(record);
         } catch (Exception e) {
@@ -34,7 +33,7 @@ public class NotificationDltConsumer {
                         (record != null ? record.topic() : "null"),
                         (record != null ? record.partition() : -1),
                         (record != null ? record.offset() : -1),
-                        e.getClass().getSimpleName());
+                        e.getClass().getSimpleName(), e);
             } catch (Exception ignore) {
             }
         }
