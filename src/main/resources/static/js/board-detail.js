@@ -748,26 +748,43 @@
 
         let wrap = replyForm.querySelector('.comment-mention-wrap');
         let pill = replyForm.querySelector('.comment-mention-pill');
+        const textarea = replyForm.querySelector('textarea[name="content"]');
 
-        if (!wrap || !pill) {
+        if (!textarea) {
+            if (wrap && pill) {
+                return { wrap: wrap, pill: pill, textarea: null };
+            }
+            return null;
+        }
+
+        if (!wrap) {
             wrap = document.createElement('div');
             wrap.className = 'comment-mention-wrap';
-            wrap.style.display = 'none';
 
-            pill = document.createElement('span');
-            pill.className = 'comment-mention-pill';
-
-            wrap.appendChild(pill);
-
-            const textarea = replyForm.querySelector('textarea[name="content"]');
-            if (textarea && textarea.parentNode) {
+            if (textarea.parentNode) {
                 textarea.parentNode.insertBefore(wrap, textarea);
             } else {
                 replyForm.insertBefore(wrap, replyForm.firstChild);
             }
         }
 
-        return { wrap: wrap, pill: pill };
+        if (!pill) {
+            pill = document.createElement('span');
+            pill.className = 'comment-mention-pill';
+            pill.setAttribute('hidden', '');
+            pill.textContent = '';
+            wrap.insertBefore(pill, wrap.firstChild);
+        }
+
+        if (textarea.parentNode !== wrap) {
+            wrap.appendChild(textarea);
+        } else {
+            if (pill.nextElementSibling !== textarea) {
+                wrap.insertBefore(pill, textarea);
+            }
+        }
+
+        return { wrap: wrap, pill: pill, textarea: textarea };
     }
 
     function clearMention(replyForm) {
@@ -775,7 +792,6 @@
             return;
         }
 
-        const textarea = replyForm.querySelector('textarea[name="content"]');
         const ui = ensureMentionUi(replyForm);
 
         if (replyForm.dataset.mentionName) {
@@ -784,35 +800,31 @@
 
         replyForm.classList.remove('mention-active');
 
-        if (ui && ui.wrap) {
-            ui.wrap.style.display = 'none';
-        }
         if (ui && ui.pill) {
             ui.pill.textContent = '';
+            ui.pill.setAttribute('hidden', '');
         }
 
-        if (textarea) {
-            textarea.style.paddingLeft = '';
+        if (ui && ui.textarea) {
+            ui.textarea.style.paddingLeft = '';
         }
     }
+
 
     function applyMentionToReplyForm(replyForm, writerName) {
         if (!replyForm || !writerName) {
             return;
         }
 
-        const textarea = replyForm.querySelector('textarea[name="content"]');
-        if (!textarea) {
+        const ui = ensureMentionUi(replyForm);
+        if (!ui || !ui.textarea || !ui.pill) {
             return;
         }
+
+        const textarea = ui.textarea;
 
         const cur = String(textarea.value || '');
         if (normalizeText(cur) !== '') {
-            return;
-        }
-
-        const ui = ensureMentionUi(replyForm);
-        if (!ui) {
             return;
         }
 
@@ -820,7 +832,7 @@
         replyForm.classList.add('mention-active');
 
         ui.pill.textContent = '@' + writerName;
-        ui.wrap.style.display = 'flex';
+        ui.pill.removeAttribute('hidden');
 
         textarea.focus();
 

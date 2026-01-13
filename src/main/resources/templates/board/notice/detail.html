@@ -15,7 +15,7 @@
 <div layout:fragment="content">
 
     <main class="board-container board board-notice"
-          th:data-login="${loginUserId != null}"
+          th:attr="data-login=${loginUserId != null}"
           th:with="supportsComments=false, supportsRecommend=false">
 
         <!-- 수정/삭제 버튼 -->

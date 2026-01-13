@@ -93,15 +93,13 @@
 }
 
 .comment-mention-wrap {
-  position: absolute;
-  left: 10px;
-  top: 9px;
-  display: flex;
-  align-items: center;
-  z-index: 2;
+  position: relative;
 }
 
 .comment-mention-pill {
+  position: absolute;
+  left: 10px;
+  top: 9px;
   display: inline-flex;
   align-items: center;
   height: 22px;
@@ -113,6 +111,23 @@
   font-size: 0.85rem;
   cursor: pointer;
   user-select: none;
+  z-index: 2;
+}
+
+.comment-mention-pill[hidden] {
+  display: none !important;
+}
+
+.comment-mention-pill:empty {
+  display: none !important;
+}
+
+.comment-mention-pill + textarea {
+  padding-left: 10px;
+}
+
+.comment-mention-pill:not([hidden]) + textarea {
+  padding-left: 110px;
 }
 
 /* 댓글 작성 폼 */
@@ -208,13 +223,12 @@
 }
 
 .comment-children-more:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: default;
-  pointer-events: none;
 }
 
 .comment-children-more:focus-visible {
-  outline: 2px solid rgba(6, 95, 212, 0.35);
+  outline: 2px solid rgba(44, 126, 251, 0.35);
   outline-offset: 2px;
 }
 

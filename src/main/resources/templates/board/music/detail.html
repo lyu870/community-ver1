@@ -16,7 +16,7 @@
 <div layout:fragment="content">
 
     <main class="board-container board board-music"
-          th:data-login="${loginUserId != null}">
+          th:attr="data-login=${loginUserId != null}">
 
         <!-- 수정/삭제 버튼 -->
         <div style="margin-bottom:10px;"
