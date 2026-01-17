@@ -144,8 +144,8 @@ public class MusicController {
         Member writer = memberRepository.findById(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-        musicService.saveMusic(title, content, writer);
-        return "redirect:/music/list/page/1";
+        Music saved = musicService.saveMusic(title, content, writer);
+        return "redirect:/post/" + saved.getId();
     }
 
     @GetMapping("/edit/{id}")

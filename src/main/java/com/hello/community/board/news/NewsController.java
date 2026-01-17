@@ -145,8 +145,8 @@ public class NewsController {
         Member writer = memberRepository.findById(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-        newsService.saveNews(title, content, writer);
-        return "redirect:/news/list/page/1";
+        News saved = newsService.saveNews(title, content, writer);
+        return "redirect:/post/" + saved.getId();
     }
 
     @GetMapping("/edit/{id}")

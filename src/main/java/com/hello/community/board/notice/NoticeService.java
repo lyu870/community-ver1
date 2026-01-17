@@ -42,12 +42,12 @@ public class NoticeService {
     }
 
     @Transactional
-    public void saveNotice(String title, String content, Member writer) {
+    public Notice saveNotice(String title, String content, Member writer) {
         Notice notice = new Notice();
         notice.setTitle(title);
         notice.setContent(content);
         notice.setWriter(writer);
-        noticePostService.save(notice);
+        return noticePostService.save(notice);
     }
 
     @Transactional

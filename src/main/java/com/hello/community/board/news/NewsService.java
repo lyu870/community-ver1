@@ -40,12 +40,12 @@ public class NewsService {
     }
 
     @Transactional
-    public void saveNews(String title, String content, Member writer) {
+    public News saveNews(String title, String content, Member writer) {
         News news = new News();
         news.setTitle(title);
         news.setContent(content);
         news.setWriter(writer);
-        newsPostService.save(news);
+        return newsPostService.save(news);
     }
 
     @Transactional

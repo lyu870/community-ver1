@@ -40,12 +40,12 @@ public class MusicService {
     }
 
     @Transactional
-    public void saveMusic(String title, String content, Member writer) {
+    public Music saveMusic(String title, String content, Member writer) {
         Music music = new Music();
         music.setTitle(title);
         music.setContent(content);
         music.setWriter(writer);
-        musicPostService.save(music);
+        return musicPostService.save(music);
     }
 
     @Transactional

@@ -117,8 +117,8 @@ public class NoticeController {
         Member writer = memberRepository.findById(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-        noticeService.saveNotice(title, content, writer);
-        return "redirect:/notice/list/page/1";
+        Notice saved = noticeService.saveNotice(title, content, writer);
+        return "redirect:/post/" + saved.getId();
     }
 
     @GetMapping("/edit/{id}")
