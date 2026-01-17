@@ -49,7 +49,7 @@ public class SecurityConfig {
             uri = uri.substring(contextPath.length());
         }
 
-        return "/logout".equals(uri);
+        return "/logout".equals(uri) || "/logout/".equals(uri);
     };
 
     @Bean
@@ -201,6 +201,9 @@ public class SecurityConfig {
                 // 에러/포워드 디스패치가 인증에 막히지 않도록 허용
                 .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
                 .requestMatchers("/error", "/error/**").permitAll()
+
+                // GET /logout은 컨트롤러로 흘려보내서 redirect 처리
+                .requestMatchers(HttpMethod.GET, "/logout", "/logout/").permitAll()
 
                 // 관리자 페이지는 관리자만
                 .requestMatchers("/admin/**").hasRole("ADMIN")
