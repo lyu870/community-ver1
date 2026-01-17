@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -35,6 +36,21 @@ public class SecurityConfig {
 
     @Value("${app.security.csrf.enabled:false}")
     private boolean csrfEnabled;
+
+    private static final RequestMatcher LOGOUT_POST_MATCHER = request -> {
+        if (!"POST".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+
+        if (contextPath != null && !contextPath.isBlank() && uri.startsWith(contextPath)) {
+            uri = uri.substring(contextPath.length());
+        }
+
+        return "/logout".equals(uri);
+    };
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -156,6 +172,11 @@ public class SecurityConfig {
 
         if (!csrfEnabled) {
             http.csrf(csrf -> csrf.disable());
+        } else {
+            http.csrf(csrf -> csrf
+                    // 로그아웃은 토큰 누락 시에도 403 없이 동작하도록 예외 처리
+                    .ignoringRequestMatchers(LOGOUT_POST_MATCHER)
+            );
         }
 
         http.addFilterBefore(new OncePerRequestFilter() {
@@ -214,7 +235,7 @@ public class SecurityConfig {
 
                 // 마이페이지/주문 등은 로그인 필요 (프로젝트에 해당 경로가 없다면 영향 없음)
                 .requestMatchers(
-                        "/mypage",
+                        "/my-page",
                         "/withdraw",
                         "/order",
                         "/order/**"
@@ -288,14 +309,36 @@ public class SecurityConfig {
         );
 
         http.logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
+                // 로그아웃은 POST만 허용 (GET /logout 접근 시 403으로 떨어지는 문제 방지)
+                .logoutRequestMatcher(LOGOUT_POST_MATCHER)
+                .logoutSuccessHandler((request, response, authentication) -> {
+
+                    if (isAjaxRequest(request)) {
+                        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                        return;
+                    }
+
+                    String referer = request.getHeader("Referer");
+                    String targetUrl = getSafeTargetUrl(request, referer);
+
+                    if (targetUrl != null) {
+                        response.sendRedirect(targetUrl);
+                        return;
+                    }
+
+                    response.sendRedirect("/");
+                })
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
         );
 
         return http.build();
+    }
+
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        String requestedWith = request.getHeader("X-Requested-With");
+        return requestedWith != null && "XMLHttpRequest".equalsIgnoreCase(requestedWith);
     }
 
     private String getSafeTargetUrl(HttpServletRequest request, String referer) {

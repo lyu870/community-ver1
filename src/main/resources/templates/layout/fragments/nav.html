@@ -216,7 +216,8 @@
 
                     fetch("/logout", {
                         method: "POST",
-                        headers: headers
+                        headers: headers,
+                        credentials: "same-origin"
                     }).then(function () {
                         storeLogoutToast();
                         goNext();
