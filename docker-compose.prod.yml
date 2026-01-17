@@ -1,29 +1,31 @@
-  services:
-    mysql:
-      ports: []
+services:
+  mysql:
+    ports: []
 
-    redis:
-      ports: []
+  redis:
+    ports: []
 
-    kafka:
-      ports: []
+  kafka:
+    ports: []
 
-    app:
-      ports: []
-      environment:
-        TZ: Asia/Seoul
-        JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Seoul
-        SPRING_PROFILES_ACTIVE: prod
+  app:
+    ports: []
+    environment:
+      TZ: Asia/Seoul
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Seoul
+      SPRING_PROFILES_ACTIVE: prod
 
-    nginx:
-      image: nginx:1.27-alpine
-      container_name: community_nginx
-      ports:
-        - "80:80"
-      volumes:
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      depends_on:
-        app:
-          condition: service_healthy
-      restart: unless-stopped
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: community_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
