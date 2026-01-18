@@ -1,4 +1,3 @@
-// notification-ui.js
 (function () {
     function escapeHtml(str) {
         if (str === null || str === undefined) {
@@ -273,6 +272,7 @@
         let badgePollTimer = null;
         let unreadSse = null;
         let unreadSseTried = false;
+        let unreadSseReady = false;
 
         function closeMenu() {
             menu.style.display = 'none';
@@ -315,6 +315,20 @@
             badgePollTimer = null;
         }
 
+        function stopUnreadSse() {
+            if (!unreadSse) {
+                return;
+            }
+
+            try {
+                unreadSse.close();
+            } catch (e) {
+            }
+
+            unreadSse = null;
+            unreadSseReady = false;
+        }
+
         function startUnreadSse() {
             if (unreadSseTried) {
                 return;
@@ -342,19 +356,25 @@
 
                         if (data.unreadCount !== null && data.unreadCount !== undefined) {
                             setBadge(badgeEl, data.unreadCount);
+
+                            if (unreadSseReady !== true) {
+                                unreadSseReady = true;
+                                stopBadgePolling();
+                            }
                         }
                     } catch (err) {
                     }
                 });
 
                 unreadSse.addEventListener('open', function () {
-                    stopBadgePolling();
                 });
 
                 unreadSse.addEventListener('error', function () {
+                    stopUnreadSse();
                     startBadgePolling();
                 });
             } catch (e) {
+                stopUnreadSse();
                 startBadgePolling();
             }
         }
@@ -495,6 +515,10 @@
                     window.location.href = link;
                 }
             });
+        });
+
+        window.addEventListener('beforeunload', function () {
+            stopUnreadSse();
         });
 
         refreshBadge();
