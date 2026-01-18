@@ -56,15 +56,16 @@
         </table>
 
         <!-- 페이지네이션 -->
-        <th:block th:with="pagePrefix=${'/admin/member/' + memberId + '/comments?page='}"
-                  th:replace="~{layout/fragments/pagination :: pagination(
-                    ${pagePrefix},
+        <th:block th:with="commentsPagePrefix=${'/admin/member/' + memberId + '/comments?page='}">
+            <th:block th:replace="~{layout/fragments/pagination :: pagination(
+                    ${commentsPagePrefix},
                     '',
                     ${current},
                     ${totalPages},
                     ${startPage},
                     ${endPage}
                   )}"></th:block>
+        </th:block>
 
     </main>
 
