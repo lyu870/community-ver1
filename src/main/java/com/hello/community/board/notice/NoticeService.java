@@ -64,7 +64,12 @@ public class NoticeService {
 
     @Transactional
     public void delete(Long id, Long loginUserId) {
-        noticePostService.delete(id, loginUserId);
+        delete(id, loginUserId, false);
+    }
+
+    @Transactional
+    public void delete(Long id, Long loginUserId, boolean isAdmin) {
+        noticePostService.delete(id, loginUserId, isAdmin);
     }
 
     // 회원탈퇴용: 특정 회원이 작성한 모든 공지 게시글 삭제

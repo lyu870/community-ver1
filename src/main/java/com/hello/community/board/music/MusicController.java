@@ -188,7 +188,10 @@ public class MusicController {
             return "redirect:/login";
         }
 
-        musicService.delete(id, user.getId());
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        musicService.delete(id, user.getId(), isAdmin);
         return "redirect:/music/list/page/1";
     }
 

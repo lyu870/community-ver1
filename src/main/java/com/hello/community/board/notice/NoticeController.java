@@ -161,7 +161,10 @@ public class NoticeController {
             return "redirect:/login";
         }
 
-        noticeService.delete(id, user.getId());
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        noticeService.delete(id, user.getId(), isAdmin);
         return "redirect:/notice/list/page/1";
     }
 

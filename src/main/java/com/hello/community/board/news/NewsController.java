@@ -189,7 +189,10 @@ public class NewsController {
             return "redirect:/login";
         }
 
-        newsService.delete(id, user.getId());
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        newsService.delete(id, user.getId(), isAdmin);
         return "redirect:/news/list/page/1";
     }
 

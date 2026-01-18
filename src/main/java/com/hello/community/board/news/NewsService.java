@@ -62,7 +62,12 @@ public class NewsService {
 
     @Transactional
     public void delete(Long id, Long loginUserId) {
-        newsPostService.delete(id, loginUserId);
+        delete(id, loginUserId, false);
+    }
+
+    @Transactional
+    public void delete(Long id, Long loginUserId, boolean isAdmin) {
+        newsPostService.delete(id, loginUserId, isAdmin);
     }
 
     // 회원탈퇴용: 특정 회원이 작성한 모든 뉴스 게시글 삭제
