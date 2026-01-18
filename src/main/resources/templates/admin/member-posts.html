@@ -84,7 +84,7 @@
         <!-- 페이지네이션 (시사 뉴스) -->
         <th:block th:if="${newsTotalPages > 0}">
             <th:block th:with="newsPagePrefix=${'/admin/member/' + memberId + '/posts?newsPage='},
-                               newsPageSuffix=${'&musicPage=' + musicCurrent + '&noticePage=' + noticeCurrent}">
+                               newsPageSuffix=${'&musicPage=' + musicCurrent + '&' + 'noticePage=' + noticeCurrent}">
                 <th:block th:replace="~{layout/fragments/pagination :: pagination(
                         ${newsPagePrefix},
                         ${newsPageSuffix},
@@ -122,7 +122,7 @@
         <!-- 페이지네이션 (노래) -->
         <th:block th:if="${musicTotalPages > 0}">
             <th:block th:with="musicPagePrefix=${'/admin/member/' + memberId + '/posts?musicPage='},
-                               musicPageSuffix=${'&newsPage=' + newsCurrent + '&noticePage=' + noticeCurrent}">
+                               musicPageSuffix=${'&newsPage=' + newsCurrent + '&' + 'noticePage=' + noticeCurrent}">
                 <th:block th:replace="~{layout/fragments/pagination :: pagination(
                         ${musicPagePrefix},
                         ${musicPageSuffix},
