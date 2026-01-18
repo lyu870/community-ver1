@@ -1,3 +1,4 @@
+// notification-ui.js
 (function () {
     function escapeHtml(str) {
         if (str === null || str === undefined) {
@@ -272,7 +273,7 @@
         let badgePollTimer = null;
         let unreadSse = null;
         let unreadSseTried = false;
-        let unreadSseReady = false;
+        let unreadSseRetryTimer = null;
 
         function closeMenu() {
             menu.style.display = 'none';
@@ -315,21 +316,23 @@
             badgePollTimer = null;
         }
 
-        function stopUnreadSse() {
-            if (!unreadSse) {
+        function scheduleUnreadSseRetry() {
+            if (unreadSseRetryTimer) {
                 return;
             }
 
-            try {
-                unreadSse.close();
-            } catch (e) {
-            }
-
-            unreadSse = null;
-            unreadSseReady = false;
+            unreadSseRetryTimer = setTimeout(function () {
+                unreadSseRetryTimer = null;
+                unreadSseTried = false;
+                startUnreadSse();
+            }, 60000);
         }
 
         function startUnreadSse() {
+            if (unreadSse) {
+                return;
+            }
+
             if (unreadSseTried) {
                 return;
             }
@@ -356,26 +359,36 @@
 
                         if (data.unreadCount !== null && data.unreadCount !== undefined) {
                             setBadge(badgeEl, data.unreadCount);
-
-                            if (unreadSseReady !== true) {
-                                unreadSseReady = true;
-                                stopBadgePolling();
-                            }
                         }
                     } catch (err) {
                     }
                 });
 
                 unreadSse.addEventListener('open', function () {
+                    stopBadgePolling();
+
+                    if (unreadSseRetryTimer) {
+                        clearTimeout(unreadSseRetryTimer);
+                        unreadSseRetryTimer = null;
+                    }
                 });
 
                 unreadSse.addEventListener('error', function () {
-                    stopUnreadSse();
+                    if (unreadSse) {
+                        try {
+                            unreadSse.close();
+                        } catch (e) {
+                        }
+                        unreadSse = null;
+                    }
+
                     startBadgePolling();
+                    scheduleUnreadSseRetry();
                 });
             } catch (e) {
-                stopUnreadSse();
+                unreadSse = null;
                 startBadgePolling();
+                scheduleUnreadSseRetry();
             }
         }
 
@@ -515,10 +528,6 @@
                     window.location.href = link;
                 }
             });
-        });
-
-        window.addEventListener('beforeunload', function () {
-            stopUnreadSse();
         });
 
         refreshBadge();
