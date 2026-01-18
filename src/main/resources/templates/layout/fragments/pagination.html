@@ -18,13 +18,13 @@
         <nav class="pagination" th:if="${totalPagesSafe > 0}">
             <span>
                 <a th:if="${currentSafe > 1}"
-                   th:href="${prefixSafe + 1 + suffixSafe}"
+                   th:href="@{${prefixSafe + 1 + suffixSafe}}"
                    class="page-btn">⏮</a>
                 <span th:unless="${currentSafe > 1}"
                       class="page-btn page-disabled">⏮</span>
 
                 <a th:if="${currentSafe > 1}"
-                   th:href="${prefixSafe + (currentSafe - 1) + suffixSafe}"
+                   th:href="@{${prefixSafe + (currentSafe - 1) + suffixSafe}}"
                    class="page-btn">◀</a>
                 <span th:unless="${currentSafe > 1}"
                       class="page-btn page-disabled">◀</span>
@@ -32,7 +32,7 @@
 
             <span th:each="p : ${#numbers.sequence(startPageSafe, endPageSafe)}">
                 <a th:if="${p != currentSafe}"
-                   th:href="${prefixSafe + p + suffixSafe}"
+                   th:href="@{${prefixSafe + p + suffixSafe}}"
                    th:text="${p}"
                    class="page-btn"></a>
 
@@ -42,13 +42,13 @@
 
             <span>
                 <a th:if="${currentSafe < totalPagesSafe}"
-                   th:href="${prefixSafe + (currentSafe + 1) + suffixSafe}"
+                   th:href="@{${prefixSafe + (currentSafe + 1) + suffixSafe}}"
                    class="page-btn">▶</a>
                 <span th:unless="${currentSafe < totalPagesSafe}"
                       class="page-btn page-disabled">▶</span>
 
                 <a th:if="${currentSafe < totalPagesSafe}"
-                   th:href="${prefixSafe + totalPagesSafe + suffixSafe}"
+                   th:href="@{${prefixSafe + totalPagesSafe + suffixSafe}}"
                    class="page-btn">⏭</a>
                 <span th:unless="${currentSafe < totalPagesSafe}"
                       class="page-btn page-disabled">⏭</span>
