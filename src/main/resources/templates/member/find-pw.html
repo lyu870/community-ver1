@@ -229,6 +229,19 @@
                     }
                 }
 
+                function buildFormHeaders() {
+                    const headers = {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    };
+
+                    if (window.CsrfUtil) {
+                        CsrfUtil.apply(headers);
+                    }
+
+                    return headers;
+                }
+
                 // 인증코드 전송 버튼
                 if (sendPwCodeBtn && pwRequestForm) {
                     sendPwCodeBtn.addEventListener('click', async function () {
@@ -248,10 +261,7 @@
                         try {
                             const res = await fetch('/api/member/password-reset/email-code', {
                                 method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
+                                headers: buildFormHeaders(),
                                 body: new URLSearchParams({
                                     username: username,
                                     email: email
@@ -287,10 +297,7 @@
                         try {
                             const res = await fetch('/api/member/password-reset/verify', {
                                 method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
+                                headers: buildFormHeaders(),
                                 body: new URLSearchParams({
                                     username: username,
                                     email: email,
@@ -339,10 +346,7 @@
                         try {
                             const res = await fetch('/api/member/password-reset/confirm', {
                                 method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
+                                headers: buildFormHeaders(),
                                 body: new URLSearchParams({
                                     username: savedUsername,
                                     email: savedEmail,
