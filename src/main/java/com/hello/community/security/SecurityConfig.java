@@ -1,4 +1,3 @@
-// SecurityConfig.java
 package com.hello.community.security;
 
 import jakarta.servlet.DispatcherType;
@@ -429,6 +428,10 @@ public class SecurityConfig {
         }
 
         if (path.startsWith("/login") || path.startsWith("/logout")) {
+            return false;
+        }
+
+        if (path.startsWith("/register") || path.startsWith("/find-id") || path.startsWith("/find-password")) {
             return false;
         }
 
