@@ -142,7 +142,6 @@ public class SecurityConfig {
                 // 알림/설정 API는 로그인 필요
                 .requestMatchers("/api/notifications/**").authenticated()
                 .requestMatchers("/api/notification-settings/**").authenticated()
-                .requestMatchers("/api/board-subscriptions/**").authenticated()
 
                 // 댓글 API 중 쓰기/수정/삭제는 로그인 필요
                 .requestMatchers(HttpMethod.POST, "/api/comment", "/api/comment/**").authenticated()

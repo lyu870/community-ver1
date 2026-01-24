@@ -25,7 +25,6 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationSettingRepository notificationSettingRepository;
-    private final BoardSubscriptionRepository boardSubscriptionRepository;
     private final MemberRepository memberRepository;
     private final NotificationCommandService notificationCommandService;
     private final NotificationUnreadSseHub unreadSseHub;
@@ -146,36 +145,6 @@ public class NotificationService {
                 s.isCommentReplyEnabled(),
                 s.isPostRecommendEnabled()
         );
-    }
-
-    @Transactional
-    public BoardSubscriptionResponseDto getSubscriptions(Long memberId) {
-        ensureDefaultSubscriptions(memberId);
-
-        List<BoardSubscription> subs = boardSubscriptionRepository.findByMemberId(memberId);
-
-        List<BoardSubscriptionItemDto> items = subs.stream()
-                .sorted(Comparator.comparing(s -> s.getBoardType().name()))
-                .map(s -> new BoardSubscriptionItemDto(s.getBoardType().toPath(), s.isEnabled()))
-                .collect(Collectors.toList());
-
-        return new BoardSubscriptionResponseDto(items);
-    }
-
-    @Transactional
-    public BoardSubscriptionItemDto updateSubscription(Long memberId, BoardType boardType, Boolean enabled) {
-        ensureDefaultSubscriptions(memberId);
-
-        BoardSubscription sub = boardSubscriptionRepository.findByMemberIdAndBoardType(memberId, boardType)
-                .orElseThrow(() -> new IllegalArgumentException("subscription not found"));
-
-        if (enabled == null) {
-            sub.setEnabled(!sub.isEnabled());
-        } else {
-            sub.setEnabled(enabled);
-        }
-
-        return new BoardSubscriptionItemDto(sub.getBoardType().toPath(), sub.isEnabled());
     }
 
     @Transactional
@@ -366,19 +335,6 @@ public class NotificationService {
 
         NotificationSetting created = NotificationSetting.of(member);
         return notificationSettingRepository.save(created);
-    }
-
-    private void ensureDefaultSubscriptions(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("member not found"));
-
-        for (BoardType t : BoardType.values()) {
-            Optional<BoardSubscription> exists = boardSubscriptionRepository.findByMemberIdAndBoardType(memberId, t);
-            if (exists.isEmpty()) {
-                BoardSubscription created = BoardSubscription.of(member, t, false);
-                boardSubscriptionRepository.save(created);
-            }
-        }
     }
 
     private void publishUnreadCountAfterCommit(Long memberId) {

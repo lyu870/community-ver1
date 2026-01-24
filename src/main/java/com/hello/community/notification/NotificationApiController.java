@@ -3,6 +3,7 @@ package com.hello.community.notification;
 
 import com.hello.community.board.common.ApiResponseDto;
 import com.hello.community.member.CustomUser;
+import com.hello.community.notification.NotificationService;
 import com.hello.community.notification.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -88,33 +89,5 @@ public class NotificationApiController {
     ) {
         Long memberId = user.getId();
         return ApiResponseDto.ok(notificationService.updateSettings(memberId, req));
-    }
-
-    // 게시판 구독 조회
-    @GetMapping("/board-subscriptions")
-    public ApiResponseDto<BoardSubscriptionResponseDto> getSubscriptions(
-            @AuthenticationPrincipal CustomUser user
-    ) {
-        Long memberId = user.getId();
-        return ApiResponseDto.ok(notificationService.getSubscriptions(memberId));
-    }
-
-    // 게시판 구독 토글 (enabled 파라미터 없으면 토글)
-    @PutMapping("/board-subscriptions/{boardType}")
-    public ApiResponseDto<BoardSubscriptionItemDto> toggleSubscription(
-            @AuthenticationPrincipal CustomUser user,
-            @PathVariable String boardType,
-            @RequestParam(required = false) Boolean enabled
-    ) {
-        Long memberId = user.getId();
-
-        BoardType type;
-        try {
-            type = BoardType.valueOf(boardType.toUpperCase());
-        } catch (Exception e) {
-            return ApiResponseDto.fail("invalid boardType");
-        }
-
-        return ApiResponseDto.ok(notificationService.updateSubscription(memberId, type, enabled));
     }
 }
