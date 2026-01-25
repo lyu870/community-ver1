@@ -27,7 +27,7 @@ services:
     image: redis:7
     container_name: redis1
     ports:
-      - "${REDIS_PORT}:6379"
+      - "127.0.0.1:${REDIS_PORT}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -41,7 +41,7 @@ services:
     image: apache/kafka:3.7.0
     container_name: kafka
     ports:
-      - "9092:9092"
+      - "127.0.0.1:${KAFKA_PORT}:9092"
     environment:
       CLUSTER_ID: ${KAFKA_CLUSTER_ID}
 
