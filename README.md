@@ -1,20 +1,17 @@
 # community-ver1
 ## 소개
-시사뉴스/노래/음악 관련 이야기를 공유하는 게시판기반의 커뮤니티 사이트입니다.  
-(Spring Boot 프로젝트)  
+시사뉴스/노래/음악 관련 이야기를 공유하는 게시판기반의 커뮤니티 사이트입니다.
+(Spring Boot 프로젝트)
 <br>
 
 ## 핵심 구현기능
-- 화면구성 : Thymeleaf로 페이지를 서버에서 렌더링, 댓글/추천/알림 등은 fetch로 API를 호출하여 갱신.
-- 댓글/대댓글 : 대댓글을 자식댓글로 분리 -> 페이지단위로 지연로딩(lazy loading)하여 댓글이 많아져도 화면이 느려지지 않게 구성.
-- 추천 : 토글방식의 게시글추천 + 추천이벤트를 알림기능에 연동
-- 알림 : 댓글/추천 알림은 트랜잭션 커밋 이후(afterCommit) 이벤트발행 → Kafka Consumer가 이를 처리해 별도 트랜잭션으로 저장(REQUIRES_NEW)
-- 실시간 : 알림목록은 REST로 가져오고,미확인 알림개수(unread-count)는 SSE로 실시간 갱신, 실패 시 폴백(폴링)
-- 장애격리(DLT) : kafka consumer가 처리실패하면 재시도 후 DLT로 분기시키고, DLT메시지를 DB에 적재 -> 관리자페이지에서 조회/상태처리 가능.
-- 운영 : kafka consumer가 에러발생 시 재시도이후 그래도 안되면 DLT발행 -> 에러메시지를 버리지않고 추적/관리 가능.
-- 보안 : /api/**는 Security체인으로 401/403을 JSON으로 응답, CSRF는 dev/prod 토글로 운영, 로그인 리다이렉트는 안전한 경로만 허용.
-- 배포 : Docker Compose(dev/prod분리) + Actuator healthcheck(컨테이너 정상동작중인지 체크) + Nginx리버스 프록시사용(외부는 80/443만 열고 서비스는 숨김. SSE동작고려.)
-<br><br>
+1. 댓글 지연로딩(lazy loading)을 통한 페이지로딩속도 향상.
+2. 이메일 인증번호 발행시스템(redis)
+3. 댓글/추천이 DB에 저장된 뒤 Kafka로 알림이벤트를 발행하고, Consumer가 알림을 별도의 트랜잭션으로 저장.
+4. kafka Consumer 처리 실패 시 재시도 후 DLT로 분기, DLT메시지를 DB에 저장 (관리자페이지 → 조회/상태 처리)
+5. 알림 목록은 REST로 조회, 미확인 개수(unread-count)는 SSE로 실시간 갱신.(실패 시 폴링 폴백)
+6. Docker Compose(dev/prod분리) + Actuator healthcheck(컨테이너 정상동작중인지 체크) + Nginx리버스 프록시사용(외부는 80/443만 열고 서비스는 숨김. SSE동작고려.)
+  <br><br>
 
 
 ## 서비스 기능
