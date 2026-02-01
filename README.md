@@ -1,7 +1,10 @@
 # community-ver1
 ## 소개
-시사뉴스/노래/음악 관련 이야기를 공유하는 게시판기반의 커뮤니티 사이트입니다.
-(Spring Boot 프로젝트)
+시사뉴스/노래/음악 관련 이야기를 공유하는 게시판기반의 커뮤니티 사이트입니다.  
+(Spring Boot 프로젝트) <br><br>
+서비스링크 : https://community-v1.com/ <br><br>
+(Notion)서비스화면 캡쳐 보러가기 : https://narrow-rain-2e3.notion.site/community-v1-2fa3d5c322e180cab04ce847a30399a0 <br>
+(Velog)서비스화면 캡쳐 보러가기 : https://velog.io/@lyu870/community-v1-%EC%84%9C%EB%B9%84%EC%8A%A4%ED%99%94%EB%A9%B4-%EC%BA%A1%EC%B3%90
 <br>
 
 ## 핵심 구현기능
