@@ -5,12 +5,12 @@
 <br>
 
 ## 핵심 구현기능
-1. 댓글 지연로딩(lazy loading)을 통한 페이지로딩속도 향상.
-2. 이메일 인증번호 발행시스템(redis)
+1. 자식댓글을 "더보기"로 지연로딩 + 페이징 처리하여 초기 렌더링비용을 줄임. (로딩속도향상)
+2. Redis기반 인증코드 발급/검증 (회원가입 + 회원탈퇴 + 비밀번호 재설정)
 3. 댓글/추천이 DB에 저장된 뒤 Kafka로 알림이벤트를 발행하고, Consumer가 알림을 별도의 트랜잭션으로 저장.
 4. kafka Consumer 처리 실패 시 재시도 후 DLT로 분기, DLT메시지를 DB에 저장 (관리자페이지 → 조회/상태 처리)
-5. 알림 목록은 REST로 조회, 미확인 개수(unread-count)는 SSE로 실시간 갱신.(실패 시 폴링 폴백)
-6. Docker Compose(dev/prod분리) + Actuator healthcheck(컨테이너 정상동작중인지 체크) + Nginx리버스 프록시사용(외부는 80/443만 열고 서비스는 숨김. SSE동작고려.)
+5. 알림 목록은 REST로 조회, 미확인 개수(unread-count)는 SSE로 실시간 갱신. (실패 시 폴링 폴백)
+6. dev/prod 분리(Docker Compose) + Actuator health 기반 헬스체크 + Nginx 리버스프록시(외부 80/443만 공개, SSE 경로 buffering off)
   <br><br>
 
 
